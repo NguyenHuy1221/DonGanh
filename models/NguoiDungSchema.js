@@ -16,9 +16,8 @@ const NguoiDungSchema = new Schema({
     { type: Schema.Types.ObjectId, ref: "PhuongThucThanhToan" },
   ],
   role: { type: String, enum: ["user", "admin"] },
-  otp: String, // Trường lưu mã OTP
-  verificationToken: { type: String },
-  isVerified: { type: Boolean, default: false },
+  otp: { type: String },
+  otpExpiry: { type: Date },
 });
 
-module.exports = monggose.model("User", NguoiDungSchema);
+module.exports = mongoose.model("User", NguoiDungSchema);

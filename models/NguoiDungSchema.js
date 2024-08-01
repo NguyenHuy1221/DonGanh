@@ -21,4 +21,4 @@ const NguoiDungSchema = new Schema({
   isVerified: { type: Boolean, default: false },
 });
 
-module.exports = monggose.model("User", NguoiDungSchema);
+module.exports = mongoose.model("User", NguoiDungSchema);

@@ -1,30 +1,27 @@
 const express = require("express");
 const apiRoute = express.Router();
-const thuoctinhRouter = require('../router/thuoctinh')
-const sanphamRouter = require('../router/sanpham')
+const thuoctinhRouter = require("../router/thuoctinh");
+const sanphamRouter = require("../router/sanpham");
+const userRoute = require("../router/user");
 
-apiRoute.use('/sanpham',(req, res,next)=>{
-    console.log('call san pham api router')
-    next()
-},sanphamRouter);
+apiRoute.use("/user", userRoute);
 
+apiRoute.use(
+  "/sanpham",
+  (req, res, next) => {
+    console.log("call san pham api router");
+    next();
+  },
+  sanphamRouter
+);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-apiRoute.use('/thuoctinh',(req, res,next)=>{
-    console.log('call thuoc tinh api router')
-    next()
-},thuoctinhRouter);
+apiRoute.use(
+  "/thuoctinh",
+  (req, res, next) => {
+    console.log("call thuoc tinh api router");
+    next();
+  },
+  thuoctinhRouter
+);
 
 module.exports = apiRoute;

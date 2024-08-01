@@ -26,6 +26,7 @@ async function RegisterUser(req, res) {
     await UserModel.create({
       tenNguoiDung,
       matKhau: hash_pass,
+      gmail,
       otp,
       otpExpiry,
     });
@@ -86,4 +87,29 @@ async function VerifyOTP(req, res) {
   }
 }
 
-module.exports = { RegisterUser, VerifyOTP };
+async function loginUser(req, res) {
+  const { gmail, matKhau } = req.body;
+  try {
+    const user = await UserModel.findOne({ gmail });
+    if (!user) {
+      return res.status(400).json({ message: "Email không tồn tại" });
+    }
+
+    // if (!user.isVerified) {
+    //   return res.status(400).json({ message: "Tài khoản chưa được xác nhận" });
+    // }
+
+    const isMatch = await comparePassword(matKhau, user.matKhau);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mật khẩu không đúng" });
+    }
+
+    const token = generateToken(user._id, user.role);
+    return res.json({ message: "Đăng nhập thành công", token });
+  } catch (error) {
+    console.error("Lỗi khi đăng nhập:", error);
+    return res.status(500).json({ message: "Đã xảy ra lỗi khi đăng nhập" });
+  }
+}
+
+module.exports = { RegisterUser, VerifyOTP, loginUser };

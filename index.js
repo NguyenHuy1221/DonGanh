@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const apiRoute = require("./router");
 require("./models/mongo-provider.js");
+require("dotenv").config();
 const session = require("express-session");
 
 app.use(express.json());

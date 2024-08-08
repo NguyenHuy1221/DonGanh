@@ -29,6 +29,7 @@ async function RegisterUser(req, res) {
       gmail,
       otp,
       otpExpiry,
+      isVerified: false,
     });
 
     const mailOptions = {
@@ -76,6 +77,7 @@ async function VerifyOTP(req, res) {
 
     user.otp = undefined;
     user.otpExpiry = undefined;
+    user.isVerified = true;
     await user.save();
 
     return res.json({
@@ -95,12 +97,12 @@ async function loginUser(req, res) {
       return res.status(400).json({ message: "Email không tồn tại" });
     }
 
-    // if (!user.isVerified) {
-    //   return res.status(400).json({ message: "Tài khoản chưa được xác nhận" });
-    // }
+    if (!user.isVerified) {
+      return res.status(400).json({ message: "Tài khoản chưa được xác nhận" });
+    }
 
-    const isMatch = await comparePassword(matKhau, user.matKhau);
-    if (!isMatch) {
+    const check = await comparePassword(matKhau, user.matKhau);
+    if (!check) {
       return res.status(400).json({ message: "Mật khẩu không đúng" });
     }
 
@@ -112,4 +114,75 @@ async function loginUser(req, res) {
   }
 }
 
-module.exports = { RegisterUser, VerifyOTP, loginUser };
+async function ForgotPassword(req, res) {
+  const { gmail } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ gmail });
+    if (!user) {
+      return res.status(400).json({ message: "Email không tồn tại" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP 6 chữ số
+    const otpExpiry = Date.now() + 15 * 60 * 1000; // OTP hết hạn sau 15 phút
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: gmail,
+      subject: "Xác nhận khôi phục mật khẩu",
+      text: `Chào ${user.tenNguoiDung},\n\nVui lòng sử dụng mã OTP sau để xác nhận khôi phục mật khẩu của bạn:\n\n${otp}\n\nTrân trọng,\nĐội ngũ hỗ trợ`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Lỗi khi gửi email:", error);
+      } else {
+        console.log("Email đã được gửi:", info.response);
+      }
+    });
+
+    return res.json({
+      message: "OTP khôi phục mật khẩu đã được gửi, vui lòng kiểm tra email",
+    });
+  } catch (error) {
+    console.error("Lỗi khi gửi OTP khôi phục mật khẩu:", error);
+    return res.status(500).json({ message: "Đã xảy ra lỗi khi gửi OTP" });
+  }
+}
+
+async function ResetPassword(req, res) {
+  const { gmail, matKhauMoi } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ gmail });
+
+    if (!user) {
+      return res.status(400).json({ message: "Người dùng không tồn tại" });
+    }
+
+    const hash_pass = await hashPassword(matKhauMoi);
+    user.matKhau = hash_pass;
+    await user.save();
+
+    return res.json({
+      message: "Mật khẩu đã được cập nhật thành công",
+    });
+  } catch (error) {
+    console.error("Lỗi khi đặt lại mật khẩu:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi đặt lại mật khẩu" });
+  }
+}
+
+module.exports = {
+  RegisterUser,
+  VerifyOTP,
+  loginUser,
+  ForgotPassword,
+  ResetPassword,
+};

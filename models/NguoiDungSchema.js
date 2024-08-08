@@ -18,6 +18,7 @@ const NguoiDungSchema = new Schema({
   role: { type: String, enum: ["user", "admin"] },
   otp: { type: String },
   otpExpiry: { type: Date },
+  isVerified: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("User", NguoiDungSchema);

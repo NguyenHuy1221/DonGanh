@@ -28,16 +28,15 @@ async function comparePassword(plaintextPassword, hash) {
 }
 
 function generateToken(payLoad) {
-  console.log("process.env.SECRET_KEY", process.env.SECRET_KEY);
-  const token = jwt.sign(
-    {
-      data: {
-        ...payLoad,
-      },
-    },
-    process.env.SECRET_KEY,
-    { expiresIn: process.env.EXPIRE_TIME }
-  );
+  const secretKey = process.env.SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("SECRET_KEY is not defined");
+  }
+
+  const token = jwt.sign({ data: payLoad }, secretKey, {
+    expiresIn: process.env.EXPIRE_TIME,
+  });
+
   return token;
 }
 

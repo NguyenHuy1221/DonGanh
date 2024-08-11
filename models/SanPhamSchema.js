@@ -12,13 +12,17 @@ const SanPhamSchema = new Schema({
   PhanTramGiamGia: { type: Number },
   NgayTao: { type: Date, default: Date.now },
   TinhTrang: { type: String }, // Ví dụ: 'Còn hàng', 'Hết hàng'
+  //  TinhTrang: { type: String, enum: ['Còn hàng', 'Hết hàng', 'Ngừng kinh doanh'] },
   MoTa: { type: String },
   Unit: { type: String }, // Đơn vị tính
   HinhBoSung: [{
     TenAnh: { type: String, required: true },
     UrlAnh: { type: String, required: true },
   }],
-  DanhSachThuocTinh: [{ type: String }], // Mảng các thuộc tính dạng chuỗi
+  DanhSachThuocTinh: [{
+    type: String,
+    ref: 'ThuocTinh'
+  }],
   IDDanhMuc: { type: String, ref: 'DanhMuc' }, // Tham chiếu đến danh mục cha
   IDDanhMucCon: { type: String, ref: 'DanhMucCon' } // Tham chiếu đến danh mục con
 });

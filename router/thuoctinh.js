@@ -1,20 +1,30 @@
 const express = require('express');
 const thuoctinhRouter = express.Router();
-const {createReview,updateReview,DeleteReview,listreview} = require("../controller/thuoctinh-controller")
+const {
+    getlistThuocTinh,
+    createThuocTinh,
+    updateThuocTinh,
+    deleteThuocTinh,
+    findThuocTinh,} = require("../controller/thuoctinh-controller")
 
-thuoctinhRouter.get('/listReview', async function (req, res) {
-    return listreview(req, res);
+    thuoctinhRouter.get('/getlistThuocTinh', async function (req, res) {
+        return getlistThuocTinh(req, res);
+    })
+    
+
+thuoctinhRouter.get('/findThuocTinh', async function (req, res) {
+    return findThuocTinh(req, res);
 })
 
-thuoctinhRouter.post('/createReview', async function (req, res) {
-    return createReview(req, res);
+thuoctinhRouter.post('/createThuocTinh', async function (req, res) {
+    return createThuocTinh(req, res);
 })
 
-thuoctinhRouter.put('/updateReview', async function (req, res) {
-    return updateReview(req, res);
+thuoctinhRouter.put('/updateThuocTinh', async function (req, res) {
+    return updateThuocTinh(req, res);
 })
-thuoctinhRouter.delete('/deleteReview', async function (req, res) {
-    return DeleteReview(req, res);
+thuoctinhRouter.delete('/deleteThuocTinh', async function (req, res) {
+    return deleteThuocTinh(req, res);
 })
 
 

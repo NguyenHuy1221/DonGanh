@@ -1,14 +1,37 @@
 const express = require('express');
 const sanphamRouter = express.Router();
-const {createReview,updateReview,DeleteReview,listreview} = require("../controller/sanpham-controller")
+const { getlistSanPham,
+    createSanPham,
+    createThuocTinhSanPham,
+    createbienthesanpham,
+    getlistBienTheFake,
+    createBienTheFake,
+    updateSanPham,
+    deleteSanPham,
+    findSanPham,} = require("../controller/sanpham-controller")
 
-sanphamRouter.get('/listReview', async function (req, res) {
-    return listreview(req, res);
+sanphamRouter.get('/getlistSanPham', async function (req, res) {
+    return getlistSanPham(req, res);
 })
 
-sanphamRouter.post('/createReview', async function (req, res) {
-    return createReview(req, res);
+sanphamRouter.post('/createSanPham', async function (req, res) {
+    return createSanPham(req, res);
 })
+
+sanphamRouter.post('/createThuocTinhSanPham', async function (req, res) {
+    return createThuocTinhSanPham(req, res);
+})
+sanphamRouter.post('/createbienthesanpham', async function (req, res) {
+    return createbienthesanpham(req, res);
+})
+
+sanphamRouter.get('/getlistBienTheFake', async function (req, res) {
+    return getlistBienTheFake(req, res);
+})
+sanphamRouter.post('/createBienTheFake', async function (req, res) {
+    return createBienTheFake(req, res);
+})
+
 
 sanphamRouter.put('/updateReview', async function (req, res) {
     return updateReview(req, res);

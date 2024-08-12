@@ -19,6 +19,7 @@ const NguoiDungSchema = new Schema({
   otp: { type: String },
   otpExpiry: { type: Date },
   isVerified: { type: Boolean, default: false },
+  googleId: { type: String, unique: true },
 });
 
 module.exports = mongoose.model("User", NguoiDungSchema);

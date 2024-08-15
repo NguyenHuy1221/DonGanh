@@ -4,8 +4,10 @@ const thuoctinhRouter = require("../router/thuoctinh");
 const thuoctinhgiatriRouter = require("../router/thuoctinhgiatri");
 const sanphamRouter = require("../router/sanpham");
 const userRoute = require("../router/user");
+const gioHangRoute = require("../router/gioHang");
 
 apiRoute.use("/user", userRoute);
+apiRoute.use("/cart", gioHangRoute);
 
 apiRoute.use(
   "/sanpham",

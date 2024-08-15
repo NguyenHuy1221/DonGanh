@@ -20,9 +20,10 @@ const SanPhamSchema = new Schema({
     UrlAnh: { type: String, required: true },
   }],
   DanhSachThuocTinh: [{
-    type: String,
-    ref: 'ThuocTinh'
+    thuocTinh: { type: Schema.Types.ObjectId, ref: 'ThuocTinh' },
+    giaTri: { type: Schema.Types.ObjectId, ref: 'GiaTriThuocTinh' }
   }],
+  
   IDDanhMuc: { type: String, ref: 'DanhMuc' }, // Tham chiếu đến danh mục cha
   IDDanhMucCon: { type: String, ref: 'DanhMucCon' } // Tham chiếu đến danh mục con
 });

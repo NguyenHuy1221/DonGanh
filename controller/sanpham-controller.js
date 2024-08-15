@@ -87,6 +87,98 @@ async function createSanPham(req, res, next) {
 //       }
 // }
 
+async function createProductWithVariants(req, res) {
+  // Tạo sản phẩm gốc
+  const projection = {
+    _id : 0,
+    GiaTri: 1,
+    // Set chapters to null explicitly
+  };
+  const { IDSanPham} = req.body;
+
+  const Product = await SanPhamModel.findById(IDSanPham);
+    if (!Product) {
+      return 'Sản phẩm không tồn tại';
+    }
+    let attributeValuesMap = {}
+    const ThuocTinhID = Product.DanhSachThuocTinh;
+        console.log(ThuocTinhID)
+        for (let i = 0; i < ThuocTinhID.length; i++) {
+          console.log(ThuocTinhID[i]); // In ra từng phần tử
+          const thuocTinhgiatri = await ThuocTinhGiaTriModel.find({ThuocTinhID:ThuocTinhID[i]},projection);
+          attributeValuesMap[ThuocTinhID[i]] = thuocTinhgiatri;
+          
+      }
+      console.log(attributeValuesMap)
+
+
+
+  // Tạo các biến thể sản phẩm
+  const createVariants = async (product, thuocTinhs, currentVariant = {}) => {
+    if (thuocTinhs.length === 0) {
+      // Tạo biến thể mới
+      const newVariant = new BienTheSchema({
+        sanPham: product._id,
+        // ... các trường khác
+        ketHopThuocTinh: Object.values(currentVariant)
+      });
+      await newVariant.save();
+    } else {
+      const thuocTinh = thuocTinhs.shift();
+      const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find({ thuocTinh: thuocTinh.thuocTinh });
+      for (const giaTri of giaTriThuocTinhList) {
+        currentVariant[thuocTinh.thuocTinh] = giaTri._id;
+        await createVariants(product, [...thuocTinhs], { ...currentVariant });
+      }
+    }
+  };
+
+  await createVariants(Product, attributeValuesMap);
+  return Product;
+}
+
+//code them thuoc tinh vao ben trong san pham 
+
+
+async function themThuocTinhVaGiaTri(req, res) {
+  const { idSanPham, thuocTinhId, giaTriId} = req.body;
+  try {
+    // Tìm sản phẩm
+    const sanPham = await SanPhamModel.findById(idSanPham);
+    if (!sanPham) {
+      return 'Sản phẩm không tồn tại';
+    }
+
+    // Kiểm tra xem thuộc tính đã tồn tại trong sản phẩm chưa
+    const thuocTinhDaTonTai = sanPham.thuocTinh.find(t => t.thuocTinh.toString() === thuocTinhId.toString());
+    if (thuocTinhDaTonTai) {
+      // Kiểm tra xem giá trị đã tồn tại trong thuộc tính chưa
+      const giaTriDaTonTai = thuocTinhDaTonTai.giaTri.find(g => g.toString() === giaTriId.toString());
+      if (giaTriDaTonTai) {
+        return 'Giá trị đã tồn tại cho thuộc tính này';
+      } else {
+        // Thêm giá trị vào thuộc tính
+        thuocTinhDaTonTai.giaTri.push(giaTriId);
+      }
+    } else {
+      // Thêm thuộc tính mới cho sản phẩm
+      sanPham.thuocTinh.push({
+        thuocTinh: thuocTinhId,
+        giaTri: [giaTriId]
+      });
+    }
+
+    // Lưu lại thay đổi
+    await sanPham.save();
+    return 'Thêm thuộc tính và giá trị thành công';
+  } catch (error) {
+    console.error(error);
+    return 'Có lỗi xảy ra';
+  }
+}
+
+
+
 async function createThuocTinhSanPham(req, res, next) {
     const { IDSanPham, ThuocTinhID } = req.body;
   

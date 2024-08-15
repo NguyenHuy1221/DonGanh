@@ -20,6 +20,7 @@ const storage = multer.diskStorage({
   },
 });
 
+
 const upload = multer({ storage: storage });
 
 async function comparePassword(plaintextPassword, hash) {

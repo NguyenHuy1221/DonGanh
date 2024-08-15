@@ -2,15 +2,15 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const DanhMucConSchema = new Schema({
-    _id: { type: Schema.Types.ObjectId, required: true }, // ID của danh mục con
-    TenDanhMucCon: { type: String, required: true },
+    IDDanhMucCon: { type: String, required: true }, // ID của danh mục con
+    TenDanhMucCon: String,
     MieuTa: String
   });
   
   const DanhMucSchema = new Schema({
-    _id: { type: Schema.Types.ObjectId, required: true },
     IDDanhMuc: { type: String, required: true, unique: true }, // Nếu cần ID tùy chỉnh
     TenDanhMuc: { type: String, required: true },
+    AnhDanhMuc: { type: String, required: true },
     DanhMucCon: [DanhMucConSchema] // Sử dụng reference nếu cần
   });
 

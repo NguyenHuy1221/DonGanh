@@ -3,6 +3,7 @@ const apiRoute = express.Router();
 const thuoctinhRouter = require("../router/thuoctinh");
 const thuoctinhgiatriRouter = require("../router/thuoctinhgiatri");
 const sanphamRouter = require("../router/sanpham");
+const danhmucRoute = require("../router/danhmuc");
 const userRoute = require("../router/user");
 const gioHangRoute = require("../router/gioHang");
 const bannerRoutes = require("../router/banner");
@@ -36,5 +37,14 @@ apiRoute.use(
     next();
   },
   thuoctinhgiatriRouter
+);
+
+apiRoute.use(
+  "/danhmuc",
+  (req, res, next) => {
+    console.log("call danh muc gia tri api router");
+    next();
+  },
+  danhmucRoute
 );
 module.exports = apiRoute;

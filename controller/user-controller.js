@@ -179,10 +179,34 @@ async function ResetPassword(req, res) {
   }
 }
 
+async function showUserById(req, res) {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Thiếu thông tin userId" });
+    }
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    return res.json(user);
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi lấy thông tin người dùng" });
+  }
+}
+
 module.exports = {
   RegisterUser,
   VerifyOTP,
   loginUser,
   ForgotPassword,
   ResetPassword,
+  showUserById,
 };

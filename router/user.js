@@ -8,7 +8,13 @@ const {
   VerifyOTP,
   ForgotPassword,
   ResetPassword,
+  showUserById,
 } = require("../controller/user-controller");
+
+// show user
+userRoute.get("/showUserID/:userId", function (req, res) {
+  return showUserById(req, res);
+});
 
 // register user
 userRoute.post("/register", async function (req, res) {

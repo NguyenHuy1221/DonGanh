@@ -5,9 +5,11 @@ const thuoctinhgiatriRouter = require("../router/thuoctinhgiatri");
 const sanphamRouter = require("../router/sanpham");
 const userRoute = require("../router/user");
 const gioHangRoute = require("../router/gioHang");
+const bannerRoutes = require("../router/banner");
 
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
+apiRoute.use("/banner", bannerRoutes);
 
 apiRoute.use(
   "/sanpham",

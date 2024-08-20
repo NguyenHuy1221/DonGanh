@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const GiaTriThuocTinhSchema = new Schema({
   IDGiaTriThuocTinh: { type: String, required: true, unique: true }, // Khóa chính, duy nhất
-  ThuocTinhID: { type: String, ref: 'ThuocTinh' }, // Tham chiếu đến thuộc tính
+  ThuocTinhID: { type: Schema.Types.ObjectId, ref: 'ThuocTinh' }, // Tham chiếu đến thuộc tính
   GiaTri: { type: String, required: true },
 });
 

@@ -8,7 +8,10 @@ const session = require("express-session");
 const passport = require("./config/passportConfig");
 app.use(express.json());
 app.use("/api", apiRoute);
-app.use(express.static('public'));
+
+const path = require('path');
+
+app.use(express.static(path.join("./public", 'public'))); 
 app.use(
   session({
     secret: process.env.SECRET_KEY,

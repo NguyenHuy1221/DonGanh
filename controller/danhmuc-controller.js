@@ -200,12 +200,13 @@ async function createDanhMuc(req, res, next) {
         const{ IDDanhMuc, TenDanhMuc } = req.body;
         console.log(IDDanhMuc,TenDanhMuc)
         // Kiểm tra dữ liệu đầu vào
-        const newPath = req.file.path.replace(
-            "public",
+        // const newPath = process.env.URL_IMAGE+req.file.path.replace(
+        //     "public",
             
-             //"https://imp-model-widely.ngrok-free.app"
-             process.env.URL_IMAGE
-          );
+        //      //"https://imp-model-widely.ngrok-free.app"
+        //      process.env.URL_IMAGE
+        //   );
+        const newPath = process.env.URL_IMAGE+req.file.path
           console.log(newPath)
         if (!IDDanhMuc || !TenDanhMuc || !req.file) {
           return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });

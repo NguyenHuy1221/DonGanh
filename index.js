@@ -11,7 +11,9 @@ app.use("/api", apiRoute);
 
 const path = require('path');
 
-app.use(express.static(path.join("./public", 'public'))); 
+// Thư mục chứa hình ảnh
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 app.use(
   session({
     secret: process.env.SECRET_KEY,

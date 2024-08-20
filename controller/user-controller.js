@@ -179,10 +179,55 @@ async function ResetPassword(req, res) {
   }
 }
 
+
+
+const { upload } = require("../untils/index");
+
+async function createAnhDaiDien(req, res, next) {
+    try {
+      upload.single('file')(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+          return res.status(500).json({ error: err });
+        } else if (err) {
+          return res.status(500).json({   
+   error: err });
+        }
+  
+        const{ IDNguoiDung } = req.body;
+        console.log(IDNguoiDung)
+        if (!IDNguoiDung  || !req.file) {
+          return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+        }
+  
+
+        const newPath = req.file.path.replace(
+            "public",
+             process.env.URL_IMAGE
+          );
+        try {
+          const updateNguoiDung = await UserModel.findOneAndUpdate(
+            { _id:IDNguoiDung },
+            { anhDaiDien:newPath },
+            { new: true }
+          );
+
+          res.status(201).json({message: "Đổi ảnh đại diện thành công"});
+        } catch (error) {
+          console.error('Lỗi khi Sửa ảnh đại diện:', error);
+          // Xử lý lỗi cụ thể của Mongoose (ví dụ: ValidationError, DuplicateKeyError)
+          res.status(500).json({ message: 'Lỗi server', error });
+        }
+      });
+    } catch (error) {
+      console.error('Lỗi chung:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
+    }
+  }
 module.exports = {
   RegisterUser,
   VerifyOTP,
   loginUser,
   ForgotPassword,
   ResetPassword,
+  createAnhDaiDien,
 };

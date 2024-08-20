@@ -2,7 +2,7 @@ const SanPhamModel = require("../models/SanPhamSchema");
 const ThuocTinhModel = require("../models/ThuocTinhSchema");
 const ThuocTinhGiaTriModel = require("../models/GiaTriThuocTinhSchema");
 const BienTheSchema = require("../models/BienTheSchema")
-
+const mongoose = require('mongoose');
 
 require("dotenv").config();
 
@@ -87,54 +87,82 @@ async function createSanPham(req, res, next) {
 //       }
 // }
 
-async function createProductWithVariants(req, res) {
+async function createSanPhamVoiBienThe(req, res) {
   // Tạo sản phẩm gốc
   const projection = {
-    _id : 0,
-    GiaTri: 1,
+    _id : 1
     // Set chapters to null explicitly
   };
   const { IDSanPham} = req.body;
-
-  const Product = await SanPhamModel.findById(IDSanPham);
-    if (!Product) {
-      return 'Sản phẩm không tồn tại';
-    }
-    let attributeValuesMap = {}
-    const ThuocTinhID = Product.DanhSachThuocTinh;
-        console.log(ThuocTinhID)
-        for (let i = 0; i < ThuocTinhID.length; i++) {
-          console.log(ThuocTinhID[i]); // In ra từng phần tử
-          const thuocTinhgiatri = await ThuocTinhGiaTriModel.find({ThuocTinhID:ThuocTinhID[i]},projection);
-          attributeValuesMap[ThuocTinhID[i]] = thuocTinhgiatri;
+  const product = await SanPhamModel.findById(IDSanPham).populate('DanhSachThuocTinh.thuocTinh');
+  const attributeIds = product.DanhSachThuocTinh;
+  console.log(attributeIds)
+    // let attributeValuesMap = []
+    // // const ThuocTinhID = Product.DanhSachThuocTinh;
+    // //     console.log(ThuocTinhID)
+    //     for (let i = 0; i < attributeIds.length; i++) {
+    //       console.log(attributeIds[i]); // In ra từng phần tử
+    //       const thuocTinhgiatri = await ThuocTinhGiaTriModel.find({ThuocTinhID:attributeIds[i]},projection);
           
-      }
-      console.log(attributeValuesMap)
+    //       attributeValuesMap[attributeIds[i]] = thuocTinhgiatri;
+          
+    //   }
+    //   console.log(attributeValuesMap)
 
 
 
-  // Tạo các biến thể sản phẩm
+  // // Tạo các biến thể sản phẩm
   const createVariants = async (product, thuocTinhs, currentVariant = {}) => {
     if (thuocTinhs.length === 0) {
       // Tạo biến thể mới
+      console.log("check  ket hop",currentVariant)
+      const KetHopThuocTinh = Object.entries(currentVariant).map(([key, value]) => ({
+        IDGiaTriThuocTinh: value
+      }));
+      
+      // const KetHopThuocTinh2 = [{IDGiaTriThuocTinh:"66c0166f71819b042379ac36"},
+      //   {IDGiaTriThuocTinh:"66c01a35577ef0bfbf76962c"}
+      // ]
+      // console.log("updatedVariant",KetHopThuocTinh);
+      // console.log("KetHopThuocTinh2",KetHopThuocTinh2);
       const newVariant = new BienTheSchema({
-        sanPham: product._id,
+        IDSanPham: product._id,
+        sku : "aa",
+        gia : 100,
+        soLuong : 10,
         // ... các trường khác
-        ketHopThuocTinh: Object.values(currentVariant)
+        //ketHopThuocTinh: Object.values(updatedVariant)
+        KetHopThuocTinh :  KetHopThuocTinh,
+      
       });
-      await newVariant.save();
+      if(!newVariant.ketHopThuocTinh){
+        console.log(newVariant)
+        return console.log("ket hop thuoc tinh rong");
+      }
+      //await newVariant.save();
+      console.log(newVariant)
     } else {
       const thuocTinh = thuocTinhs.shift();
-      const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find({ thuocTinh: thuocTinh.thuocTinh });
+      console.log("thuoc tinh abababa la zap",thuocTinh)
+      const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find({ThuocTinhID:thuocTinh},projection);
+      console.log(giaTriThuocTinhList)
       for (const giaTri of giaTriThuocTinhList) {
-        currentVariant[thuocTinh.thuocTinh] = giaTri._id;
-        await createVariants(product, [...thuocTinhs], { ...currentVariant });
-      }
+        const  IDGiaTriThuocTinh  = giaTri._id; // Destructure to get the value ID
+        //currentVariant = { ...currentVariant, [thuocTinh]: _id }; // Update currentVariant
+        currentVariant = { ...currentVariant, [thuocTinh]: IDGiaTriThuocTinh };
+        await createVariants(product, [...thuocTinhs], currentVariant);
+    }
+      // for (const giaTri of giaTriThuocTinhList) {
+      //   //const IDGiaTriThuocTinh= giaTri._id
+      //   currentVariant[thuocTinh] = giaTri._id;
+      //   await createVariants(product, [...thuocTinhs], { ...currentVariant });
+      // }
+      
     }
   };
 
-  await createVariants(Product, attributeValuesMap);
-  return Product;
+  await createVariants(product, attributeIds);
+  return product;
 }
 
 //code them thuoc tinh vao ben trong san pham 
@@ -394,6 +422,7 @@ async function findSanPham(req, res, next) {
 module.exports = {
     getlistSanPham,
     createSanPham,
+    createSanPhamVoiBienThe,
     createThuocTinhSanPham,
     createbienthesanpham,
     getlistBienTheFake,

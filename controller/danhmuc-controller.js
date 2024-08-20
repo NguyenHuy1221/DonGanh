@@ -146,7 +146,7 @@ async function getlistDanhMuc(req, res, next) {
 //     }
 // }
    
-const { upload } = require("../untils/index");
+ const { upload } = require("../untils/index");
 
 // async function createDanhMuc(req, res, next) {
 //     try {
@@ -186,33 +186,86 @@ const { upload } = require("../untils/index");
 // }
 
 
+
 async function createDanhMuc(req, res, next) {
     try {
-
-
-            const { IDDanhMuc, TenDanhMuc,newPath,DanhMucCon } = req.body;
-
-            // Kiểm tra dữ liệu đầu vào
-            if (!IDDanhMuc || !TenDanhMuc) {
-                return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
-            }
-
-
-            // Tạo đối tượng danh mục
-            const newDanhMuc = await DanhMucModel.create({
-                IDDanhMuc,
-                TenDanhMuc,
-                AnhDanhMuc: newPath,
-                DanhMucCon : DanhMucCon
-            });
-
-            res.status(201).json(newDanhMuc);
-      
+      upload.single('file')(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+          return res.status(500).json({ error: err });
+        } else if (err) {
+          return res.status(500).json({   
+   error: err });
+        }
+  
+        const{ IDDanhMuc, TenDanhMuc } = req.body;
+        console.log(IDDanhMuc,TenDanhMuc)
+        // Kiểm tra dữ liệu đầu vào
+        const newPath = req.file.path.replace(
+            "public",
+            
+             //"https://imp-model-widely.ngrok-free.app"
+             process.env.URL_IMAGE
+          );
+          console.log(newPath)
+        if (!IDDanhMuc || !TenDanhMuc || !req.file) {
+          return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+        }
+  
+        // const uploadPath = path.join(__dirname, '../', 'public', 'uploads'); // Đường dẫn tuyệt đối
+        // const newPath = path.join(uploadPath, req.file.filename);
+        // const newPath = req.file.path.replace(
+        //     "public",
+        //      process.env.URL_IMAGE
+        //   );
+        try {
+          const newDanhMuc = await DanhMucModel.create({
+            IDDanhMuc,
+            TenDanhMuc,
+            AnhDanhMuc: newPath
+          });
+  
+          res.status(201).json(newDanhMuc);
+        } catch (error) {
+          console.error('Lỗi khi tạo danh mục:', error);
+          // Xử lý lỗi cụ thể của Mongoose (ví dụ: ValidationError, DuplicateKeyError)
+          res.status(500).json({ message: 'Lỗi server', error });
+        }
+      });
     } catch (error) {
-        console.error('Lỗi khi tạo danh mục:', error);
-        res.status(500).json({ message: 'Lỗi server', error });
+      console.error('Lỗi chung:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
     }
-}
+  }
+
+
+
+// async function createDanhMuc(req, res, next) {
+//     try {
+
+
+//             const { IDDanhMuc, TenDanhMuc,newPath,DanhMucCon } = req.body;
+
+//             // Kiểm tra dữ liệu đầu vào
+//             if (!IDDanhMuc || !TenDanhMuc) {
+//                 return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+//             }
+
+
+//             // Tạo đối tượng danh mục
+//             const newDanhMuc = await DanhMucModel.create({
+//                 IDDanhMuc,
+//                 TenDanhMuc,
+//                 AnhDanhMuc: newPath,
+//                 DanhMucCon : DanhMucCon
+//             });
+
+//             res.status(201).json(newDanhMuc);
+      
+//     } catch (error) {
+//         console.error('Lỗi khi tạo danh mục:', error);
+//         res.status(500).json({ message: 'Lỗi server', error });
+//     }
+// }
 async function updateThuocTinh(req, res, next) {
     // const { ThuocTinhID } = req.params;
     const { TenThuocTinh,ThuocTinhID } = req.body;

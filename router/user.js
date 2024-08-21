@@ -27,7 +27,7 @@ userRoute.post("/verifyOtp", async function (req, res) {
 });
 
 // register user
-userRoute.get("/login", async function (req, res) {
+userRoute.post("/login", async function (req, res) {
   return loginUser(req, res);
 });
 

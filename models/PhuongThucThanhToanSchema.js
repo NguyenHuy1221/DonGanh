@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const QRCode = require("qrcode");
 
 const phuongThucThanhToanSchema = new Schema({
   ten: { type: String, required: true },
@@ -8,10 +9,24 @@ const phuongThucThanhToanSchema = new Schema({
     enum: ["the_tin_dung", "chuyen_khoan", "tien_mat"],
     required: true,
   },
-  chiTiet: { type: Schema.Types.Mixed }, // Chi tiết phương thức thanh toán, có thể là thông tin tùy ý
-  trangThai: { type: Boolean, default: true }, // Trạng thái của phương thức thanh toán
-  ngayTao: { type: Date, default: Date.now }, // Thời điểm tạo phương thức thanh toán
-  ngayCapNhat: { type: Date, default: Date.now }, // Thời điểm cập nhật phương thức thanh toán
+  chiTiet: { type: Schema.Types.Mixed },
+  qrCode: { type: String },
+  trangThai: { type: Boolean, default: true },
+  ngayTao: { type: Date, default: Date.now },
+  ngayCapNhat: { type: Date, default: Date.now },
+});
+
+phuongThucThanhToanSchema.pre("save", async function (next) {
+  if (this.loai === "chuyen_khoan") {
+    try {
+      const qrCodeData = this.chiTiet; // Using chiTiet as QR code data
+      const qrCodeUrl = await QRCode.toDataURL(JSON.stringify(qrCodeData));
+      this.qrCode = qrCodeUrl;
+    } catch (error) {
+      return next(error);
+    }
+  }
+  next();
 });
 
 module.exports = mongoose.model(

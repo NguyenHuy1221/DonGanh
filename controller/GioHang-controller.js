@@ -1,4 +1,9 @@
 const GioHang = require("../models/GioHangSchema");
+const QRCode = require("qrcode");
+const axios = require("axios").default;
+const CryptoJS = require("crypto-js");
+const moment = require("moment");
+const Transaction = require("../models/TransactionSchema");
 
 async function createGioHang(req, res, next) {
   try {
@@ -106,9 +111,91 @@ async function deleteGioHang(req, res, next) {
   }
 }
 
+const config = {
+  app_id: "2554",
+  key1: "sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn",
+  key2: "trMrHtvjo6myautxDUiAcYsVtaeQ8nhf",
+  endpoint: "https://sb-openapi.zalopay.vn/v2/create",
+};
+
+async function zaloPay(req, res, next) {
+  try {
+    const { id } = req.params;
+    const gioHang = await GioHang.findById(id);
+
+    if (!gioHang) {
+      return res.status(404).json({ error: "Giỏ hàng không tồn tại" });
+    }
+
+    const items = gioHang.chiTietGioHang.map((item) => ({
+      itemid: item.idBienThe.toString(),
+      itemname: item.tenSanPham,
+      itemprice: item.donGia,
+      itemquantity: item.soLuong,
+    }));
+
+    const transID = Math.floor(Math.random() * 1000000);
+    const embed_data = {
+      redirecturl: "https://pcrender.com",
+    };
+    const order = {
+      app_id: config.app_id,
+      app_trans_id: `${moment().format("YYMMDD")}_${transID}`,
+      app_user: "user123",
+      app_time: Date.now(),
+      item: JSON.stringify(items),
+      embed_data: JSON.stringify(embed_data),
+      amount: gioHang.chiTietGioHang.reduce(
+        (acc, item) => acc + item.soLuong * item.donGia,
+        0
+      ),
+      description: `Thanh toán  #${transID}`,
+      bank_code: "zalopayapp",
+    };
+
+    const data =
+      config.app_id +
+      "|" +
+      order.app_trans_id +
+      "|" +
+      order.app_user +
+      "|" +
+      order.amount +
+      "|" +
+      order.app_time +
+      "|" +
+      order.embed_data +
+      "|" +
+      order.item;
+    order.mac = CryptoJS.HmacSHA256(data, config.key1).toString();
+
+    const response = await axios.post(config.endpoint, null, { params: order });
+
+    if (response.data.return_code === 1) {
+      // Kiểm tra nếu giao dịch thành công
+      const transaction = new Transaction({
+        transactionId: response.data.zptranstoken || transID, // Gán transactionId từ phản hồi của ZaloPay hoặc tự tạo nếu không có
+        orderId: id,
+        amount: order.amount,
+        status: "success",
+        method: "ZaloPay",
+        timestamp: new Date(),
+      });
+
+      await transaction.save(); // Lưu giao dịch vào cơ sở dữ liệu
+    }
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error("Lỗi khi xử lý thanh toán ZaloPay:", error);
+    res.status(500).json({ error: "Lỗi khi xử lý thanh toán ZaloPay" });
+  }
+}
+
 module.exports = {
   createGioHang,
   getGioHangById,
   updateGioHang,
   deleteGioHang,
+  zaloPay,
 };

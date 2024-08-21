@@ -8,6 +8,7 @@ const {
   VerifyOTP,
   ForgotPassword,
   ResetPassword,
+  createAnhDaiDien,
   showUserById,
 } = require("../controller/user-controller");
 
@@ -39,6 +40,10 @@ userRoute.post("/forgotPassword", async function (req, res) {
 // reset password
 userRoute.post("/resetPassword", async function (req, res) {
   return ResetPassword(req, res);
+});
+//update image user
+userRoute.post("/createAnhDaiDien", async function (req, res) {
+  return createAnhDaiDien(req, res);
 });
 
 module.exports = userRoute;

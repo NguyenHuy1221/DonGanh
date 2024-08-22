@@ -227,7 +227,27 @@ async function createDanhMuc(req, res, next) {
       res.status(500).json({ message: 'Lỗi server', error });
     }
   }
+  async function updateDanhMuc(req, res, next) {
+    // const { ThuocTinhID } = req.params;
+    const { TenThuocTinh,ThuocTinhID } = req.body;
 
+    try {
+        const updatedThuocTinh = await ThuocTinhModel.findOneAndUpdate(
+            { ThuocTinhID },
+            { TenThuocTinh },
+            { new: true }
+        );
+
+        if (!updatedThuocTinh) {
+            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+        }
+
+        res.status(200).json(updatedThuocTinh);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi cập nhật thuộc tính' });
+    }
+}
 
 
 // async function createDanhMuc(req, res, next) {

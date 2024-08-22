@@ -6,6 +6,7 @@ const sanphamRouter = require("../router/sanpham");
 const danhmucRoute = require("../router/danhmuc");
 const userRoute = require("../router/user");
 const gioHangRoute = require("../router/gioHang");
+const bientheRoute = require("../router/bienthe");
 
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
@@ -40,9 +41,17 @@ apiRoute.use(
 apiRoute.use(
   "/danhmuc",
   (req, res, next) => {
-    console.log("call danh muc gia tri api router");
+    console.log("call danh muc  api router");
     next();
   },
   danhmucRoute
+);
+apiRoute.use(
+  "/bienthe",
+  (req, res, next) => {
+    console.log("call bien the api router");
+    next();
+  },
+  bientheRoute
 );
 module.exports = apiRoute;

@@ -180,20 +180,20 @@ async function ResetPassword(req, res) {
 }
 
 
-
+const multer = require("multer");
 const { upload } = require("../untils/index");
 
 async function createAnhDaiDien(req, res, next) {
     try {
       upload.single('file')(req, res, async (err) => {
-        if (err instanceof multer.MulterError) {
-          return res.status(500).json({ error: err });
-        } else if (err) {
-          return res.status(500).json({   
-   error: err });
+        if (err) {
+          // Handle file upload errors
+          console.error(err);
+          return res.status(500).json({ message: 'Error uploading file' });
         }
   
-        const{ IDNguoiDung } = req.body;
+        //const{ IDNguoiDung } = req.body;
+        const IDNguoiDung  = "66c45d431ee5471012d0540f";
         console.log(IDNguoiDung)
         if (!IDNguoiDung  || !req.file) {
           return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });

@@ -9,7 +9,8 @@ const { getlistSanPham,
     createBienTheFake,
     updateSanPham,
     deleteSanPham,
-    findSanPham,} = require("../controller/sanpham-controller")
+    findSanPham,
+    getlistPageSanPham,} = require("../controller/sanpham-controller")
 
 sanphamRouter.get('/getlistSanPham', async function (req, res) {
     return getlistSanPham(req, res);
@@ -45,6 +46,9 @@ sanphamRouter.delete('/deleteReview', async function (req, res) {
     return DeleteReview(req, res);
 })
 
+sanphamRouter.get('/getlistPageSanPham', async function (req, res) {
+    return getlistPageSanPham(req, res);
+})
 
 
 

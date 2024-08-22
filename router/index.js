@@ -6,10 +6,12 @@ const sanphamRouter = require("../router/sanpham");
 const danhmucRoute = require("../router/danhmuc");
 const userRoute = require("../router/user");
 const gioHangRoute = require("../router/gioHang");
+const bannerRoutes = require("../router/banner");
 const bientheRoute = require("../router/bienthe");
 
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
+apiRoute.use("/banner", bannerRoutes);
 
 apiRoute.use(
   "/sanpham",

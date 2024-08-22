@@ -9,7 +9,13 @@ const {
   ForgotPassword,
   ResetPassword,
   createAnhDaiDien,
+  showUserById,
 } = require("../controller/user-controller");
+
+// show user
+userRoute.get("/showUserID/:userId", function (req, res) {
+  return showUserById(req, res);
+});
 
 // register user
 userRoute.post("/register", async function (req, res) {
@@ -22,7 +28,7 @@ userRoute.post("/verifyOtp", async function (req, res) {
 });
 
 // register user
-userRoute.get("/login", async function (req, res) {
+userRoute.post("/login", async function (req, res) {
   return loginUser(req, res);
 });
 

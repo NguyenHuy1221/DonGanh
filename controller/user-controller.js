@@ -179,11 +179,35 @@ async function ResetPassword(req, res) {
   }
 }
 
+async function showUserById(req, res) {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Thiếu thông tin userId" });
+    }
+
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    return res.json(user);
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi lấy thông tin người dùng" });
+  }
+}
+
 
 const multer = require("multer");
 const { upload } = require("../untils/index");
 
 async function createAnhDaiDien(req, res, next) {
+
     try {
       upload.single('file')(req, res, async (err) => {
         if (err) {
@@ -211,18 +235,18 @@ async function createAnhDaiDien(req, res, next) {
             { new: true }
           );
 
-          res.status(201).json({message: "Đổi ảnh đại diện thành công"});
-        } catch (error) {
-          console.error('Lỗi khi Sửa ảnh đại diện:', error);
-          // Xử lý lỗi cụ thể của Mongoose (ví dụ: ValidationError, DuplicateKeyError)
-          res.status(500).json({ message: 'Lỗi server', error });
-        }
-      });
-    } catch (error) {
-      console.error('Lỗi chung:', error);
-      res.status(500).json({ message: 'Lỗi server', error });
-    }
+        res.status(201).json({ message: "Đổi ảnh đại diện thành công" });
+      } catch (error) {
+        console.error("Lỗi khi Sửa ảnh đại diện:", error);
+        // Xử lý lỗi cụ thể của Mongoose (ví dụ: ValidationError, DuplicateKeyError)
+        res.status(500).json({ message: "Lỗi server", error });
+      }
+    });
+  } catch (error) {
+    console.error("Lỗi chung:", error);
+    res.status(500).json({ message: "Lỗi server", error });
   }
+}
 module.exports = {
   RegisterUser,
   VerifyOTP,
@@ -230,4 +254,5 @@ module.exports = {
   ForgotPassword,
   ResetPassword,
   createAnhDaiDien,
+  showUserById,
 };

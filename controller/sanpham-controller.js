@@ -537,14 +537,14 @@ async function findSanPham(req, res, next) {
 
 async function findSanPhambyID(req, res, next) {
   const {IDSanPham  } = req.params;
-
+console.log(IDSanPham)
   let query = {};
   if (IDSanPham) {
       query.IDSanPham = IDSanPham;
   }
 
   try {
-      const IDSanPhams = await SanPhamModel.findById(query);
+      const IDSanPhams = await SanPhamModel.findById(IDSanPham);
       res.status(200).json(IDSanPhams);
   } catch (error) {
       console.error(error);

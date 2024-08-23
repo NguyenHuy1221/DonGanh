@@ -20,7 +20,7 @@ async function RegisterUser(req, res) {
       return res.status(400).json({ message: "Email đã được sử dụng" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP 6 chữ số
+    const otp = Math.floor(1000 + Math.random() * 9000).toString(); // Tạo mã OTP 4 chữ số
     const otpExpiry = Date.now() + 15 * 60 * 1000; // OTP hết hạn sau 15 phút
 
     await UserModel.create({

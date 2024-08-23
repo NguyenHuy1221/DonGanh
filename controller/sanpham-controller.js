@@ -425,6 +425,44 @@ async function findSanPham(req, res, next) {
   }
 }
 
+async function findSanPhambyID(req, res, next) {
+  const { IDSanPham } = req.params;
+  console.log(IDSanPham);
+  let query = {};
+  if (IDSanPham) {
+    query.IDSanPham = IDSanPham;
+  }
+
+  try {
+    const IDSanPhams = await SanPhamModel.findById(IDSanPham);
+    res.status(200).json(IDSanPhams);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi tìm kiếm giá trị thuộc tính" });
+  }
+}
+
+async function getlistPageSanPham(req, res, next) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const sanphams = await SanPhamModel.find().skip(skip).limit(limit);
+    const totalProducts = await SanPhamModel.countDocuments();
+
+    res.status(200).json({
+      sanphams,
+      totalProducts,
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi truy xuất sản phẩm" });
+  }
+}
+
 module.exports = {
   getlistSanPham,
   createSanPham,

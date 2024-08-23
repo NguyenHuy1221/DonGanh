@@ -66,5 +66,17 @@ sanphamRouter.delete("/deleteImageSanPham", async function (req, res) {
 sanphamRouter.get("/findSanPhambyID", async function (req, res) {
   return findSanPhambyID(req, res);
 });
+sanphamRouter.put("/createimageSanPham", async function (req, res) {
+  return createimageSanPham(req, res);
+});
+sanphamRouter.put("/updateimageSanPham", async function (req, res) {
+  return updateimageSanPham(req, res);
+});
+sanphamRouter.delete("/deleteImageSanPham", async function (req, res) {
+  return deleteImageSanPham(req, res);
+});
+sanphamRouter.get("/findSanPhambyID:IDSanPham", async function (req, res) {
+  return findSanPhambyID(req, res);
+});
 
 module.exports = sanphamRouter;

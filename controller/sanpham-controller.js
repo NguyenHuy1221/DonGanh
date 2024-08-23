@@ -226,6 +226,128 @@ async function createThuocTinhSanPham(req, res, next) {
     }
   }
 
+  async function updateSanPham(req, res, next) {
+    const { _id,IDSanPham,TenSanPham, HinhSanPham ,DonGiaNhap,DonGiaBan,SoLuongNhap,SoLuongHienTai,PhanTramGiamGia,NgayTao,TinhTrang,MoTa,Unit,TenAnh,UrlAnh,DanhSachThuocTinh,IDDanhMuc,IDDanhMucCon} = req.body;
+    try {
+
+      const updatedData = {
+        IDSanPham,
+            TenSanPham,
+            HinhSanPham,
+            DonGiaNhap,
+            DonGiaBan,
+            SoLuongNhap,
+            SoLuongHienTai,
+            PhanTramGiamGia,
+            NgayTao,
+            TinhTrang,
+            MoTa,
+            Unit,
+            DanhSachThuocTinh,
+            IDDanhMuc,
+            IDDanhMucCon,
+    };
+        // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
+        const updatedSanPham = await SanPhamModel.findByIdAndUpdate(
+          _id,
+          { $set: updatedData },
+          { new: true }
+      );
+        // Lưu đối tượng vào cơ sở dữ liệu
+        await updatedSanPham.save();
+
+        // Trả về kết quả cho client
+        res.status(201).json(updatedSanPham);
+    } catch (error) {
+        if (error.code === 11000) {
+            console.error('Lỗi thêm sản phẩm đã tồn tại');
+          } else {
+            console.error('Lỗi khác:', error);
+          }
+    }
+}
+
+  async function createimageSanPham(req, res, next) {
+    const { IDSanPham,TenAnh,UrlAnh} = req.body;
+    try {
+
+
+        // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
+        const updatedBienThe = await SanPhamModel.findOneAndUpdate(
+          { _id: IDSanPham },
+          { $push: { HinhBoSung: { TenAnh, UrlAnh } } },
+          { new: true }
+      );
+
+        if (!updatedBienThe) {
+            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+        }
+
+        // Trả về kết quả cho client
+        res.status(201).json(updatedBienThe);
+    } catch (error) {
+        if (error.code === 11000) {
+            console.error('Lỗi update Biến thể loi');
+          } else {
+            console.error('Lỗi khác:', error);
+          }
+    }
+}
+
+
+async function updateimageSanPham(req, res, next) {
+  const { IDSanPham, IDHinhAnh, TenAnh, UrlAnh} = req.body;
+  try {
+    // Tìm sản phẩm cần cập nhật
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+
+    if (!sanPham) {
+      return 'Không tìm thấy sản phẩm';
+    }
+
+    // Tìm hình ảnh cần cập nhật trong mảng HinhBoSung
+    const hinhAnh = sanPham.HinhBoSung.find(hinh => hinh._id.toString() === IDHinhAnh.toString());
+
+    if (!hinhAnh) {
+      return 'Không tìm thấy hình ảnh cần cập nhật';
+    }
+
+    // Cập nhật thông tin hình ảnh mới
+    hinhAnh.TenAnh = TenAnh;
+    hinhAnh.UrlAnh = UrlAnh;
+
+    // Lưu lại các thay đổi
+    await sanPham.save();
+
+    return 'Cập nhật hình bổ sung thành công';
+  } catch (error) {
+    console.error('Lỗi khi cập nhật hình bổ sung:', error);
+    return 'Có lỗi xảy ra';
+  }
+}
+async function deleteImageSanPham(req, res, next) {
+  const { IDSanPham, IDHinhAnh } = req.body;
+
+  try {
+    // Tìm sản phẩm cần cập nhật
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+
+    if (!sanPham) {
+      return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+    }
+
+    // Tìm và xóa hình ảnh trong mảng HinhBoSung
+    sanPham.HinhBoSung = sanPham.HinhBoSung.filter(hinh => hinh._id.toString() !== IDHinhAnh.toString());
+
+    // Lưu lại các thay đổi
+    await sanPham.save();
+
+    return res.json({ message: 'Xóa hình bổ sung thành công' });
+  } catch (error) {
+    console.error('Lỗi khi xóa hình bổ sung:', error);
+    return res.status(500).json({ message: 'Có lỗi xảy ra' });
+  }
+}
 // //hamdequy
 //   async function createbienthesanpham(req, res, next) {
 //     const { IDSanPham } = req.body;
@@ -413,6 +535,22 @@ async function findSanPham(req, res, next) {
     }
 }
 
+async function findSanPhambyID(req, res, next) {
+  const {IDSanPham  } = req.params;
+
+  let query = {};
+  if (IDSanPham) {
+      query.IDSanPham = IDSanPham;
+  }
+
+  try {
+      const IDSanPhams = await SanPhamModel.findById(query);
+      res.status(200).json(IDSanPhams);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Lỗi khi tìm kiếm giá trị thuộc tính' });
+  }
+}
 
 
 
@@ -449,5 +587,9 @@ module.exports = {
     updateSanPham,
     deleteSanPham,
     findSanPham,
-    getlistPageSanPham
+    getlistPageSanPham,
+    createimageSanPham,
+    updateimageSanPham,
+    deleteImageSanPham,
+    findSanPhambyID,
 };

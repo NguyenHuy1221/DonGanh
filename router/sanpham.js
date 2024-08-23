@@ -4,13 +4,16 @@ const { getlistSanPham,
     createSanPham,
     createThuocTinhSanPham,
     createSanPhamVoiBienThe,
-    createbienthesanpham,
     getlistBienTheFake,
     createBienTheFake,
     updateSanPham,
     deleteSanPham,
     findSanPham,
-    getlistPageSanPham,} = require("../controller/sanpham-controller")
+    getlistPageSanPham,
+    createimageSanPham,
+    updateimageSanPham,
+    deleteImageSanPham,
+    findSanPhambyID,} = require("../controller/sanpham-controller")
 
 sanphamRouter.get('/getlistSanPham', async function (req, res) {
     return getlistSanPham(req, res);
@@ -50,6 +53,17 @@ sanphamRouter.get('/getlistPageSanPham', async function (req, res) {
     return getlistPageSanPham(req, res);
 })
 
-
+sanphamRouter.put('/createimageSanPham', async function (req, res) {
+    return createimageSanPham(req, res);
+})
+sanphamRouter.put('/updateimageSanPham', async function (req, res) {
+    return updateimageSanPham(req, res);
+})
+sanphamRouter.delete('/deleteImageSanPham', async function (req, res) {
+    return deleteImageSanPham(req, res);
+})
+sanphamRouter.get('/findSanPhambyID', async function (req, res) {
+    return findSanPhambyID(req, res);
+})
 
 module.exports = sanphamRouter;

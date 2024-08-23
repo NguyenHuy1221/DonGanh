@@ -575,7 +575,18 @@ async function getlistPageSanPham(req, res, next) {
     res.status(500).json({ message: 'Lỗi khi truy xuất sản phẩm' });
   }
 }
+async function getlistBienTheInSanPham(req, res, next) {
+  const {IDSanPham} = req.params;
+  console.log(IDSanPham)
+    try {
+      const bienThe = await BienTheSchema.find({ IDSanPham: IDSanPham }).populate('KetHopThuocTinh.IDGiaTriThuocTinh');
 
+        res.status(200).json(bienThe);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi tìm kiếm giá trị thuộc tính' });
+    }
+}
 
 module.exports = {
     getlistSanPham,
@@ -592,4 +603,5 @@ module.exports = {
     updateimageSanPham,
     deleteImageSanPham,
     findSanPhambyID,
+    getlistBienTheInSanPham,
 };

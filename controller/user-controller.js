@@ -217,7 +217,7 @@ async function createAnhDaiDien(req, res, next) {
         }
   
         //const{ IDNguoiDung } = req.body;
-        const IDNguoiDung  = "66c45d431ee5471012d0540f";
+        const IDNguoiDung  = "66c70e563d694149998e1a53";
         console.log(IDNguoiDung)
         if (!IDNguoiDung  || !req.file) {
           return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });

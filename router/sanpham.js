@@ -13,7 +13,8 @@ const { getlistSanPham,
     createimageSanPham,
     updateimageSanPham,
     deleteImageSanPham,
-    findSanPhambyID,} = require("../controller/sanpham-controller")
+    findSanPhambyID,
+    getlistBienTheInSanPham,} = require("../controller/sanpham-controller")
 
 sanphamRouter.get('/getlistSanPham', async function (req, res) {
     return getlistSanPham(req, res);
@@ -64,6 +65,9 @@ sanphamRouter.delete('/deleteImageSanPham', async function (req, res) {
 })
 sanphamRouter.get('/findSanPhambyID:IDSanPham', async function (req, res) {
     return findSanPhambyID(req, res);
+})
+sanphamRouter.get('/getlistBienTheInSanPham:IDSanPham', async function (req, res) {
+    return getlistBienTheInSanPham(req, res);
 })
 
 module.exports = sanphamRouter;

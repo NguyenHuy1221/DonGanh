@@ -49,7 +49,7 @@ async function createSanPham(req, res, next) {
             TinhTrang,
             MoTa,
             Unit,
-            newHinhSanPhams,
+            HinhBoSung : newHinhSanPhams,
             DanhSachThuocTinh,
             IDDanhMuc,
             IDDanhMucCon,
@@ -135,11 +135,7 @@ async function createSanPhamVoiBienThe(req, res) {
         KetHopThuocTinh :  KetHopThuocTinh,
       
       });
-      if(!newVariant.ketHopThuocTinh){
-        console.log(newVariant)
-        return console.log("ket hop thuoc tinh rong");
-      }
-      //await newVariant.save();
+      await newVariant.save();
       console.log(newVariant)
     } else {
       const thuocTinh = thuocTinhs.shift();
@@ -230,73 +226,195 @@ async function createThuocTinhSanPham(req, res, next) {
     }
   }
 
-//hamdequy
-  async function createbienthesanpham(req, res, next) {
-    const { IDSanPham } = req.body;
-    const projection = {
-        _id : 0,
-        GiaTri: 1,
-        // Set chapters to null explicitly
-      };
-    const sanPham = await SanPhamModel.findById(IDSanPham);
-      if (!sanPham) {
-        return res.status(404).json({ message: 'Không tìm thấy sản phẩm' }); // Trả về lỗi HTTP 404
-      }
-      // Lấy danh sách ID thuộc tính
-      let attributeValuesMap = {}
-  const ThuocTinhID = sanPham.DanhSachThuocTinh;
-      console.log(ThuocTinhID)
-      for (let i = 0; i < ThuocTinhID.length; i++) {
-        console.log(ThuocTinhID[i]); // In ra từng phần tử
-        const thuocTinhgiatri = await ThuocTinhGiaTriModel.find({ThuocTinhID:ThuocTinhID[i]},projection);
-        attributeValuesMap[ThuocTinhID[i]] = thuocTinhgiatri;
-        
-    }
-    console.log(attributeValuesMap)
-    // const attributeValuesMap = {
-    //     ThuocTinhID[i]: ['a1', 'a2'],
-    //     'thu bbb': ['b1', 'b2', 'b3']
-    //   };
-  // Giả sử các giá trị của thuộc tính là: a1, a2, a3, b1, b2, b3
-//   const attributeValues = ["a1", "a2", "a3", "b1", "b2", "b3"];
+  async function updateSanPham(req, res, next) {
+    const { _id,IDSanPham,TenSanPham, HinhSanPham ,DonGiaNhap,DonGiaBan,SoLuongNhap,SoLuongHienTai,PhanTramGiamGia,NgayTao,TinhTrang,MoTa,Unit,TenAnh,UrlAnh,DanhSachThuocTinh,IDDanhMuc,IDDanhMucCon} = req.body;
+    try {
 
-//   // Tạo một hàm đệ quy để tạo các tổ hợp
-//   function generateCombinations(current, remaining) {
+      const updatedData = {
+        IDSanPham,
+            TenSanPham,
+            HinhSanPham,
+            DonGiaNhap,
+            DonGiaBan,
+            SoLuongNhap,
+            SoLuongHienTai,
+            PhanTramGiamGia,
+            NgayTao,
+            TinhTrang,
+            MoTa,
+            Unit,
+            DanhSachThuocTinh,
+            IDDanhMuc,
+            IDDanhMucCon,
+    };
+        // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
+        const updatedSanPham = await SanPhamModel.findByIdAndUpdate(
+          _id,
+          { $set: updatedData },
+          { new: true }
+      );
+        // Lưu đối tượng vào cơ sở dữ liệu
+        await updatedSanPham.save();
+
+        // Trả về kết quả cho client
+        res.status(201).json(updatedSanPham);
+    } catch (error) {
+        if (error.code === 11000) {
+            console.error('Lỗi thêm sản phẩm đã tồn tại');
+          } else {
+            console.error('Lỗi khác:', error);
+          }
+    }
+}
+
+  async function createimageSanPham(req, res, next) {
+    const { IDSanPham,TenAnh,UrlAnh} = req.body;
+    try {
+
+
+        // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
+        const updatedBienThe = await SanPhamModel.findOneAndUpdate(
+          { _id: IDSanPham },
+          { $push: { HinhBoSung: { TenAnh, UrlAnh } } },
+          { new: true }
+      );
+
+        if (!updatedBienThe) {
+            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+        }
+
+        // Trả về kết quả cho client
+        res.status(201).json(updatedBienThe);
+    } catch (error) {
+        if (error.code === 11000) {
+            console.error('Lỗi update Biến thể loi');
+          } else {
+            console.error('Lỗi khác:', error);
+          }
+    }
+}
+
+
+async function updateimageSanPham(req, res, next) {
+  const { IDSanPham, IDHinhAnh, TenAnh, UrlAnh} = req.body;
+  try {
+    // Tìm sản phẩm cần cập nhật
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+
+    if (!sanPham) {
+      return 'Không tìm thấy sản phẩm';
+    }
+
+    // Tìm hình ảnh cần cập nhật trong mảng HinhBoSung
+    const hinhAnh = sanPham.HinhBoSung.find(hinh => hinh._id.toString() === IDHinhAnh.toString());
+
+    if (!hinhAnh) {
+      return 'Không tìm thấy hình ảnh cần cập nhật';
+    }
+
+    // Cập nhật thông tin hình ảnh mới
+    hinhAnh.TenAnh = TenAnh;
+    hinhAnh.UrlAnh = UrlAnh;
+
+    // Lưu lại các thay đổi
+    await sanPham.save();
+
+    return 'Cập nhật hình bổ sung thành công';
+  } catch (error) {
+    console.error('Lỗi khi cập nhật hình bổ sung:', error);
+    return 'Có lỗi xảy ra';
+  }
+}
+async function deleteImageSanPham(req, res, next) {
+  const { IDSanPham, IDHinhAnh } = req.body;
+
+  try {
+    // Tìm sản phẩm cần cập nhật
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+
+    if (!sanPham) {
+      return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+    }
+
+    // Tìm và xóa hình ảnh trong mảng HinhBoSung
+    sanPham.HinhBoSung = sanPham.HinhBoSung.filter(hinh => hinh._id.toString() !== IDHinhAnh.toString());
+
+    // Lưu lại các thay đổi
+    await sanPham.save();
+
+    return res.json({ message: 'Xóa hình bổ sung thành công' });
+  } catch (error) {
+    console.error('Lỗi khi xóa hình bổ sung:', error);
+    return res.status(500).json({ message: 'Có lỗi xảy ra' });
+  }
+}
+// //hamdequy
+//   async function createbienthesanpham(req, res, next) {
+//     const { IDSanPham } = req.body;
+//     const projection = {
+//         _id : 0,
+//         GiaTri: 1,
+//         // Set chapters to null explicitly
+//       };
+//     const sanPham = await SanPhamModel.findById(IDSanPham);
+//       if (!sanPham) {
+//         return res.status(404).json({ message: 'Không tìm thấy sản phẩm' }); // Trả về lỗi HTTP 404
+//       }
+//       // Lấy danh sách ID thuộc tính
+//       let attributeValuesMap = {}
+//   const ThuocTinhID = sanPham.DanhSachThuocTinh;
+//       console.log(ThuocTinhID)
+//       for (let i = 0; i < ThuocTinhID.length; i++) {
+//         console.log(ThuocTinhID[i]); // In ra từng phần tử
+//         const thuocTinhgiatri = await ThuocTinhGiaTriModel.find({ThuocTinhID:ThuocTinhID[i]},projection);
+//         attributeValuesMap[ThuocTinhID[i]] = thuocTinhgiatri;
+        
+//     }
+//     console.log(attributeValuesMap)
+//     // const attributeValuesMap = {
+//     //     ThuocTinhID[i]: ['a1', 'a2'],
+//     //     'thu bbb': ['b1', 'b2', 'b3']
+//     //   };
+//   // Giả sử các giá trị của thuộc tính là: a1, a2, a3, b1, b2, b3
+// //   const attributeValues = ["a1", "a2", "a3", "b1", "b2", "b3"];
+
+// //   // Tạo một hàm đệ quy để tạo các tổ hợp
+// //   function generateCombinations(current, remaining) {
+// //     if (!remaining.length) {
+// //       combinations.push(current.join(''));
+// //       return;
+// //     }
+
+// //     const next = remaining[0];
+// //     for (let i = 0; i < attributeValuesMap.length; i++) {
+// //         for (const value of attributeValuesMap[i]) {
+// //             generateCombinations([...current, value], remaining.slice(1));
+// //           }
+        
+// //     }
+    
+// //   }
+// function generateCombinations(current, remaining) {
 //     if (!remaining.length) {
-//       combinations.push(current.join(''));
+//       combinations.push(current.join(','));
 //       return;
 //     }
-
-//     const next = remaining[0];
-//     for (let i = 0; i < attributeValuesMap.length; i++) {
-//         for (const value of attributeValuesMap[i]) {
-//             generateCombinations([...current, value], remaining.slice(1));
-//           }
-        
+  
+//     const nextId = remaining[0];
+//     const values = attributeValuesMap[nextId];
+  
+//     for (const value of values) {
+//       generateCombinations([...current, value], remaining.slice(1));
 //     }
-    
 //   }
-function generateCombinations(current, remaining) {
-    if (!remaining.length) {
-      combinations.push(current.join(','));
-      return;
-    }
-  
-    const nextId = remaining[0];
-    const values = attributeValuesMap[nextId];
-  
-    for (const value of values) {
-      generateCombinations([...current, value], remaining.slice(1));
-    }
-  }
-  // Khởi tạo mảng để lưu các tổ hợp
-  const combinations = [];
+//   // Khởi tạo mảng để lưu các tổ hợp
+//   const combinations = [];
 
-  // Gọi hàm đệ quy để tạo các tổ hợp
-  generateCombinations([], ThuocTinhID);
-console.log(combinations);
-return combinations;
-  }
+//   // Gọi hàm đệ quy để tạo các tổ hợp
+//   generateCombinations([], ThuocTinhID);
+// console.log(combinations);
+// return combinations;
+//   }
 
 
 
@@ -417,6 +535,46 @@ async function findSanPham(req, res, next) {
     }
 }
 
+async function findSanPhambyID(req, res, next) {
+  const {IDSanPham  } = req.params;
+
+  let query = {};
+  if (IDSanPham) {
+      query.IDSanPham = IDSanPham;
+  }
+
+  try {
+      const IDSanPhams = await SanPhamModel.findById(query);
+      res.status(200).json(IDSanPhams);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Lỗi khi tìm kiếm giá trị thuộc tính' });
+  }
+}
+
+
+
+
+async function getlistPageSanPham(req, res, next) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const sanphams = await SanPhamModel.find().skip(skip).limit(limit);
+    const totalProducts = await SanPhamModel.countDocuments();
+
+    res.status(200).json({
+      sanphams,
+      totalProducts,
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi truy xuất sản phẩm' });
+  }
+}
 
 
 module.exports = {
@@ -424,10 +582,14 @@ module.exports = {
     createSanPham,
     createSanPhamVoiBienThe,
     createThuocTinhSanPham,
-    createbienthesanpham,
     getlistBienTheFake,
     createBienTheFake,
     updateSanPham,
     deleteSanPham,
     findSanPham,
+    getlistPageSanPham,
+    createimageSanPham,
+    updateimageSanPham,
+    deleteImageSanPham,
+    findSanPhambyID,
 };

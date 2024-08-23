@@ -42,7 +42,7 @@ userRoute.post("/resetPassword", async function (req, res) {
   return ResetPassword(req, res);
 });
 //update image user
-userRoute.post("/createAnhDaiDien", async function (req, res) {
+userRoute.put("/createAnhDaiDien", async function (req, res) {
   return createAnhDaiDien(req, res);
 });
 

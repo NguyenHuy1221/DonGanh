@@ -474,4 +474,6 @@ module.exports = {
   updateSanPham,
   deleteSanPham,
   findSanPham,
+  findSanPhambyID,
+  getlistPageSanPham,
 };

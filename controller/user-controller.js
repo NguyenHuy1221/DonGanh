@@ -105,7 +105,7 @@ async function loginUser(req, res) {
     if (!check) {
       return res.status(400).json({ message: "Mật khẩu không đúng" });
     }
-
+    
     const token = generateToken(user._id, user.role);
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {

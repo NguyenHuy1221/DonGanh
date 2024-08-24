@@ -172,23 +172,57 @@ async function zaloPay(req, res, next) {
     const response = await axios.post(config.endpoint, null, { params: order });
 
     if (response.data.return_code === 1) {
-      // Kiểm tra nếu giao dịch thành công
-      const transaction = new Transaction({
-        transactionId: response.data.zptranstoken || transID, // Gán transactionId từ phản hồi của ZaloPay hoặc tự tạo nếu không có
-        orderId: id,
-        amount: order.amount,
-        status: "success",
-        method: "ZaloPay",
-        timestamp: new Date(),
-      });
-
-      await transaction.save(); // Lưu giao dịch vào cơ sở dữ liệu
+      res.status(200).json(response.data); // Trả về thông tin QR code cho frontend
+    } else {
+      res.status(400).json({ error: "Không thể tạo đơn hàng ZaloPay" });
     }
-
-    res.status(200).json(response.data);
   } catch (error) {
     console.error("Lỗi khi xử lý thanh toán ZaloPay:", error);
     res.status(500).json({ error: "Lỗi khi xử lý thanh toán ZaloPay" });
+  }
+}
+
+async function zaloPayWebhook(req, res, next) {
+  try {
+    const data = req.body;
+
+    // Xác minh MAC để đảm bảo yêu cầu là xác thực
+    const macData =
+      data.app_id +
+      "|" +
+      data.app_trans_id +
+      "|" +
+      data.zp_trans_id +
+      "|" +
+      data.amount +
+      "|" +
+      data.app_time +
+      "|" +
+      data.embed_data +
+      "|" +
+      data.item;
+    const generatedMac = CryptoJS.HmacSHA256(macData, config.key1).toString();
+
+    if (generatedMac !== data.mac) {
+      return res.status(400).json({ error: "MAC không hợp lệ" });
+    }
+
+    // Lưu giao dịch với trạng thái "success"
+    const transaction = new Transaction({
+      transactionId: data.zp_trans_id,
+      orderId: data.app_trans_id.split("_")[1], // Trích xuất ID đơn hàng từ app_trans_id
+      amount: data.amount,
+      status: "success", // Cập nhật trạng thái thành công
+      method: "ZaloPay",
+      timestamp: new Date(),
+    });
+
+    await transaction.save();
+
+    res.status(200).json({ message: "Thanh toán đã được xác nhận" });
+  } catch (error) {
+    console.error("Lỗi khi xử lý callback từ ZaloPay:", error);
+    res.status(500).json({ error: "Lỗi khi xử lý callback từ ZaloPay" });
   }
 }
 
@@ -198,4 +232,5 @@ module.exports = {
   updateGioHang,
   deleteGioHang,
   zaloPay,
+  zaloPayWebhook,
 };

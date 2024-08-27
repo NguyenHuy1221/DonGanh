@@ -8,6 +8,7 @@ const userRoute = require("../router/user");
 const gioHangRoute = require("../router/gioHang");
 const bannerRoutes = require("../router/banner");
 const bientheRoute = require("../router/bienthe");
+const hoadonRoute = require("../router/hoadon")
 
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
@@ -55,5 +56,13 @@ apiRoute.use(
     next();
   },
   bientheRoute
+);
+apiRoute.use(
+  "/hoadon",
+  (req, res, next) => {
+    console.log("call hoadon api router");
+    next();
+  },
+  hoadonRoute
 );
 module.exports = apiRoute;

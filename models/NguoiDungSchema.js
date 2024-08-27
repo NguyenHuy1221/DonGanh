@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const NguoiDungSchema = new Schema({
   anhDaiDien: String,
   tenNguoiDung: String,
+  GioiTinh: String,
   soDienThoai: Number,
   gmail: String,
   matKhau: String,

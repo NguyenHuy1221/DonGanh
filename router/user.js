@@ -49,10 +49,9 @@ userRoute.post("/createAnhDaiDien/:IDNguoiDung", async function (req, res) {
 });
 userRoute.put("/updateUser", async function (req, res) {
   return updateUser(req, res);
-}); 
+});
 userRoute.put("/updateUserDiaChi", async function (req, res) {
   return updateUserDiaChi(req, res);
 });
-
 
 module.exports = userRoute;

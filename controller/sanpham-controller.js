@@ -136,7 +136,6 @@ async function createSanPhamVoiBienThe(req, res) {
           IDGiaTriThuocTinh: value,
         })
       );
-
       // const KetHopThuocTinh2 = [{IDGiaTriThuocTinh:"66c0166f71819b042379ac36"},
       //   {IDGiaTriThuocTinh:"66c01a35577ef0bfbf76962c"}
       // ]
@@ -151,11 +150,11 @@ async function createSanPhamVoiBienThe(req, res) {
         //ketHopThuocTinh: Object.values(updatedVariant)
         KetHopThuocTinh: KetHopThuocTinh,
       });
-      if (!newVariant.ketHopThuocTinh) {
-        console.log(newVariant);
-        return console.log("ket hop thuoc tinh rong");
-      }
-      //await newVariant.save();
+      // if (!newVariant.ketHopThuocTinh) {
+      //   console.log(newVariant);
+      //   return console.log("ket hop thuoc tinh rong");
+      // }
+      await newVariant.save();
       console.log(newVariant);
     } else {
       const thuocTinh = thuocTinhs.shift();

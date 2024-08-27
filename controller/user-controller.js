@@ -216,9 +216,7 @@ async function createAnhDaiDien(req, res, next) {
           return res.status(500).json({ message: 'Error uploading file' });
         }
   
-        //const{ IDNguoiDung } = req.body;
-        const IDNguoiDung  = "66c70e563d694149998e1a53";
-        console.log(IDNguoiDung)
+        const{ IDNguoiDung } = req.params;   
         if (!IDNguoiDung  || !req.file) {
           return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
         }
@@ -247,6 +245,73 @@ async function createAnhDaiDien(req, res, next) {
     res.status(500).json({ message: "Lỗi server", error });
   }
 }
+
+// async function updateUser(req, res, next) {
+//   // const { ThuocTinhID } = req.params;
+//   const { tenNguoiDung,UserID,LoaiThongTinUpdate } = req.body;
+
+//   try {
+//       const updatedThuocTinh = await UserModel.findByIdAndUpdate(
+//           { UserID },
+//           { tenNguoiDung:tenNguoiDung},
+//           { new: true }
+//       );
+
+//       if (!updatedThuocTinh) {
+//           return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+//       }
+
+//       res.status(200).json(updatedThuocTinh);
+//   } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: 'Lỗi khi cập nhật thuộc tính' });
+//   }
+// }
+
+async function updateUser(req, res, next) {
+  const { UserID, LoaiThongTinUpdate } = req.body;
+
+  // Tạo một object để lưu trữ các trường cần cập nhật
+  const updateData = {};
+  updateData[LoaiThongTinUpdate] = req.body[LoaiThongTinUpdate];
+console.log(updateData)
+  try {
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      UserID,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng',updatedUser });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi cập nhật người dùng' });
+  }
+}
+async function updateUserDiaChi(req, res, next) {
+  const { UserID, diaChiMoi } = req.body;
+
+  // Tạo một object để lưu trữ các trường cần cập nhật
+console.log(diaChiMoi)
+  try {
+    const user = await UserModel.findById(UserID);
+    if (!user) {
+      return 'Người dùng không tồn tại';
+    }
+
+    user.diaChi = diaChiMoi;
+    await user.save();
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi cập nhật người dùng' });
+  }
+}
 module.exports = {
   RegisterUser,
   VerifyOTP,
@@ -255,4 +320,6 @@ module.exports = {
   ResetPassword,
   createAnhDaiDien,
   showUserById,
+  updateUser,
+  updateUserDiaChi,
 };

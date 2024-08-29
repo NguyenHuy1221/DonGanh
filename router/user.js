@@ -43,13 +43,16 @@ userRoute.post("/forgotPassword", async function (req, res) {
 userRoute.post("/resetPassword", async function (req, res) {
   return ResetPassword(req, res);
 });
+
 //update image user
 userRoute.post("/createAnhDaiDien/:IDNguoiDung", async function (req, res) {
   return createAnhDaiDien(req, res);
 });
+
 userRoute.put("/updateUser", async function (req, res) {
   return updateUser(req, res);
 }); 
+
 userRoute.put("/updateUserDiaChi", async function (req, res) {
   return updateUserDiaChi(req, res);
 });

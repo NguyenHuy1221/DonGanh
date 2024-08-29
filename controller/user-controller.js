@@ -294,9 +294,7 @@ console.log(updateData)
 }
 async function updateUserDiaChi(req, res, next) {
   const { UserID, diaChiMoi } = req.body;
-
   // Tạo một object để lưu trữ các trường cần cập nhật
-console.log(diaChiMoi)
   try {
     const user = await UserModel.findById(UserID);
     if (!user) {

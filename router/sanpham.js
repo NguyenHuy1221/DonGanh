@@ -16,6 +16,12 @@ const {
   // deleteImageSanPham,
   findSanPhambyID,
   getlistBienTheInSanPham,
+  sapXepSanPhamTheoGia,
+  sapXepSanPhamTheoGiaGiamDan,
+  sapXepSanPhamTheoNgayTao,
+  sapXepSanPhamNgayTaoGiamDan,
+  sapXepSanPhamBanChayNhat,
+  sapXepSanPhamCoGiamGia,
 } = require("../controller/sanpham-controller");
 
 sanphamRouter.get("/getlistSanPham", async function (req, res) {
@@ -102,5 +108,26 @@ sanphamRouter.delete("/deleteImageSanPham", async function (req, res) {
 sanphamRouter.get("/findSanPhambyID/:IDSanPham", async function (req, res) {
   return findSanPhambyID(req, res);
 });
+
+sanphamRouter.get("/sapXepSanPhamTheoGia", async function (req, res) {
+  return sapXepSanPhamTheoGia(req, res);
+});
+sanphamRouter.get("/sapXepSanPhamTheoGiaGiamDan", async function (req, res) {
+  return sapXepSanPhamTheoGiaGiamDan(req, res);
+});
+
+sanphamRouter.get("/sapXepSanPhamTheoNgayTao", async function (req, res) {
+  return sapXepSanPhamTheoNgayTao(req, res);
+});
+sanphamRouter.get("/sapXepSanPhamNgayTaoGiamDan", async function (req, res) {
+  return sapXepSanPhamNgayTaoGiamDan(req, res);
+});
+sanphamRouter.get("/sapXepSanPhamBanChayNhat", async function (req, res) {
+  return sapXepSanPhamBanChayNhat(req, res);
+});
+sanphamRouter.get("/sapXepSanPhamCoGiamGia", async function (req, res) {
+  return sapXepSanPhamCoGiamGia(req, res);
+});
+
 
 module.exports = sanphamRouter;

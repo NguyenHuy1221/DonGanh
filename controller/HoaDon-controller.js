@@ -1,4 +1,6 @@
 const HoaDonModel = require("../models/HoaDonSchema");
+const GioHangModel = require("../models/GioHangSchema")
+const UserModel = require("../models/NguoiDungSchema")
 require("dotenv").config();
 
 
@@ -42,6 +44,35 @@ async function getHoaDonById(req, res) {
     }
   }
 
+  async function updateUserDiaChivaThongTinGiaoHang(req, res, next) {
+    const { userId, diaChiMoi,ghiChu,khuyenmaiId,giohangId,TongTien } = req.body;
+    // Tạo một object để lưu trữ các trường cần cập nhật
+    const TrangThai = "Chờ Xác Nhận"
+    try {
+        const giohang = await GioHangModel.findById(giohangId);
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return 'Người dùng không tồn tại';
+      }
+      console.log(giohang.chiTietGioHang)
+      user.diaChi = diaChiMoi;
+      await user.save();
+      const newHoaDon = new HoaDonModel({
+        userId,
+        diaChi:diaChiMoi,
+        TrangThai,
+        TongTien,
+        chiTietHoaDon : giohang.chiTietGioHang,
+        GhiChu: ghiChu,
+    });
+    // Lưu đối tượng vào cơ sở dữ liệu
+    const savedHoaDon = await newHoaDon.save();
+      res.status(200).json(savedHoaDon);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Lỗi khi Tạo Đơn Hàng' });
+    }
+  }
 async function updateHoaDonThanhToan(req, res, next) {
     const { hoadonId, transactionId } = req.body;
   
@@ -161,4 +192,5 @@ module.exports = {
     updateThuocTinh,
     deleteThuocTinh,
     findThuocTinh,
+    updateUserDiaChivaThongTinGiaoHang,
 };

@@ -334,7 +334,6 @@ async function updateUser(req, res, next) {
 }
 async function updateUserDiaChi(req, res, next) {
   const { UserID, diaChiMoi } = req.body;
-
   // Tạo một object để lưu trữ các trường cần cập nhật
   console.log(diaChiMoi);
   try {

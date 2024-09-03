@@ -495,6 +495,111 @@ async function findSanPhamByDanhMuc(req, res, next) {
   }
 }
 
+async function sapXepSanPhamTheoGia(req, res, next) {
+  try {
+    const sanPhams = await SanPhamModel.find().sort({ DonGiaBan: 1 }); // Sắp xếp tăng dần
+
+    return res.status(200).json(sanPhams);
+  } catch (error) {
+    console.error("Lỗi khi sắp xếp sản phẩm:", error);
+    res.status(500).json({ message: "Lỗi khi sắp xếp sản phẩm" });
+  }
+}
+async function sapXepSanPhamTheoGiaGiamDan(req, res, next) {
+  try {
+    const sanPhams = await SanPhamModel.find().sort({ DonGiaBan: -1 }); // Sắp xếp tăng dần
+
+    return res.status(200).json(sanPhams);
+  } catch (error) {
+    console.error("Lỗi khi sắp xếp sản phẩm:", error);
+    res.status(500).json({ message: "Lỗi khi sắp xếp sản phẩm" });
+  }
+}
+
+async function sapXepSanPhamTheoNgayTao(req, res, next) {
+  try {
+    const sanPhams = await SanPhamModel.find().sort({ NgayTao: 1 }); // Sắp xếp tăng dần
+
+    return res.status(200).json(sanPhams);
+  } catch (error) {
+    console.error("Lỗi khi sắp xếp sản phẩm:", error);
+    res.status(500).json({ message: "Lỗi khi sắp xếp sản phẩm" });
+  }
+}
+async function sapXepSanPhamNgayTaoGiamDan(req, res, next) {
+  try {
+    const sanPhams = await SanPhamModel.find().sort({ NgayTao: -1 }); // Sắp xếp tăng dần
+
+    return res.status(200).json(sanPhams);
+  } catch (error) {
+    console.error("Lỗi khi sắp xếp sản phẩm:", error);
+    res.status(500).json({ message: "Lỗi khi sắp xếp sản phẩm" });
+  }
+}
+
+async function sapXepSanPhamBanChayNhat(req, res, next) {
+  try {
+    const sanPhams = await SanPhamModel.aggregate([
+      {
+        $addFields: {
+          SoLuongDaBan: { $subtract: ["$SoLuongNhap", "$SoLuongHienTai"] },
+        },
+      },
+      {
+        $sort: { soLuongDaBan: -1 },
+      },
+    ]);
+    return res.status(200).json(sanPhams);
+  } catch (error) {
+    console.error("Lỗi khi sắp xếp sản phẩm:", error);
+    res.status(500).json({ message: "Lỗi khi sắp xếp sản phẩm" });
+  }
+}
+async function sapXepSanPhamCoGiamGia(req, res, next) {
+  try {
+    const sanPhams = await SanPhamModel.find({ PhanTramGiamGia: { $gt: 0 } });
+
+    return res.status(200).json(sanPhams);
+  } catch (error) {
+    console.error("Lỗi khi sắp xếp sản phẩm:", error);
+    res.status(500).json({ message: "Lỗi khi sắp xếp sản phẩm" });
+  }
+}
+
+async function findSanPhamByDanhMuc(req, res, next) {
+  const { IDDanhMuc } = req.params;
+
+  try {
+    const sanphams = await SanPhamModel.find({ IDDanhMuc });
+
+    if (!sanphams || sanphams.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+    }
+
+    res.status(200).json(sanphams);
+  } catch (error) {
+    console.error("Lỗi khi tìm kiếm sản phẩm theo danh mục:", error);
+    res
+      .status(500)
+      .json({ message: "Lỗi khi tìm kiếm sản phẩm theo danh mục" });
+  }
+}
+//hàm chuyển đổi ngày tạo sang ngày việt nam
+// async function layNgayTaoSanPham(idSanPham) {
+//   try {
+//     const sanPham = await SanPham.findById(idSanPham);
+//     if (sanPham) {
+//       const ngayTao = sanPham.NgayTao; // Đối tượng Date
+//       // Định dạng lại ngày tạo theo mong muốn
+//       const ngayTaoFormat = ngayTao.toLocaleDateString('vi-VN'); // Định dạng theo tiếng Việt
+//       console.log('Ngày tạo sản phẩm:', ngayTaoFormat);
+//     } else {
+//       console.log('Không tìm thấy sản phẩm');
+//     }
+//   } catch (error) {
+//     console.error('Lỗi khi lấy ngày tạo:', error);
+//   }
+// }
 module.exports = {
   getlistSanPham,
   createSanPham,
@@ -505,13 +610,19 @@ module.exports = {
   updateSanPham,
   deleteSanPham,
   findSanPham,
+  findSanPhamByDanhMuc,
   getlistPageSanPham,
   // createimageSanPham,
   // updateimageSanPham,
   // deleteImageSanPham,
   findSanPhambyID,
   getlistBienTheInSanPham,
-  findSanPhamByDanhMuc,
+  sapXepSanPhamTheoGia,
+  sapXepSanPhamTheoGiaGiamDan,
+  sapXepSanPhamTheoNgayTao,
+  sapXepSanPhamNgayTaoGiamDan,
+  sapXepSanPhamBanChayNhat,
+  sapXepSanPhamCoGiamGia,
   // getlistSanPham,
   // createSanPham,
   // createSanPhamVoiBienThe,

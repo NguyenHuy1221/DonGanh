@@ -16,6 +16,7 @@ const {
   // deleteImageSanPham,
   findSanPhambyID,
   getlistBienTheInSanPham,
+  findSanPhamByDanhMuc,
 } = require("../controller/sanpham-controller");
 
 sanphamRouter.get("/getlistSanPham", async function (req, res) {
@@ -101,6 +102,10 @@ sanphamRouter.delete("/deleteImageSanPham", async function (req, res) {
 });
 sanphamRouter.get("/findSanPhambyID/:IDSanPham", async function (req, res) {
   return findSanPhambyID(req, res);
+});
+
+sanphamRouter.get("/findSanPham/:IDDanhMuc", async function (req, res) {
+  return findSanPhamByDanhMuc(req, res);
 });
 
 module.exports = sanphamRouter;

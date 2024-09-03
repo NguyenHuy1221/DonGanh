@@ -12,6 +12,7 @@ const {
   showUserById,
   updateUser,
   updateUserDiaChi,
+  ResendOTP,
 } = require("../controller/user-controller");
 
 // show user
@@ -22,6 +23,10 @@ userRoute.get("/showUserID/:userId", function (req, res) {
 // register user
 userRoute.post("/register", async function (req, res) {
   return RegisterUser(req, res);
+});
+
+userRoute.post("/resendOTP", async function (req, res) {
+  return ResendOTP(req, res);
 });
 
 // otp

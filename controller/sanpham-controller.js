@@ -476,6 +476,25 @@ async function getlistBienTheInSanPham(req, res, next) {
   }
 }
 
+async function findSanPhamByDanhMuc(req, res, next) {
+  const { IDDanhMuc } = req.params;
+
+  try {
+    const sanphams = await SanPhamModel.find({ IDDanhMuc });
+
+    if (!sanphams || sanphams.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
+    }
+
+    res.status(200).json(sanphams);
+  } catch (error) {
+    console.error("Lỗi khi tìm kiếm sản phẩm theo danh mục:", error);
+    res
+      .status(500)
+      .json({ message: "Lỗi khi tìm kiếm sản phẩm theo danh mục" });
+  }
+}
+
 module.exports = {
   getlistSanPham,
   createSanPham,
@@ -492,6 +511,7 @@ module.exports = {
   // deleteImageSanPham,
   findSanPhambyID,
   getlistBienTheInSanPham,
+  findSanPhamByDanhMuc,
   // getlistSanPham,
   // createSanPham,
   // createSanPhamVoiBienThe,

@@ -117,7 +117,14 @@ async function getGioHangByUserId(req, res, next) {
 
     const gioHang = await GioHang.findOne({ userId })
       .populate("userId")
-      .populate("chiTietGioHang.idBienThe");
+      .populate({
+        path: "chiTietGioHang.idBienThe",
+        populate: [
+          {
+            path: "KetHopThuocTinh.IDGiaTriThuocTinh",
+          },
+        ],
+      });
 
     if (!gioHang) {
       return res.status(404).json({ error: "Giỏ hàng không tồn tại" });

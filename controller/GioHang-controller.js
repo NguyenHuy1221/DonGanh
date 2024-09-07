@@ -111,6 +111,33 @@ async function deleteGioHang(req, res, next) {
   }
 }
 
+async function getGioHangByUserId(req, res, next) {
+  try {
+    const { userId } = req.params;
+
+    const gioHang = await GioHang.findOne({ userId })
+      .populate("userId")
+      .populate({
+        path: "chiTietGioHang.idBienThe",
+        populate: [
+          {
+            path: "KetHopThuocTinh.IDGiaTriThuocTinh",
+          },
+        ],
+      });
+
+    if (!gioHang) {
+      return res.status(404).json({ error: "Giỏ hàng không tồn tại" });
+    }
+
+    res.status(200).json(gioHang);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Lỗi khi lấy thông tin giỏ hàng theo userId" });
+  }
+}
+
 const config = {
   app_id: "2554",
   key1: "sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn",
@@ -233,4 +260,5 @@ module.exports = {
   deleteGioHang,
   zaloPay,
   zaloPayWebhook,
+  getGioHangByUserId,
 };

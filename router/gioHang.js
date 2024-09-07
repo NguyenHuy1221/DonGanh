@@ -8,6 +8,7 @@ const {
   deleteGioHang,
   zaloPay,
   zaloPayWebhook,
+  getGioHangByUserId,
 } = require("../controller/GioHang-controller");
 
 gioHangRouter.post("/gioHang", async function (req, res) {
@@ -16,6 +17,10 @@ gioHangRouter.post("/gioHang", async function (req, res) {
 
 gioHangRouter.get("/gioHang/:id", async function (req, res) {
   return getGioHangById(req, res);
+});
+
+gioHangRouter.get("/giohang/user/:userId", async function (req, res) {
+  return getGioHangByUserId(req, res);
 });
 
 gioHangRouter.put("/gioHang/:id", async function (req, res) {

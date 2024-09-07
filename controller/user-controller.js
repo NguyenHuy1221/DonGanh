@@ -20,7 +20,7 @@ async function RegisterUser(req, res) {
       return res.status(400).json({ message: "Email đã được sử dụng" });
     }
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString(); // Tạo mã OTP 4 chữ số
+    const otp = Math.floor(1000 + Math.random() * 900000).toString(); // Tạo mã OTP 4 chữ số
     const otpExpiry = Date.now() + 15 * 60 * 1000; // OTP hết hạn sau 15 phút
 
     await UserModel.create({
@@ -105,7 +105,7 @@ async function loginUser(req, res) {
     if (!check) {
       return res.status(400).json({ message: "Mật khẩu không đúng" });
     }
-    
+
     const token = generateToken(user._id, user.role);
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {
@@ -202,36 +202,76 @@ async function showUserById(req, res) {
   }
 }
 
+async function ResendOTP(req, res) {
+  const { gmail } = req.body;
+
+  try {
+    const user = await UserModel.findOne({ gmail });
+
+    if (!user) {
+      return res.status(400).json({ message: "Email không tồn tại" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: "Tài khoản đã được xác nhận" });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP 6 chữ số
+    const otpExpiry = Date.now() + 15 * 60 * 1000; // OTP hết hạn sau 15 phút
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: gmail,
+      subject: "Xác nhận mã OTP mới",
+      text: `Chào ${user.tenNguoiDung},\n\nVui lòng sử dụng mã OTP sau để xác nhận tài khoản của bạn:\n\n${otp}\n\nTrân trọng,\nĐội ngũ hỗ trợ`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Lỗi khi gửi email:", error);
+        return res.status(500).json({ message: "Lỗi khi gửi lại mã OTP" });
+      } else {
+        console.log("Email đã được gửi:", info.response);
+        return res.json({
+          message: "Mã OTP mới đã được gửi, vui lòng kiểm tra email",
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Lỗi khi gửi lại mã OTP:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi gửi lại mã OTP" });
+  }
+}
 
 const multer = require("multer");
 const { upload } = require("../untils/index");
 
 async function createAnhDaiDien(req, res, next) {
+  try {
+    upload.single("file")(req, res, async (err) => {
+      if (err) {
+        // Handle file upload errors
+        console.error(err);
+        return res.status(500).json({ message: "Error uploading file" });
+      }
 
-    try {
-      upload.single('file')(req, res, async (err) => {
-        if (err) {
-          // Handle file upload errors
-          console.error(err);
-          return res.status(500).json({ message: 'Error uploading file' });
-        }
-  
-        const{ IDNguoiDung } = req.params;   
-        if (!IDNguoiDung  || !req.file) {
-          return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
-        }
-  
+      const { IDNguoiDung } = req.params;
+      if (!IDNguoiDung || !req.file) {
+        return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
+      }
 
-        const newPath = req.file.path.replace(
-            "public",
-             process.env.URL_IMAGE
-          );
-        try {
-          const updateNguoiDung = await UserModel.findOneAndUpdate(
-            { _id:IDNguoiDung },
-            { anhDaiDien:newPath },
-            { new: true }
-          );
+      const newPath = req.file.path.replace("public", process.env.URL_IMAGE);
+      try {
+        const updateNguoiDung = await UserModel.findOneAndUpdate(
+          { _id: IDNguoiDung },
+          { anhDaiDien: newPath },
+          { new: true }
+        );
 
         res.status(201).json({ message: "Đổi ảnh đại diện thành công" });
       } catch (error) {
@@ -274,31 +314,32 @@ async function updateUser(req, res, next) {
   // Tạo một object để lưu trữ các trường cần cập nhật
   const updateData = {};
   updateData[LoaiThongTinUpdate] = req.body[LoaiThongTinUpdate];
-console.log(updateData)
+  console.log(updateData);
   try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      UserID,
-      updateData,
-      { new: true }
-    );
+    const updatedUser = await UserModel.findByIdAndUpdate(UserID, updateData, {
+      new: true,
+    });
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'Không tìm thấy người dùng',updatedUser });
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy người dùng", updatedUser });
     }
 
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi khi cập nhật người dùng' });
+    res.status(500).json({ message: "Lỗi khi cập nhật người dùng" });
   }
 }
 async function updateUserDiaChi(req, res, next) {
   const { UserID, diaChiMoi } = req.body;
   // Tạo một object để lưu trữ các trường cần cập nhật
+  console.log(diaChiMoi);
   try {
     const user = await UserModel.findById(UserID);
     if (!user) {
-      return 'Người dùng không tồn tại';
+      return "Người dùng không tồn tại";
     }
 
     user.diaChi = diaChiMoi;
@@ -307,7 +348,7 @@ async function updateUserDiaChi(req, res, next) {
     res.status(200).json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Lỗi khi cập nhật người dùng' });
+    res.status(500).json({ message: "Lỗi khi cập nhật người dùng" });
   }
 }
 module.exports = {
@@ -320,4 +361,5 @@ module.exports = {
   showUserById,
   updateUser,
   updateUserDiaChi,
+  ResendOTP,
 };

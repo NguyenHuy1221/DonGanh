@@ -16,6 +16,7 @@ const {
   // deleteImageSanPham,
   findSanPhambyID,
   getlistBienTheInSanPham,
+  findSanPhamByDanhMuc,
   sapXepSanPhamTheoGia,
   sapXepSanPhamTheoGiaGiamDan,
   sapXepSanPhamTheoNgayTao,
@@ -109,6 +110,10 @@ sanphamRouter.get("/findSanPhambyID/:IDSanPham", async function (req, res) {
   return findSanPhambyID(req, res);
 });
 
+sanphamRouter.get("/findSanPham/:IDDanhMuc", async function (req, res) {
+  return findSanPhamByDanhMuc(req, res);
+});
+
 sanphamRouter.get("/sapXepSanPhamTheoGia", async function (req, res) {
   return sapXepSanPhamTheoGia(req, res);
 });
@@ -128,6 +133,5 @@ sanphamRouter.get("/sapXepSanPhamBanChayNhat", async function (req, res) {
 sanphamRouter.get("/sapXepSanPhamCoGiamGia", async function (req, res) {
   return sapXepSanPhamCoGiamGia(req, res);
 });
-
 
 module.exports = sanphamRouter;

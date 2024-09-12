@@ -1,15 +1,17 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-// Schema cho biến thể sản phẩm
+const {convertToVietnamTimezone} = require('../middleware/index');
+// Schema cho loai khuyến mãi
 const LoaiKhuyenMaiSchema = new Schema({
-    IDLoaiKhuyenMai: { type: String, required: true, unique: true }, // Giả sử có một schema SanPham
+    //IDLoaiKhuyenMai: { type: String, required: true, unique: true }, // Giả sử có một schema SanPham
     TenLoaiKhuyenMai: String,
-    LoaiKhuyenMai: String,
+    LoaiKhuyenMai: { type: Number, required: true, unique: true },
     MoTa: String,
-    NgayBatDau: String,
-    NgayKetThuc: Number,
+    NgayBatDau: { type: Date, default: Date.now },
   });
 
+  
+  convertToVietnamTimezone(LoaiKhuyenMaiSchema);
   const LoaiKhuyenMai = mongoose.model('LoaiKhuyenMai', LoaiKhuyenMaiSchema);
 
 module.exports = LoaiKhuyenMai; 

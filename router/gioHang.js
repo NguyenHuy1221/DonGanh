@@ -19,6 +19,8 @@ gioHangRouter.get("/gioHang/:id", async function (req, res) {
   return getGioHangById(req, res);
 });
 
+
+//dang su dung cai nay
 gioHangRouter.get("/giohang/user/:userId", async function (req, res) {
   return getGioHangByUserId(req, res);
 });

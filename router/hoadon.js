@@ -2,7 +2,7 @@ const express = require('express');
 const hoadonRouter = express.Router();
 const {getlistHoaDon,
     getHoaDonById,
-    updateUserDiaChivaThongTinGiaoHang,
+    createUserDiaChivaThongTinGiaoHang,
     updateHoaDonThanhToan,
     } = require("../controller/HoaDon-controller")
 
@@ -11,12 +11,12 @@ hoadonRouter.get('/getlistHoaDon', async function (req, res) {
     })
     
 
-    hoadonRouter.get("/getHoaDonById/:hoadonId", function (req, res) {
+hoadonRouter.get("/getHoaDonById/:hoadonId", function (req, res) {
         return getHoaDonById(req, res);
       });
 
-hoadonRouter.post('/updateUserDiaChivaThongTinGiaoHang', async function (req, res) {
-    return updateUserDiaChivaThongTinGiaoHang(req, res);
+hoadonRouter.post('/createUserDiaChivaThongTinGiaoHang', async function (req, res) {
+    return createUserDiaChivaThongTinGiaoHang(req, res);
 })
 hoadonRouter.post('/updateHoaDonThanhToan', async function (req, res) {
     return updateHoaDonThanhToan(req, res);

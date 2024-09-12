@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const {convertToVietnamTimezone} = require('../middleware/index');
 const TransactionSchema = new mongoose.Schema({
   transactionId: {
     type: String,
@@ -27,5 +27,5 @@ const TransactionSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-
+convertToVietnamTimezone(TransactionSchema)
 module.exports = mongoose.model("Transaction", TransactionSchema);

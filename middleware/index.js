@@ -53,5 +53,16 @@ const authMiddlewareView = (req, res, next) => {
   }
   next();
 };
+const moment = require('moment-timezone');
 
-module.exports = { authMiddleware, authorizationJwt, authMiddlewareView };
+function convertToVietnamTimezone(schema) {
+    schema.methods.toJSON = function() {
+        const obj = this.toObject();
+        if (obj.NgayBatDau) {
+            obj.NgayBatDau = moment(obj.NgayBatDau).tz('Asia/Ho_Chi_Minh').format();
+        }
+        return obj;
+    };
+}
+
+module.exports = { authMiddleware, authorizationJwt, authMiddlewareView,convertToVietnamTimezone };

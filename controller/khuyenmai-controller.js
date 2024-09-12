@@ -1,13 +1,14 @@
-const ThuocTinhModel = require("../models/ThuocTinhSchema");
+const KhuyenMaiModel = require("../models/KhuyenMaiSchema");
+const LoaiKhuyenMaiModel = require("../models/LoaiKhuyenMaiSchema")
 require("dotenv").config();
 
 
 //ham lay danh sach thuoc tinh
-async function getlistThuocTinh(req, res, next) {
+async function getlistKhuyenMai(req, res, next) {
 
     try {
-        const thuocTinhs = await ThuocTinhModel.find();
-        res.status(200).json(thuocTinhs);
+        const khuyenmais = await KhuyenMaiModel.find();
+        res.status(200).json(khuyenmais);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
@@ -15,103 +16,103 @@ async function getlistThuocTinh(req, res, next) {
 }
 
 
-//hàm thêm thuộc tính
-async function createThuocTinh(req, res, next) {
-    const { ThuocTinhID, TenThuocTinh } = req.body;
+
+async function createKhuyenMai(req, res, next) {
+    const { IDKhuyenMai, TenKhuyenMai, MoTa, GiaTriKhuyenMai, GioiHanSoLuong, GioiHanGiaTriDuocApDung, NgayBatDau, NgayKetThuc, soLuong, IDLoaiKhuyenMai, IDDanhMucCon, TrangThai } = req.body;
+
     try {
-
-        // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    const existingThuocTinh = await ThuocTinhModel.findOne({ ThuocTinhID });
-
-    if (existingThuocTinh) {
-        return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
-    }
-        // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
-        const newThuocTinh = new ThuocTinhModel({
-            ThuocTinhID,
-            TenThuocTinh
+        const newKhuyenMai = new KhuyenMai({
+            IDKhuyenMai,
+            TenKhuyenMai,
+            MoTa,
+            GiaTriKhuyenMai,
+            GioiHanSoLuong,
+            GioiHanGiaTriDuocApDung,
+            NgayBatDau,
+            NgayKetThuc,
+            soLuong,
+            IDLoaiKhuyenMai,
+            IDDanhMucCon,
+            TrangThai
         });
-        
-        // Lưu đối tượng vào cơ sở dữ liệu
-        const savedThuocTinh = await newThuocTinh.save();
 
-        // Trả về kết quả cho client
-        res.status(201).json(savedThuocTinh);
+        const savedKhuyenMai = await newKhuyenMai.save();
+        res.status(201).json(savedKhuyenMai);
     } catch (error) {
-        if (error.code === 11000) {
-            console.error('ThuocTinhID đã tồn tại');
-          } else {
-            console.error('Lỗi khác:', error);
-          }
+        next(error);
     }
 }
-  
-   
-async function updateThuocTinh(req, res, next) {
-    // const { ThuocTinhID } = req.params;
-    const { TenThuocTinh,ThuocTinhID } = req.body;
+
+async function updateKhuyenMai(req, res, next) {
+    const { id } = req.params;
+    const { IDKhuyenMai, TenKhuyenMai, MoTa, GiaTriKhuyenMai, GioiHanSoLuong, GioiHanGiaTriDuocApDung, NgayBatDau, NgayKetThuc, soLuong, IDLoaiKhuyenMai, IDDanhMucCon, TrangThai } = req.body;
 
     try {
-        const updatedThuocTinh = await ThuocTinhModel.findOneAndUpdate(
-            { ThuocTinhID },
-            { TenThuocTinh },
+        const updatedKhuyenMai = await KhuyenMai.findByIdAndUpdate(
+            id,
+            {
+                IDKhuyenMai,
+                TenKhuyenMai,
+                MoTa,
+                GiaTriKhuyenMai,
+                GioiHanSoLuong,
+                GioiHanGiaTriDuocApDung,
+                NgayBatDau,
+                NgayKetThuc,
+                soLuong,
+                IDLoaiKhuyenMai,
+                IDDanhMucCon,
+                TrangThai
+            },
             { new: true }
         );
 
-        if (!updatedThuocTinh) {
-            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+        if (!updatedKhuyenMai) {
+            return res.status(404).json({ message: 'Khuyến mãi không tồn tại' });
         }
 
-        res.status(200).json(updatedThuocTinh);
+        res.status(200).json(updatedKhuyenMai);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi cập nhật thuộc tính' });
+        next(error);
     }
 }
-
-async function deleteThuocTinh(req, res, next) {
-    const { ThuocTinhID } = req.params;
+async function deleteKhuyenMai(req, res, next) {
+    const { id } = req.params;
 
     try {
-        const deletedThuocTinh = await ThuocTinhModel.findOneAndDelete( ThuocTinhID );
+        const deletedKhuyenMai = await KhuyenMai.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { new: true }
+        );
 
-        if (!deletedThuocTinh) {
-            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+        if (!deletedKhuyenMai) {
+            return res.status(404).json({ message: 'Khuyến mãi không tồn tại' });
         }
 
-        res.status(200).json({ message: 'Xóa thuộc tính thành công' });
+        res.status(200).json({ message: 'Khuyến mãi đã được đánh dấu là đã xóa' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi xóa thuộc tính' });
+        next(error);
     }
 }
 
-async function findThuocTinh(req, res, next) {
-    const { ThuocTinhID, TenThuocTinh } = req.body;
-
-    let query = {};
-    if (ThuocTinhID) {
-        query.ThuocTinhID = ThuocTinhID;
-    }
-    if (TenThuocTinh) {
-        query.TenThuocTinh = { $regex: TenThuocTinh, $options: 'i' }; // Tìm kiếm không phân biệt hoa thường
-    }
-
+async function getActiveKhuyenMai(req, res, next) {
     try {
-        const thuocTinhs = await ThuocTinhModel.find(query);
-        res.status(200).json(thuocTinhs);
+        const activeKhuyenMai = await KhuyenMai.find({ isDeleted: false });
+        res.status(200).json(activeKhuyenMai);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
+        next(error);
     }
 }
+
+
 
 
 
 module.exports = {
-    getlistThuocTinh,
-    createThuocTinh,
-    updateThuocTinh,
-    deleteThuocTinh,
-    findThuocTinh,
+    getlistKhuyenMai,
+    createKhuyenMai,
+    updateKhuyenMai,
+    deleteKhuyenMai,
+    getActiveKhuyenMai
 };

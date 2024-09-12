@@ -8,7 +8,9 @@ const userRoute = require("../router/user");
 const gioHangRoute = require("../router/gioHang");
 const bannerRoutes = require("../router/banner");
 const bientheRoute = require("../router/bienthe");
-const hoadonRoute = require("../router/hoadon")
+const hoadonRoute = require("../router/hoadon");
+const khuyenmaiRoute = require("../router/khuyenmai");
+const khuyenmaimanageRoute = require("../router/khuyenmai-manage");
 
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
@@ -64,5 +66,21 @@ apiRoute.use(
     next();
   },
   hoadonRoute
+);
+apiRoute.use(
+  "/khuyenmai",
+  (req, res, next) => {
+    console.log("call khuyenmai api router");
+    next();
+  },
+  khuyenmaiRoute
+);
+apiRoute.use(
+  "/khuyenmaimanage",
+  (req, res, next) => {
+    console.log("call khuyenmaimanage api router");
+    next();
+  },
+  khuyenmaimanageRoute
 );
 module.exports = apiRoute;

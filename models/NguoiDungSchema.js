@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-
+const {convertToVietnamTimezone} = require('../middleware/index');
 const NguoiDungSchema = new Schema({
   anhDaiDien: String,
   tenNguoiDung: String,
   GioiTinh: String,
-  soDienThoai: Number,
+  soDienThoai: String,
   gmail: String,
   matKhau: String,
   ngayTao: { type: Date, default: Date.now },
@@ -17,7 +17,7 @@ const NguoiDungSchema = new Schema({
     phuongXa: String,
     duongThon: String
   },
-  tinhTrang: String,
+  tinhTrang: Number,
   phuongThucThanhToan: [
     { type: Schema.Types.ObjectId, ref: "PhuongThucThanhToan" },
   ],
@@ -28,5 +28,5 @@ const NguoiDungSchema = new Schema({
   googleId: { type: String, unique: true, sparse: true },
   facebookId: { type: String, unique: true, sparse: true },
 });
-
+convertToVietnamTimezone(NguoiDungSchema)
 module.exports = mongoose.model("User", NguoiDungSchema);

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const {convertToVietnamTimezone} = require('../middleware/index');
 const SanPhamSchema = new Schema({
   IDSanPham: { type: String, required: true, unique: true }, // Khóa chính, duy nhất
   TenSanPham: { type: String, required: true },
@@ -26,7 +26,7 @@ const SanPhamSchema = new Schema({
   IDDanhMuc: { type: String, ref: 'DanhMuc' }, // Tham chiếu đến danh mục cha
   IDDanhMucCon: { type: String, ref: 'DanhMucCon' } // Tham chiếu đến danh mục con
 });
-
+convertToVietnamTimezone(SanPhamSchema)
 const SanPham = mongoose.model('SanPham', SanPhamSchema);
 
 module.exports = SanPham;

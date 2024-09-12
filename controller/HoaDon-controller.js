@@ -2,6 +2,24 @@ const HoaDonModel = require("../models/HoaDonSchema");
 const GioHangModel = require("../models/GioHangSchema")
 const UserModel = require("../models/NguoiDungSchema")
 require("dotenv").config();
+// qr
+// const PayOS = require('@payos/node')
+// const pauos = require('client_oid','api_key','checksum-key')
+
+// async function CreateThanhToan(req, res, next) {
+//   const order = {
+//     amount: 10000,
+//     description: 'thanh toan nong san',
+//     ordercode : 10,
+//     returnUrl: `${YOUR_DOMAIN}/success.html`,
+//     cancelUrl: `${YOUR_DOMAIN}/cancel.html`
+//   }
+// }
+ 
+
+
+
+
 
 
 //ham lay danh sach thuoc tinh
@@ -26,10 +44,10 @@ async function getHoaDonById(req, res) {
       const hoadon = await HoaDonModel.findById(hoadonId).populate("userId")
       .populate('khuyenmaiId')
       .populate('transactionId')
-      .populate({
-        path: 'chiTietHoaDon.idBienThe',
-        model: 'BienThe' // Tên model của BienThe
-      });
+      // .populate({
+      //   path: 'chiTietHoaDon.idBienThe',
+      //   model: 'BienThe' // Tên model của BienThe
+      // });
   
       if (!hoadon) {
         return res.status(404).json({ message: "Không tìm thấy hoa don" });
@@ -44,17 +62,48 @@ async function getHoaDonById(req, res) {
     }
   }
 
-  async function updateUserDiaChivaThongTinGiaoHang(req, res, next) {
+  async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
     const { userId, diaChiMoi,ghiChu,khuyenmaiId,giohangId,TongTien } = req.body;
     // Tạo một object để lưu trữ các trường cần cập nhật
-    const TrangThai = "Chờ Xác Nhận"
+    const TrangThai = 0
     try {
-        const giohang = await GioHangModel.findById(giohangId);
+        // const giohang = await GioHangModel.findById(giohangId).populate({ path: 'chiTietGioHang.idBienThe', model: 'BienThe' });
+        const giohang = await GioHangModel.findById(giohangId)
+    .populate({
+        path: 'chiTietGioHang.idBienThe',
+        model: 'BienThe',
+        populate: {
+            path: 'KetHopThuocTinh.IDGiaTriThuocTinh',
+            model: 'GiaTriThuocTinh',
+            populate: {
+              path: 'ThuocTinhID',
+              model: 'ThuocTinh'
+          }
+        }
+    }).exec();
       const user = await UserModel.findById(userId);
       if (!user) {
         return 'Người dùng không tồn tại';
       }
       console.log(giohang.chiTietGioHang)
+// Chuyển đổi dữ liệu chiTietGioHang
+const chiTietHoaDon = giohang.chiTietGioHang.map(item => ({
+  BienThe: {
+      sku: item.idBienThe.sku,
+      gia: item.idBienThe.gia,
+      soLuong: item.idBienThe.soLuong,
+      KetHopThuocTinh: item.idBienThe.KetHopThuocTinh.map(ketHop => ({
+          GiaTriThuocTinh: {
+              ThuocTinh: {
+                  TenThuocTinh: ketHop.IDGiaTriThuocTinh.ThuocTinhID.TenThuocTinh
+              },
+              GiaTri: ketHop.IDGiaTriThuocTinh.GiaTri
+          }
+      }))
+  },
+  soLuong: item.soLuong,
+  donGia: item.donGia
+}));
       user.diaChi = diaChiMoi;
       await user.save();
       const newHoaDon = new HoaDonModel({
@@ -62,7 +111,7 @@ async function getHoaDonById(req, res) {
         diaChi:diaChiMoi,
         TrangThai,
         TongTien,
-        chiTietHoaDon : giohang.chiTietGioHang,
+        chiTietHoaDon: chiTietHoaDon,
         GhiChu: ghiChu,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
@@ -192,5 +241,6 @@ module.exports = {
     updateThuocTinh,
     deleteThuocTinh,
     findThuocTinh,
-    updateUserDiaChivaThongTinGiaoHang,
+    createUserDiaChivaThongTinGiaoHang,
+    updateHoaDonThanhToan,
 };

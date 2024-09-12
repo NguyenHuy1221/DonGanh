@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const {convertToVietnamTimezone} = require('../middleware/index');
 const DanhGiaSchema = new Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     sanphamId: { type: mongoose.Schema.Types.ObjectId, ref: "SanPham" },
@@ -16,5 +16,6 @@ const DanhGiaSchema = new Schema({
     NgayTao: { type: Date, default: Date.now },
 });
 
+convertToVietnamTimezone(DanhGiaSchema)
 const DanhGia = mongoose.model('DanhGia', DanhGiaSchema);
 module.exports = DanhGia; 

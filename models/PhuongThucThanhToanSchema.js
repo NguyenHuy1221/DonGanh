@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const QRCode = require("qrcode");
-
+const {convertToVietnamTimezone} = require('../middleware/index');
 const phuongThucThanhToanSchema = new Schema({
   ten: { type: String, required: true },
   loai: {
@@ -28,7 +28,7 @@ phuongThucThanhToanSchema.pre("save", async function (next) {
   }
   next();
 });
-
+convertToVietnamTimezone(phuongThucThanhToanSchema)
 module.exports = mongoose.model(
   "PhuongThucThanhToan",
   phuongThucThanhToanSchema

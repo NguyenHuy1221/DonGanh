@@ -33,22 +33,51 @@ async function getlistHoaDon(req, res, next) {
         res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
     }
 }
-async function getHoaDonById(req, res) {
+async function getHoaDonByUserId(req, res) {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Thiếu thông tin userid" });
+    }
+
+    const hoadon = await HoaDonModel.find({userId:userId}).populate("userId")
+    .populate('khuyenmaiId')
+    .populate('transactionId')
+    // .populate({
+    //   path: 'chiTietHoaDon.BienThe.IDSanPham',
+    //   model: 'SanPham',
+    // })
+    .exec();
+    if (!hoadon) {
+      return res.status(404).json({ message: "Không tìm thấy hoa don" });
+    }
+
+    return res.json(hoadon);
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi lấy thông tin người dùng" });
+  }
+}
+
+async function getHoaDonByHoaDonId(req, res) {
     try {
       const { hoadonId } = req.params;
   
       if (!hoadonId) {
-        return res.status(400).json({ message: "Thiếu thông tin hoadonId" });
+        return res.status(400).json({ message: "Thiếu thông tin userid" });
       }
   
       const hoadon = await HoaDonModel.findById(hoadonId).populate("userId")
       .populate('khuyenmaiId')
       .populate('transactionId')
       // .populate({
-      //   path: 'chiTietHoaDon.idBienThe',
-      //   model: 'BienThe' // Tên model của BienThe
-      // });
-  
+      //   path: 'chiTietHoaDon.BienThe.IDSanPham',
+      //   model: 'SanPham',
+      // })
+      .exec();
       if (!hoadon) {
         return res.status(404).json({ message: "Không tìm thấy hoa don" });
       }
@@ -88,7 +117,9 @@ async function getHoaDonById(req, res) {
       console.log(giohang.chiTietGioHang)
 // Chuyển đổi dữ liệu chiTietGioHang
 const chiTietHoaDon = giohang.chiTietGioHang.map(item => ({
+  
   BienThe: {
+      IDSanPham: item.idBienThe.IDSanPham,
       sku: item.idBienThe.sku,
       gia: item.idBienThe.gia,
       soLuong: item.idBienThe.soLuong,
@@ -111,6 +142,7 @@ const chiTietHoaDon = giohang.chiTietGioHang.map(item => ({
         diaChi:diaChiMoi,
         TrangThai,
         TongTien,
+        khuyenmaiId,
         chiTietHoaDon: chiTietHoaDon,
         GhiChu: ghiChu,
     });
@@ -236,7 +268,8 @@ async function findThuocTinh(req, res, next) {
 
 module.exports = {
     getlistHoaDon,
-    getHoaDonById,
+    getHoaDonByUserId,
+    getHoaDonByHoaDonId,
     createThuocTinh,
     updateThuocTinh,
     deleteThuocTinh,

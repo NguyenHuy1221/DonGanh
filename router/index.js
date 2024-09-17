@@ -1,3 +1,4 @@
+process.env.TZ = 'Asia/Ho_Chi_Minh';
 const express = require("express");
 const apiRoute = express.Router();
 const thuoctinhRouter = require("../router/thuoctinh");
@@ -11,6 +12,7 @@ const bientheRoute = require("../router/bienthe");
 const hoadonRoute = require("../router/hoadon");
 const khuyenmaiRoute = require("../router/khuyenmai");
 const khuyenmaimanageRoute = require("../router/khuyenmai-manage");
+const diachiRoute = require("../router/diachi");
 
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
@@ -82,5 +84,13 @@ apiRoute.use(
     next();
   },
   khuyenmaimanageRoute
+);
+apiRoute.use(
+  "/diachi",
+  (req, res, next) => {
+    console.log("call diachi api router");
+    next();
+  },
+  diachiRoute
 );
 module.exports = apiRoute;

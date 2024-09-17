@@ -11,12 +11,6 @@ const NguoiDungSchema = new Schema({
   ngayTao: { type: Date, default: Date.now },
   ngaySinh: String,
   hoKinhDoanh: { type: Boolean, default: false },
-  diaChi: {
-    tinhThanhPho: String,
-    quanHuyen: String,
-    phuongXa: String,
-    duongThon: String
-  },
   tinhTrang: Number,
   phuongThucThanhToan: [
     { type: Schema.Types.ObjectId, ref: "PhuongThucThanhToan" },

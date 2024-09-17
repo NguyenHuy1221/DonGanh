@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 //việc lưu địa chỉ ở schema hóa đơn nhằm hiểu rỡ đơn đó từng được giao ở vị trí nào
 const {convertToVietnamTimezone} = require('../middleware/index');
+const getCurrentDate = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Đặt giờ, phút, giây và mili giây về 0
+  // Điều chỉnh múi giờ
+  const timezoneOffset = today.getTimezoneOffset() * 60000; // Chuyển đổi phút sang mili giây
+  const localMidnight = new Date(today.getTime() - timezoneOffset);
+  return localMidnight;
+};
 const HoaDonSchema = new Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     khuyenmaiId: { type: mongoose.Schema.Types.ObjectId, ref: "KhuyenMai" },
@@ -15,16 +23,11 @@ const HoaDonSchema = new Schema({
     TrangThai: Number,
     ThanhToan: { type: Boolean, default: false },
     transactionId: { type: mongoose.Schema.Types.ObjectId, ref: "Transaction" },
-    // chiTietHoaDon: [
-    //   {
-    //     idBienThe: { type: mongoose.Schema.Types.ObjectId, ref: "BienThe" },
-    //     soLuong: Number,
-    //     donGia: Number,
-    //   },
-    // ],
     chiTietHoaDon: [
       {
+        
         BienThe: { 
+        IDSanPham: { type: Schema.Types.ObjectId, ref: 'SanPham' },
         sku: String,
         gia: Number,
         soLuong: Number,
@@ -42,7 +45,7 @@ const HoaDonSchema = new Schema({
       },
     ],
     GhiChu: String,
-    NgayTao: { type: Date, default: Date.now },
+    NgayTao: { type: Date, default: getCurrentDate },
 });
 convertToVietnamTimezone(HoaDonSchema)
 const HoaDon = mongoose.model('HoaDon', HoaDonSchema);

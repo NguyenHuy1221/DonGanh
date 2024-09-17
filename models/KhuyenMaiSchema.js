@@ -5,14 +5,14 @@ const {convertToVietnamTimezone} = require('../middleware/index');
 const KhuyenMaiSchema = new Schema({// Giả sử có một schema SanPham
     TenKhuyenMai: String,
     MoTa: String,
-    GiaTriKhuyenMai: String,
-    GioiHanSoLuong: String,
-    GioiHanGiaTriDuocApDung: String,
-    NgayBatDau: { type: Date, default: Date.now },
+    GiaTriKhuyenMai: Number,
+    TongSoLuongDuocTao: Number,
+    GioiHanGiaTriDuocApDung: Number,
+    NgayBatDau: { type: Date},
     NgayKetThuc: Date,
-    soLuong: Number,
+    SoLuongHienTai: Number,
     IDLoaiKhuyenMai: { type: Schema.Types.ObjectId, ref: 'SanPham' },
-    IDDanhMucCon: { type: Schema.Types.ObjectId, ref: 'DanhMuc' },
+    IDDanhMucCon: { type: Schema.Types.ObjectId, ref: 'DanhMuc.DanhMucCon' },
     TrangThai: Number,
     isDeleted: { type: Boolean, default: false } 
 

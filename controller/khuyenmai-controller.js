@@ -4,62 +4,81 @@ require("dotenv").config();
 
 
 //ham lay danh sach thuoc tinh
-async function getlistKhuyenMai(req, res, next) {
+// async function getlistKhuyenMai(req, res, next) {
 
+//     try {
+//         const khuyenmais = await KhuyenMaiModel.find();
+//         res.status(200).json(khuyenmais);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Lỗi khi get list khuyen mai' });
+//     }
+// }
+//trangthai 1 tat ca san pham , trang thai 0 chi 1 san pham
+async function getlistKhuyenMai(req, res, next) {
     try {
-        const khuyenmais = await KhuyenMaiModel.find();
+        const  {IDDanhMucCon}  = req.params;
+
+        // Điều kiện tìm kiếm
+        const conditions = {
+            SoLuongHienTai: { $gt: 0 },
+            $or: [
+                { TrangThai: 0 },
+                { IDDanhMucCon: IDDanhMucCon }
+            ]
+        };
+
+        // Tạo query
+        let query = KhuyenMaiModel.find(conditions);
+        const khuyenmais = await query.exec();
         res.status(200).json(khuyenmais);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
+        res.status(500).json({ message: 'Lỗi khi get list khuyến mãi' });
     }
 }
 
-
-
 async function createKhuyenMai(req, res, next) {
-    const { IDKhuyenMai, TenKhuyenMai, MoTa, GiaTriKhuyenMai, GioiHanSoLuong, GioiHanGiaTriDuocApDung, NgayBatDau, NgayKetThuc, soLuong, IDLoaiKhuyenMai, IDDanhMucCon, TrangThai } = req.body;
-
+    const {TenKhuyenMai, MoTa, GiaTriKhuyenMai, TongSoLuongDuocTao, GioiHanGiaTriDuocApDung, NgayBatDau, NgayKetThuc, SoLuongHienTai, IDLoaiKhuyenMai, IDDanhMucCon, TrangThai } = req.body;
     try {
-        const newKhuyenMai = new KhuyenMai({
-            IDKhuyenMai,
+        const newKhuyenMai = await KhuyenMaiModel.create({
             TenKhuyenMai,
             MoTa,
             GiaTriKhuyenMai,
-            GioiHanSoLuong,
+            TongSoLuongDuocTao,
             GioiHanGiaTriDuocApDung,
             NgayBatDau,
             NgayKetThuc,
-            soLuong,
+            SoLuongHienTai,
             IDLoaiKhuyenMai,
             IDDanhMucCon,
             TrangThai
         });
 
-        const savedKhuyenMai = await newKhuyenMai.save();
-        res.status(201).json(savedKhuyenMai);
+
+        res.status(201).json(newKhuyenMai);
     } catch (error) {
-        next(error);
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi create khuyen mai' });
     }
 }
 
 async function updateKhuyenMai(req, res, next) {
     const { id } = req.params;
-    const { IDKhuyenMai, TenKhuyenMai, MoTa, GiaTriKhuyenMai, GioiHanSoLuong, GioiHanGiaTriDuocApDung, NgayBatDau, NgayKetThuc, soLuong, IDLoaiKhuyenMai, IDDanhMucCon, TrangThai } = req.body;
+    const {  TenKhuyenMai, MoTa, GiaTriKhuyenMai, TongSoLuongDuocTao, GioiHanGiaTriDuocApDung, NgayBatDau, NgayKetThuc, SoLuongHienTai, IDLoaiKhuyenMai, IDDanhMucCon, TrangThai } = req.body;
 
     try {
-        const updatedKhuyenMai = await KhuyenMai.findByIdAndUpdate(
+        const updatedKhuyenMai = await KhuyenMaiModel.findByIdAndUpdate(
             id,
             {
-                IDKhuyenMai,
                 TenKhuyenMai,
                 MoTa,
                 GiaTriKhuyenMai,
-                GioiHanSoLuong,
+                TongSoLuongDuocTao,
                 GioiHanGiaTriDuocApDung,
                 NgayBatDau,
                 NgayKetThuc,
-                soLuong,
+                SoLuongHienTai,
                 IDLoaiKhuyenMai,
                 IDDanhMucCon,
                 TrangThai
@@ -73,14 +92,15 @@ async function updateKhuyenMai(req, res, next) {
 
         res.status(200).json(updatedKhuyenMai);
     } catch (error) {
-        next(error);
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi update khuyen mai' });
     }
 }
 async function deleteKhuyenMai(req, res, next) {
     const { id } = req.params;
 
     try {
-        const deletedKhuyenMai = await KhuyenMai.findByIdAndUpdate(
+        const deletedKhuyenMai = await KhuyenMaiModel.findByIdAndUpdate(
             id,
             { isDeleted: true },
             { new: true }
@@ -92,16 +112,18 @@ async function deleteKhuyenMai(req, res, next) {
 
         res.status(200).json({ message: 'Khuyến mãi đã được đánh dấu là đã xóa' });
     } catch (error) {
-        next(error);
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi xoa khuyen mai' });
     }
 }
 
 async function getActiveKhuyenMai(req, res, next) {
     try {
-        const activeKhuyenMai = await KhuyenMai.find({ isDeleted: false });
+        const activeKhuyenMai = await KhuyenMaiModel.find({ isDeleted: false });
         res.status(200).json(activeKhuyenMai);
     } catch (error) {
-        next(error);
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
     }
 }
 

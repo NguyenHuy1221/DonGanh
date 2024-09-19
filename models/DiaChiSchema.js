@@ -4,7 +4,10 @@ const { convertToVietnamTimezone } = require('../middleware/index');
 
 const DiaChiSchema = new Schema({
     IDUser: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    
     diaChiList: [{
+        Name: { type: String},
+        SoDienThoai: { type: String },
         tinhThanhPho: { type: String},
         quanHuyen: { type: String },
         phuongXa: { type: String },

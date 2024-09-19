@@ -17,7 +17,9 @@ const HoaDonSchema = new Schema({
       tinhThanhPho: String,
       quanHuyen: String,
       phuongXa: String,
-      duongThon: String
+      duongThon: String,
+      Name: { type: String},
+      SoDienThoai: { type: String },
     },
     TongTien: Number,
     TrangThai: Number,

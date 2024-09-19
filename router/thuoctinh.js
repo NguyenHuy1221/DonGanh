@@ -23,7 +23,7 @@ thuoctinhRouter.post('/createThuocTinh', async function (req, res) {
 thuoctinhRouter.put('/updateThuocTinh', async function (req, res) {
     return updateThuocTinh(req, res);
 })
-thuoctinhRouter.delete('/deleteThuocTinh', async function (req, res) {
+thuoctinhRouter.delete('/deleteThuocTinh/:ThuocTinhID', async function (req, res) {
     return deleteThuocTinh(req, res);
 })
 

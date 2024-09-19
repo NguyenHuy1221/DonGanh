@@ -11,7 +11,7 @@ const NguoiDungSchema = new Schema({
   ngayTao: { type: Date, default: Date.now },
   ngaySinh: String,
   hoKinhDoanh: { type: Boolean, default: false },
-  tinhTrang: Number,
+  tinhTrang: {type :Number, default :0},
   phuongThucThanhToan: [
     { type: Schema.Types.ObjectId, ref: "PhuongThucThanhToan" },
   ],
@@ -21,6 +21,8 @@ const NguoiDungSchema = new Schema({
   isVerified: { type: Boolean, default: false },
   googleId: { type: String, unique: true, sparse: true },
   facebookId: { type: String, unique: true, sparse: true },
+},{
+  timeseries:true
 });
 convertToVietnamTimezone(NguoiDungSchema)
 module.exports = mongoose.model("User", NguoiDungSchema);

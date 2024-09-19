@@ -73,7 +73,7 @@ async function deleteThuocTinh(req, res, next) {
     const { ThuocTinhID } = req.params;
 
     try {
-        const deletedThuocTinh = await ThuocTinhModel.findOneAndDelete( ThuocTinhID );
+        const deletedThuocTinh = await ThuocTinhModel.findByIdAndDelete(ThuocTinhID);
 
         if (!deletedThuocTinh) {
             return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });

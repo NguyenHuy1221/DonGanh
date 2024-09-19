@@ -1,6 +1,15 @@
 const express = require("express");
 const userRoute = express.Router();
 const UserModel = require("../models/NguoiDungSchema");
+const bodyParser = require('body-parser');
+
+userRoute.use(bodyParser.json());
+userRoute.use(bodyParser.urlencoded({extended:true}));
+userRoute.use(express.static('public'));
+const path = require('path')
+const multer =require('multer');
+
+
 
 const {
   RegisterUser,

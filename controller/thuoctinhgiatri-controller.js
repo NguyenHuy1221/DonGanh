@@ -6,7 +6,7 @@ require("dotenv").config();
 async function getlistThuocTinhGiaTri(req, res, next) {
 
     try {
-        const thuocTinhs = await ThuocTinhGiaTriModel.find();
+        const thuocTinhs = await ThuocTinhGiaTriModel.find().populate('ThuocTinhID');
         res.status(200).json(thuocTinhs);
     } catch (error) {
         console.error(error);
@@ -96,7 +96,7 @@ async function findThuocTinhGiaTri(req, res, next) {
     }
 
     try {
-        const thuocTinhs = await ThuocTinhGiaTriModel.find(query);
+        const thuocTinhs = await ThuocTinhGiaTriModel.find(query).populate('ThuocTinhID');;
         res.status(200).json(thuocTinhs);
     } catch (error) {
         console.error(error);

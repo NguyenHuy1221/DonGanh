@@ -48,11 +48,11 @@ async function createThuocTinh(req, res, next) {
   
    
 async function updateThuocTinh(req, res, next) {
-    // const { ThuocTinhID } = req.params;
-    const { TenThuocTinh,ThuocTinhID } = req.body;
+     const { ThuocTinhID } = req.params;
+    const { TenThuocTinh } = req.body;
 
     try {
-        const updatedThuocTinh = await ThuocTinhModel.findOneAndUpdate(
+        const updatedThuocTinh = await ThuocTinhModel.findByIdAndUpdate(
             { ThuocTinhID },
             { TenThuocTinh },
             { new: true }

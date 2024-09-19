@@ -22,7 +22,7 @@ const NguoiDungSchema = new Schema({
   googleId: { type: String, unique: true, sparse: true },
   facebookId: { type: String, unique: true, sparse: true },
 },{
-  timeseries:true
+  timestamps:true
 });
 convertToVietnamTimezone(NguoiDungSchema)
 module.exports = mongoose.model("User", NguoiDungSchema);

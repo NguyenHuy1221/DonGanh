@@ -1,5 +1,7 @@
 const DanhMucModel = require("../models/DanhMucSchema");
-
+//danh de delete anh da update o danh mục
+const fs = require('fs');
+const path = require('path');
 require("dotenv").config();
 const multer = require("multer");
 
@@ -187,7 +189,7 @@ async function getlistDanhMuc(req, res, next) {
 
 
 
-async function createDanhMuc(req, res, next) {
+async function createDanhMucCha(req, res, next) {
     try {
       upload.single('file')(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
@@ -212,7 +214,8 @@ async function createDanhMuc(req, res, next) {
           const newDanhMuc = await DanhMucModel.create({
             IDDanhMuc,
             TenDanhMuc,
-            AnhDanhMuc: newPath
+            AnhDanhMuc: newPath,
+            DanhMucCon: []
           });
   
           res.status(201).json(newDanhMuc);
@@ -227,121 +230,172 @@ async function createDanhMuc(req, res, next) {
       res.status(500).json({ message: 'Lỗi server', error });
     }
   }
-  async function updateDanhMuc(req, res, next) {
-    // const { ThuocTinhID } = req.params;
-    const { TenThuocTinh,ThuocTinhID } = req.body;
-
+  async function updateDanhMucCha(req, res, next) {
     try {
-        const updatedThuocTinh = await ThuocTinhModel.findOneAndUpdate(
-            { ThuocTinhID },
-            { TenThuocTinh },
-            { new: true }
-        );
-
-        if (!updatedThuocTinh) {
-            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+      upload.single('file')(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+          return res.status(500).json({ error: err });
+        } else if (err) {
+          return res.status(500).json({ error: err });
         }
-
-        res.status(200).json(updatedThuocTinh);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi cập nhật thuộc tính' });
-    }
-}
-
-
-// async function createDanhMuc(req, res, next) {
-//     try {
-
-
-//             const { IDDanhMuc, TenDanhMuc,newPath,DanhMucCon } = req.body;
-
-//             // Kiểm tra dữ liệu đầu vào
-//             if (!IDDanhMuc || !TenDanhMuc) {
-//                 return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
-//             }
-
-
-//             // Tạo đối tượng danh mục
-//             const newDanhMuc = await DanhMucModel.create({
-//                 IDDanhMuc,
-//                 TenDanhMuc,
-//                 AnhDanhMuc: newPath,
-//                 DanhMucCon : DanhMucCon
-//             });
-
-//             res.status(201).json(newDanhMuc);
-      
-//     } catch (error) {
-//         console.error('Lỗi khi tạo danh mục:', error);
-//         res.status(500).json({ message: 'Lỗi server', error });
-//     }
-// }
-async function updateThuocTinh(req, res, next) {
-    // const { ThuocTinhID } = req.params;
-    const { TenThuocTinh,ThuocTinhID } = req.body;
-
-    try {
-        const updatedThuocTinh = await ThuocTinhModel.findOneAndUpdate(
-            { ThuocTinhID },
-            { TenThuocTinh },
-            { new: true }
-        );
-
-        if (!updatedThuocTinh) {
-            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+  
+        const { id } = req.params;
+        const { IDDanhMuc, TenDanhMuc } = req.body;
+        let updateData = { IDDanhMuc, TenDanhMuc };
+  
+        if (req.file) {
+          const newPath = req.file.path.replace("public", process.env.URL_IMAGE);
+          updateData.AnhDanhMuc = newPath;
+  
+          // Xóa ảnh cũ
+          const danhMuc = await DanhMucModel.findById(id);
+          if (danhMuc && danhMuc.AnhDanhMuc) {
+            const oldImagePath = path.join(__dirname, '..', 'public', danhMuc.AnhDanhMuc.replace(process.env.URL_IMAGE, ''));
+            fs.unlink(oldImagePath, (err) => {
+              if (err) {
+                console.error('Lỗi khi xóa ảnh cũ:', err);
+              }
+            });
+          }
         }
-
-        res.status(200).json(updatedThuocTinh);
+  
+        const updatedDanhMucCha = await DanhMucModel.findByIdAndUpdate(id, updateData, { new: true });
+        res.status(200).json(updatedDanhMucCha);
+      });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi cập nhật thuộc tính' });
+      console.error('Lỗi khi sửa danh mục cha:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
     }
-}
-
-async function deleteThuocTinh(req, res, next) {
-    const { ThuocTinhID } = req.params;
-
+  }
+  async function deleteDanhMucCha(req, res, next) {
     try {
-        const deletedThuocTinh = await ThuocTinhModel.findOneAndDelete( ThuocTinhID );
+      const { id } = req.params;
+      const danhMucCha = await DanhMucModel.findByIdAndDelete(id);
+  
+      if (!danhMucCha) {
+        return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
+      }
+  
+      res.status(200).json({ message: 'Xóa danh mục cha thành công' });
+    } catch (error) {
+      console.error('Lỗi khi xóa danh mục cha:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
+    }
+  }
 
-        if (!deletedThuocTinh) {
-            return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
+
+
+async function createDanhMucCon(req, res, next) {
+    try {
+        const { IDDanhMucCha } = req.params;
+      const { IDDanhMucCon, TenDanhMucCon, MieuTa } = req.body;
+      if (!IDDanhMucCha || !IDDanhMucCon || !TenDanhMucCon) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+      }
+  
+      try {
+        const danhMucCha = await DanhMucModel.findById(IDDanhMucCha);
+        if (!danhMucCha) {
+          return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
         }
-
-        res.status(200).json({ message: 'Xóa thuộc tính thành công' });
+  
+        const newDanhMucCon = {
+          IDDanhMucCon,
+          TenDanhMucCon,
+          MieuTa
+        };
+  
+        danhMucCha.DanhMucCon.push(newDanhMucCon);
+        await danhMucCha.save();
+  
+        res.status(201).json(danhMucCha);
+      } catch (error) {
+        console.error('Lỗi khi tạo danh mục con:', error);
+        res.status(500).json({ message: 'Lỗi server', error });
+      }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi xóa thuộc tính' });
+      console.error('Lỗi chung:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
     }
-}
-
-async function findThuocTinh(req, res, next) {
-    const { ThuocTinhID, TenThuocTinh } = req.body;
-
-    let query = {};
-    if (ThuocTinhID) {
-        query.ThuocTinhID = ThuocTinhID;
-    }
-    if (TenThuocTinh) {
-        query.TenThuocTinh = { $regex: TenThuocTinh, $options: 'i' }; // Tìm kiếm không phân biệt hoa thường
-    }
-
+  }
+  
+  
+async function updateDanhMucCon(req, res, next) {
     try {
-        const thuocTinhs = await ThuocTinhModel.find(query);
-        res.status(200).json(thuocTinhs);
+        const { IDDanhMucCha,IDDanhMucCon } = req.params;
+      const {  TenDanhMucCon, MieuTa } = req.body;
+      if (!IDDanhMucCha || !IDDanhMucCon) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+      }
+  
+      try {
+        const danhMucCha = await DanhMucModel.findById(IDDanhMucCha);
+        if (!danhMucCha) {
+          return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
+        }
+  
+        const danhMucCon = danhMucCha.DanhMucCon.id(IDDanhMucCon);
+        if (!danhMucCon) {
+          return res.status(404).json({ message: 'Danh mục con không tồn tại' });
+        }
+        danhMucCon.IDDanhMucCon = IDDanhMucCon;
+        danhMucCon.TenDanhMucCon = TenDanhMucCon;
+        danhMucCon.MieuTa = MieuTa;
+  
+        await danhMucCha.save();
+  
+        res.status(200).json(danhMucCha);
+      } catch (error) {
+        console.error('Lỗi khi sửa danh mục con:', error);
+        res.status(500).json({ message: 'Lỗi server', error });
+      }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
+      console.error('Lỗi chung:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
     }
-}
+  }
 
 
+
+  async function deleteDanhMucCon(req, res, next) {
+    try {
+        const { IDDanhMucCha,IDDanhMucCon } = req.params;
+      if (!IDDanhMucCha || !IDDanhMucCon) {
+        return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+      }
+  
+      try {
+        const danhMucCha = await DanhMucModel.findById(IDDanhMucCha);
+        if (!danhMucCha) {
+          return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
+        }
+  
+        const danhMucCon = danhMucCha.DanhMucCon.id(IDDanhMucCon);
+        if (!danhMucCon) {
+          return res.status(404).json({ message: 'Danh mục con không tồn tại' });
+        }
+  
+        danhMucCon.remove();
+        await danhMucCha.save();
+  
+        res.status(200).json({ message: 'Xóa danh mục con thành công' });
+      } catch (error) {
+        console.error('Lỗi khi xóa danh mục con:', error);
+        res.status(500).json({ message: 'Lỗi server', error });
+      }
+    } catch (error) {
+      console.error('Lỗi chung:', error);
+      res.status(500).json({ message: 'Lỗi server', error });
+    }
+  }
+  
 
 module.exports = {
     getlistDanhMuc,
-    createDanhMuc,
-    updateThuocTinh,
-    deleteThuocTinh,
-    findThuocTinh,
+    createDanhMucCha,
+    updateDanhMucCha,
+    deleteDanhMucCha,
+    createDanhMucCon,
+    updateDanhMucCon,
+    deleteDanhMucCon,
 };

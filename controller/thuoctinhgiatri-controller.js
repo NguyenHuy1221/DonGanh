@@ -90,13 +90,9 @@ async function deleteThuocTinhGiaTri(req, res, next) {
 async function findThuocTinhGiaTri(req, res, next) {
     const {ThuocTinhID  } = req.params;
 
-    let query = {};
-    if (ThuocTinhID) {
-        query.ThuocTinhID = ThuocTinhID;
-    }
 
     try {
-        const thuocTinhs = await ThuocTinhGiaTriModel.find(query).populate('ThuocTinhID');;
+        const thuocTinhs = await ThuocTinhGiaTriModel.find({ThuocTinhID:ThuocTinhID}).populate('ThuocTinhID');;
         res.status(200).json(thuocTinhs);
     } catch (error) {
         console.error(error);

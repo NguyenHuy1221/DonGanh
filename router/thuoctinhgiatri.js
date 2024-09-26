@@ -12,7 +12,7 @@ const {
     })
     
 
-    thuoctinhgiatriRouter.get('/findThuocTinhGiaTri', async function (req, res) {
+    thuoctinhgiatriRouter.get('/findThuocTinhGiaTri/:ThuocTinhID', async function (req, res) {
     return findThuocTinhGiaTri(req, res);
 })
 

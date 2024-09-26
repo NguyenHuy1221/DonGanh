@@ -1,30 +1,48 @@
 const express = require('express');
-const thuoctinhRouter = express.Router();
-const {createDanhMuc,
+const danhmucRouter = express.Router();
+const {
     getlistDanhMuc,
+    createDanhMucCha,
+    updateDanhMucCha,
+    deleteDanhMucCha,
+    createDanhMucCon,
+    updateDanhMucCon,
+    deleteDanhMucCon,
     } = require("../controller/danhmuc-controller")
 
-    thuoctinhRouter.get('/getlistDanhMuc', async function (req, res) {
+    danhmucRouter.get('/getlistDanhMuc', async function (req, res) {
         return getlistDanhMuc(req, res);
     })
     
-
-thuoctinhRouter.get('/findThuocTinh', async function (req, res) {
-    return findThuocTinh(req, res);
+//danh muc cha
+danhmucRouter.post('/createDanhMucCha', async function (req, res) {
+    return createDanhMucCha(req, res);
 })
 
-thuoctinhRouter.post('/createDanhMuc', async function (req, res) {
-    return createDanhMuc(req, res);
+danhmucRouter.put('/updateDanhMucCha/:id', async function (req, res) {
+    return updateDanhMucCha(req, res);
+})
+danhmucRouter.delete('/deleteDanhMucCha/:id', async function (req, res) {
+    return deleteDanhMucCha(req, res);
 })
 
-thuoctinhRouter.put('/updateThuocTinh', async function (req, res) {
-    return updateThuocTinh(req, res);
+//danh muc con
+// danhmucRouter.get('/updateThuocTinh:ThuocTinhID', async function (req, res) {
+//     return updateThuocTinh(req, res);
+// })
+
+
+danhmucRouter.post('/createDanhMucCon/:IDDanhMucCha', async function (req, res) {
+    return createDanhMucCon(req, res);
 })
-thuoctinhRouter.delete('/deleteThuocTinh', async function (req, res) {
-    return deleteThuocTinh(req, res);
+
+danhmucRouter.put('/updateDanhMucCon/:IDDanhMucCha/:IDDanhMucCon', async function (req, res) {
+    return updateDanhMucCon(req, res);
+})
+danhmucRouter.delete('/deleteDanhMucCon/:IDDanhMucCha/:IDDanhMucCon', async function (req, res) {
+    return deleteDanhMucCon(req, res);
 })
 
 
 
-
-module.exports = thuoctinhRouter;
+module.exports = danhmucRouter;

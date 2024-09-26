@@ -1,8 +1,10 @@
 const UserModel = require("../models/NguoiDungSchema");
 const transporter = require("./mailer");
+const ChatModel = require('../models/MessageSchema')
 require("dotenv").config();
 const { hashPassword, comparePassword, generateToken } = require("../untils");
 const crypto = require("crypto");
+
 
 async function RegisterUser(req, res) {
   const { tenNguoiDung, gmail, matKhau } = req.body;
@@ -351,6 +353,20 @@ async function updateUserDiaChi(req, res, next) {
     res.status(500).json({ message: "Lỗi khi cập nhật người dùng" });
   }
 }
+async function saveChat(req,res, next){
+  try{
+    new ChatModel({
+        sender_id:req.body.sender_id,
+        receiver_id:req.body.receiver_id,
+        message:req.body.message,
+    }),
+
+    await ChatModel.save;
+    res.status(200).send({success:true,msg:'chat inserted'})
+  }catch(error){
+    res.status(400).send({success:false ,msg:error.message})
+  }
+}
 module.exports = {
   RegisterUser,
   VerifyOTP,
@@ -362,4 +378,5 @@ module.exports = {
   updateUser,
   updateUserDiaChi,
   ResendOTP,
+  saveChat
 };

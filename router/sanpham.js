@@ -114,6 +114,9 @@ sanphamRouter.get("/findSanPham/:IDDanhMuc", async function (req, res) {
   return findSanPhamByDanhMuc(req, res);
 });
 
+
+
+//xap xep san pham
 sanphamRouter.get("/sapXepSanPhamTheoGia", async function (req, res) {
   return sapXepSanPhamTheoGia(req, res);
 });

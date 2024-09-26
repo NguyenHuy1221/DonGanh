@@ -9,8 +9,17 @@ userRoute.use(express.static('public'));
 const path = require('path')
 const multer =require('multer');
 
+const storage = multer.diskStorage({
+  destination:function(req,file,cb){
+    cb(null, path.join(__dirname,'../public/images'));
+  },
+  filename:function(req, file,cb){
+    const name = Date.now()+'-'+file.originalname;
+    cb(null,name)
+  }
+})
 
-
+const upload = multer({storage:storage})
 const {
   RegisterUser,
   loginUser,
@@ -22,6 +31,7 @@ const {
   updateUser,
   updateUserDiaChi,
   ResendOTP,
+  saveChat,
 } = require("../controller/user-controller");
 
 // show user
@@ -71,5 +81,9 @@ userRoute.put("/updateUser", async function (req, res) {
 userRoute.put("/updateUserDiaChi", async function (req, res) {
   return updateUserDiaChi(req, res);
 });
+userRoute.post("/saveChat", async function (req, res) {
+  return saveChat(req, res);
+});
+
 
 module.exports = userRoute;

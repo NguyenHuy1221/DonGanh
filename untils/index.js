@@ -1,13 +1,13 @@
 const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
-const multer = require("multer");
-const { uid } = require("uid");
+
 
 async function hashPassword(plaintextPassword) {
   const hash = await bcrypt.hash(plaintextPassword, 10);
   return hash;
 }
-
+const multer = require("multer");
+const { uid } = require("uid");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/uploads/"); //hỉnh ảnh sẽ chưa trong folder uploads

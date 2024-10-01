@@ -7,20 +7,16 @@ const MessageModel = require('../models/MessageSchema')
 const ConversationModel = require('../models/ConversationSchema')
 const getConversation = require('../helpers/getConversation')
 
-const app = express()
+// const app = express()
 
 /***socket connection */
-const server = http.createServer(app)
-const io = new Server(server,{
-    cors : {
-        origin : process.env.FRONTEND_URL,
-        credentials : true
-    }
-})
-
-/***
- * socket running at http://localhost:8080/
- */
+// const server = http.createServer(app)
+// const io = new Server(server,{
+//     cors : {
+//         origin : process.env.BASE_URL_SOCKET,
+//         credentials : true
+//     }
+// })
 
 //online user
 const onlineUser = new Set()

@@ -12,52 +12,59 @@ app.use("/api", apiRoute);
 app.use("/apiBaokim", apiBaokim);
 const path = require("path");
 
+//chat ong an do thu 3
+// const socket = require("./socket/index.js")
+// app.use("/chat", (req, res) => {
+//   res.send("API endpoint for chat service");
+// });
+
+
 //chat
 //ong an do dau tien
-const UserModel = require('./models/NguoiDungSchema.js')
-const http = require('http').Server(app);
-const io = require('socket.io')(http)
-var usp = io.of('/user-namespace')
-usp.on('connection',async function(Socket){
-  console.log('User Connected')
+// const UserModel = require('./models/NguoiDungSchema.js')
+// const http = require('http').Server(app);
+// const io = require('socket.io')(http)
+// var usp = io.of('/user-namespace')
+// usp.on('connection',async function(Socket){
+//   console.log('User Connected')
 
-  var userId = Socket.handshake.auth.token;
+//   var userId = Socket.handshake.auth.token;
 
-  try {
-    await UserModel.findByIdAndUpdate({_id: userId}, {$set: {tinhTrang: 1}});
-    // user broadcast online status
-    Socket.broadcast.emit('getOnlineUser', {user_id: userId});
-  } catch (error) {
-    console.error('Error updating user status:', error);
-  }
+//   try {
+//     await UserModel.findByIdAndUpdate({_id: userId}, {$set: {tinhTrang: 1}});
+//     // user broadcast online status
+//     Socket.broadcast.emit('getOnlineUser', {user_id: userId});
+//   } catch (error) {
+//     console.error('Error updating user status:', error);
+//   }
 
-  Socket.on('disconnect',async function(){
-    console.log('user Disconnected');
+//   Socket.on('disconnect',async function(){
+//     console.log('user Disconnected');
 
-    var userId = Socket.handshake.auth.token;
-    try {
-      await UserModel.findByIdAndUpdate({_id: userId}, {$set: {tinhTrang: 0}});
-      // user broadcast offline status
-      Socket.broadcast.emit('getOfflineUser', {user_id: userId});
-    } catch (error) {
-      console.error('Error updating user status:', error);
-    }
-  })
-});
+//     var userId = Socket.handshake.auth.token;
+//     try {
+//       await UserModel.findByIdAndUpdate({_id: userId}, {$set: {tinhTrang: 0}});
+//       // user broadcast offline status
+//       Socket.broadcast.emit('getOfflineUser', {user_id: userId});
+//     } catch (error) {
+//       console.error('Error updating user status:', error);
+//     }
+//   })
+// });
 
 
-// Thư mục chứa hình ảnh
-const publicPath = path.join(__dirname, "public");
-app.use(express.static(publicPath));
+// // Thư mục chứa hình ảnh
+// const publicPath = path.join(__dirname, "public");
+// app.use(express.static(publicPath));
 
-app.use(
-  session({
-    secret: process.env.SECRET_KEY,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false },
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.SECRET_KEY,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: { secure: false },
+//   })
+// );
 
 app.use(passport.initialize());
 app.use(passport.session());

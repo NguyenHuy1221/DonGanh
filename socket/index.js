@@ -1,22 +1,30 @@
 const express = require('express')
+const routerSocket = express.Router();
 const { Server } = require('socket.io')
 const http  = require('http')
 const getUserDetailsFromToken = require('../helpers/getUserDetailsFromToken')
-const UserModel = require('../models/UserModel')
+const UserModel = require('../models/NguoiDungSchema')
 const MessageModel = require('../models/MessageSchema')
 const ConversationModel = require('../models/ConversationSchema')
-const getConversation = require('../helpers/getConversation')
+const getConversation = require('../helpers/getUserDetailsFromToken')
+const socket = require('../socket/index');
 
-// const app = express()
+// Điểm truy cập chính của socket
+// routerSocket.use('/chat', (req, res) => {
+//     res.send("Socket service is active");
+// });
+
+
+ const app = express()
 
 /***socket connection */
-// const server = http.createServer(app)
-// const io = new Server(server,{
-//     cors : {
-//         origin : process.env.BASE_URL_SOCKET,
-//         credentials : true
-//     }
-// })
+const server = http.createServer(app)
+const io = new Server(server,{
+    cors : {
+        origin : process.env.BASE_URL_SOCKET,
+        credentials : true
+    }
+})
 
 //online user
 const onlineUser = new Set()
@@ -155,7 +163,4 @@ io.on('connection',async(socket)=>{
     })
 })
 
-module.exports = {
-    app,
-    server
-}
+module.exports = routerSocket;

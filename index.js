@@ -13,10 +13,8 @@ app.use("/apiBaokim", apiBaokim);
 const path = require("path");
 
 //chat ong an do thu 3
-// const socket = require("./socket/index.js")
-// app.use("/chat", (req, res) => {
-//   res.send("API endpoint for chat service");
-// });
+const socketRouter = require("./socket/index.js")
+app.use('/socket', socketRouter);
 
 
 //chat

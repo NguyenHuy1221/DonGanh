@@ -3,7 +3,8 @@ const { Server } = require('socket.io')
 const http  = require('http')
 const getUserDetailsFromToken = require('../helpers/getUserDetailsFromToken')
 const UserModel = require('../models/UserModel')
-const { ConversationModel,MessageModel } = require('../models/ConversationModel')
+const MessageModel = require('../models/MessageSchema')
+const ConversationModel = require('../models/ConversationSchema')
 const getConversation = require('../helpers/getConversation')
 
 const app = express()
@@ -44,9 +45,9 @@ io.on('connection',async(socket)=>{
         
         const payload = {
             _id : userDetails?._id,
-            name : userDetails?.name,
-            email : userDetails?.email,
-            profile_pic : userDetails?.profile_pic,
+            name : userDetails?.tenNguoiDung,
+            email : userDetails?.gmail,
+            profile_pic : userDetails?.anhDaiDien,
             online : onlineUser.has(userId)
         }
         socket.emit('message-user',payload)

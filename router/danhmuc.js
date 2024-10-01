@@ -8,6 +8,7 @@ const {
     createDanhMucCon,
     updateDanhMucCon,
     deleteDanhMucCon,
+    getListDanhMucCon,
     } = require("../controller/danhmuc-controller")
 
     danhmucRouter.get('/getlistDanhMuc', async function (req, res) {
@@ -27,9 +28,9 @@ danhmucRouter.delete('/deleteDanhMucCha/:id', async function (req, res) {
 })
 
 //danh muc con
-// danhmucRouter.get('/updateThuocTinh:ThuocTinhID', async function (req, res) {
-//     return updateThuocTinh(req, res);
-// })
+danhmucRouter.get('/getListDanhMucCon/:IDDanhMucCha', async function (req, res) {
+    return getListDanhMucCon(req, res);
+})
 
 
 danhmucRouter.post('/createDanhMucCon/:IDDanhMucCha', async function (req, res) {

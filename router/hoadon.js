@@ -9,7 +9,7 @@ const {getlistHoaDon,
 
 hoadonRouter.get('/getlistHoaDon', async function (req, res) {
         return getlistHoaDon(req, res);
-    })
+})
     
 
 hoadonRouter.get("/getHoaDonByUserId/:userId", function (req, res) {

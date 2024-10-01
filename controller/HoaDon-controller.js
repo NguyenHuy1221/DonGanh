@@ -1,6 +1,7 @@
 const HoaDonModel = require("../models/HoaDonSchema");
 const GioHangModel = require("../models/GioHangSchema")
 const UserModel = require("../models/NguoiDungSchema")
+const moment = require('moment-timezone');
 require("dotenv").config();
 // qr
 // const PayOS = require('@payos/node')
@@ -91,8 +92,13 @@ async function getHoaDonByHoaDonId(req, res) {
     }
   }
 
-  async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
-    const { userId, diaChiMoi,ghiChu,khuyenmaiId,giohangId,TongTien } = req.body;
+
+
+
+
+async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
+    const { userId, diaChiMoi,ghiChu,khuyenmaiId,giohangId,TongTien,transactionId } = req.body;
+const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').format('YYYYMMDDHHmmss');
     // Tạo một object để lưu trữ các trường cần cập nhật
     const TrangThai = 0
     try {
@@ -111,6 +117,7 @@ async function getHoaDonByHoaDonId(req, res) {
         }
     }).exec();
       const user = await UserModel.findById(userId);
+      const orderId = `${user.tenNguoiDung}-${vietnamTime}`;
       if (!user) {
         return 'Người dùng không tồn tại';
       }
@@ -135,25 +142,62 @@ const chiTietHoaDon = giohang.chiTietGioHang.map(item => ({
   soLuong: item.soLuong,
   donGia: item.donGia
 }));
-      user.diaChi = diaChiMoi;
-      await user.save();
+      // user.diaChi = diaChiMoi;
+      // await user.save();
       const newHoaDon = new HoaDonModel({
         userId,
+        orderId: orderId,
         diaChi:diaChiMoi,
         TrangThai,
         TongTien,
         khuyenmaiId,
+        transactionId : transactionId,
         chiTietHoaDon: chiTietHoaDon,
         GhiChu: ghiChu,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
     const savedHoaDon = await newHoaDon.save();
+
+
+    const orderData = {
+      mrc_order_id: orderId,
+      total_amount: TongTien,
+      description: ghiChu,
+      url_success: "https://baokim.vn/",
+      merchant_id: parseInt(process.env.MERCHANT_ID, 10),
+      url_detail: "https://baokim.vn/",
+      lang: "en",
+      bpm_id: transactionId,
+      webhooks: "https://baokim.vn/",
+      customer_email: user.gmail,
+      customer_phone: user.soDienThoai,
+      customer_name: user.tenNguoiDung,
+      customer_address: diaChiMoi,
+      items: JSON.stringify({}),
+      extension: {
+        items: chiTietHoaDon.map(item => ({
+          item_id: item.BienThe.IDSanPham,
+          item_code: item.BienThe.sku,
+          item_name: item.BienThe.TenSanPham,
+          price_amount: item.BienThe.gia,
+          quantity: item.soLuong,
+          url: process.env.BASE_URL + item.BienThe.IDSanPham,
+        })),
+      },
+    };
+
+    const orderResponse = await createOrder(orderData);
+
+
+
       res.status(200).json(savedHoaDon);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Lỗi khi Tạo Đơn Hàng' });
     }
   }
+
+
 async function updateHoaDonThanhToan(req, res, next) {
     const { hoadonId, transactionId } = req.body;
   

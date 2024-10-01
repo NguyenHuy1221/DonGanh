@@ -10,7 +10,7 @@ const multer = require("multer");
 async function getlistDanhMuc(req, res, next) {
 
     try {
-        const DanhMucs = await DanhMucModel.find();
+        const DanhMucs = await DanhMucModel.find().select('-DanhMucCon');
         res.status(200).json(DanhMucs);
     } catch (error) {
         console.error(error);
@@ -284,6 +284,21 @@ async function createDanhMucCha(req, res, next) {
   }
 
 
+  async function getListDanhMucCon(req, res, next) {
+    try {
+        const { IDDanhMucCha } = req.params;
+        console.log(IDDanhMucCha)
+        const danhMuc = await DanhMucModel.findById(IDDanhMucCha).select('DanhMucCon');
+        if (!danhMuc) {
+            return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
+        }
+        res.status(200).json(danhMuc.DanhMucCon);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi tìm kiếm danh mục con' });
+    }
+}
+
 
 async function createDanhMucCon(req, res, next) {
     try {
@@ -323,7 +338,7 @@ async function createDanhMucCon(req, res, next) {
 async function updateDanhMucCon(req, res, next) {
     try {
         const { IDDanhMucCha,IDDanhMucCon } = req.params;
-      const {  TenDanhMucCon, MieuTa } = req.body;
+      const {  TenDanhMucCon, MieuTa,IDDanhMucContudat } = req.body;
       if (!IDDanhMucCha || !IDDanhMucCon) {
         return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
       }
@@ -338,7 +353,7 @@ async function updateDanhMucCon(req, res, next) {
         if (!danhMucCon) {
           return res.status(404).json({ message: 'Danh mục con không tồn tại' });
         }
-        danhMucCon.IDDanhMucCon = IDDanhMucCon;
+        danhMucCon.IDDanhMucCon = IDDanhMucContudat;
         danhMucCon.TenDanhMucCon = TenDanhMucCon;
         danhMucCon.MieuTa = MieuTa;
   
@@ -398,4 +413,5 @@ module.exports = {
     createDanhMucCon,
     updateDanhMucCon,
     deleteDanhMucCon,
+    getListDanhMucCon,
 };

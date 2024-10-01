@@ -3,155 +3,169 @@ const apiBaokim = express.Router();
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-
+const crypto = require("crypto")
 
 const { refreshToken } = require('../jwt/index');
 
-
-const API_URL = 'https://dev-api.baokim.vn/payment/api/v5/bpm/list';
 async function getPaymentMethods(req, res) {
   const token = refreshToken();
   try {
-      const response = await axios.get(API_URL, {
-          headers: {
-              Authorization: `Bearer ${token}`
+      const response = await axios.get(process.env.API_URL_PaymentMethods, {
+          params: {
+              jwt: token
           }
       });
       res.status(200).json(response.data);
   } catch (error) {
       console.error('Error fetching payment methods:', error);
-      res.status(500).json({ message: 'Error fetching payment methods', error: error.message,token });
+      res.status(500).json({ message: 'Error fetching payment methods', error: error.message });
   }
 }
 
-
-async function createOrder(req, res, next) {
+// hàm này sẽ trở thành hàm phụ nằm bên trong hàm createUserDiaChivaThongTinGiaoHang ở hóa đơn controller.
+async function createOrder(orderData) {
   try {
     // Tách riêng việc tạo token
     const token = refreshToken();
-
-    const orderData = {
-      mrc_order_id: "string", 
-      total_amount: 200000,
-      description: "test",
-      url_success: "https://baokim.vn/",
-      merchant_id: 40002, 
-      url_detail: "https://baokim.vn/",
-      lang: "en",
-      bpm_id: 128,
-      webhooks: "https://baokim.vn/",
-      customer_email: "test@gmail.vn",
-      customer_phone: "0888888888",
-      customer_name: "Nguyen Van A",
-      customer_address: "102 Thai Thinh",
-      payment_info: {
-        token,
-      },
-      items: {}, 
-      extension: {
-        items: [
-          {
-            item_id: "abc123",
-            item_code: "ABC123",
-            item_name: "tủ lạnh",
-            price_amount: 10000000,
-            quantity: 3,
-            url: "http://baokim.vn/tu-lanh/abc123",
-          },
-        ],
-      },
-    };
-
-    const response = await axios.post('https://dev-api.baokim.vn/payment/api/v5/order/send', orderData, {
+    const response = await axios.post(process.env.API_URL_createOrder, orderData, {
+      params: {
+        jwt: token
+    },
       headers: {
-        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
-
-    res.status(201).json(response.data);
+    return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
     let errorMessage = 'Error creating order';
     if (error.response) {
       errorMessage = error.response.data.message || error.response.statusText;
     }
-    res.status(error.response && error.response.status ? error.response.status : 500).json({
-      message: errorMessage,
-    });
+    throw new Error(errorMessage);
   }
 }
+
+async function getCheckOrder(req, res) {
+  const token = refreshToken();
+  try {
+      const response = await axios.get(process.env.API_URL_getCheckOrder, {
+          params: {
+              jwt: token,
+              id: 177636	,
+              mrc_order_id :"Bc203412",
+          }
+      });
+      res.status(200).json(response.data);
+  } catch (error) {
+      console.error('Error  check Order methods:', error);
+      res.status(500).json({ message: 'Error  check Order methods', error: error.message });
+  }
+}
+
+
+async function deleteCannelOrder(req, res) {
+  const token = refreshToken();
+  const cannel = {
+    id : 177607
+  }
+  // const id = 177607;
+  try {
+      const response = await axios.post(process.env.API_URL_deleteCannelOrder,cannel, {
+          params: {
+              jwt: token,
+          },
+          headers: {
+            'Content-Type': 'application/json',
+          },
+      });
+      res.status(200).json(response.data);
+  } catch (error) {
+      console.error('Error  cannel order methods:', error);
+      res.status(500).json({ message: 'Error cannel order methods', error: error.message });
+  }
+}
+
+
+async function getPayfee(req, res) {
+  const token = refreshToken();
+  const fee = {
+    merchant_id: 40002,
+    amount: 200000
+  }
+  // const id = 177607;
+  try {
+      const response = await axios.post("https://dev-api.baokim.vn/paymentapi/v5/refund/create",fee, {
+          params: {
+              jwt: token,
+          },
+          headers: {
+            'Content-Type': 'application/json',
+          },
+      });
+      res.status(200).json(response.data);
+  } catch (error) {
+      console.error('Error  fee methods:', error);
+      res.status(500).json({ message: 'Error  fee methods', error: error.message });
+  }
+}
+
+
 
 async function checkToken(req, res) {
   const token = refreshToken();
   try {
+    const decipher = crypto.createDecipher('aes-256-cbc', process.env.API_SECRET);
+let decrypted = decipher.update('51234516847402740000', 'hex', 'utf8');
+decrypted += decipher.final('utf8');
     const decoded = jwt.decode(token);
-    res.status(201).json(decoded);
+    console.log(decrypted);
+    res.status(201).json(decoded,decrypted);
     return decoded;
 } catch (error) {
     console.error('Error decoding token:', error);
     return null;
 }
 }
-// async function createOrder(req, res, next) {
+
+
+// api ham ko ton tai  chỉ có 4 api đầu tiên của bảo kim có thể hoạt động.
+
+// async function calculateBankFee(req, res) {
+//   const API_URL2 = 'https://dev-api.baokim.vn/paymentapi/v5/payment-txn/calculate-bank-fee';
 //     const token = refreshToken();
-//     const url = 'https://dev-api.baokim.vn/payment/api/v5/order/send';
-//     // const orderData = req.body;
-//     const orderData = {
-//             mrc_order_id: "string",
-//             total_amount: 200000,
-//             description: "test",
-//             url_success: "https://baokim.vn/",
-//             merchant_id: 40002,
-//             url_detail: "https://baokim.vn/",
-//             lang: "en",
-//             bpm_id: 128,
-//             webhooks: "https://baokim.vn/",
-//             customer_email: "test@gmail.vn",
-//             customer_phone: "0888888888",
-//             customer_name: "Nguyen Van A",
-//             customer_address: "102 Thai Thinh",
-//             payment_info: {
-//               token: token
-//             },
-//             items: {},
-//             extension: {
-//               items: [
-//                 {
-//                   item_id: "abc123",
-//                   item_code: "ABC123",
-//                   item_name: "tủ lạnh",
-//                   price_amoun: 10000000,
-//                   quantity: 3,
-//                   url: "http://baokim.vn/tu-lanh/abc123"
-//                 }
-//               ]
-//             }
-          
-//       };
+//     const payload = {
+//         merchant_id: 40002,
+//         amount: 200000,
+//         bpm_id: 128,
+//         fee_payer: 1 // Thêm trường fee_payer (1 - Người mua chịu phí, 2 - Merchant chịu phí)
+//     };
+
 //     try {
-//       const response = await axios.post(url, orderData, {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           'Content-Type': 'application/json'
-//         }
-//       });
-  
-//       res.status(201).json(response.data);
+//         const response = await axios.post("https://dev-api.baokim.vn/paymentapi/v5/payment-txn/calculate-bank-fee", payload, {
+//             params: {
+//                 jwt: token
+//             },
+//             headers: {
+//               // 'Authorization': `Bearer ${token}`,
+//               'Content-Type': 'application/json'
+//           }
+            
+//         });
+//         res.status(200).json(response.data);
 //     } catch (error) {
-//     //   console.error('Error creating order:', error.response ? error.response.data : error.message);
-//     // console.error('Error creating order:', error.response ? error.response.data : error.message);
-//     res.status(error.response && error.response.status ? error.response.status : 500).json({
-//       message: 'Error creating order',
-//       error: error.response ? error.response.data : error.message
-//     });
-
+//         console.error('Error calculating bank fee:', error);
+//         res.status(500).json({ message: 'Error calculating bank fee', error: error.message, token });
 //     }
-//   }
-
-
+// }
 
 apiBaokim.get('/checkToken', checkToken);
 apiBaokim.get('/getPaymentMethods', getPaymentMethods);
 apiBaokim.post('/createOrder', createOrder);
+apiBaokim.get('/getCheckOrder', getCheckOrder);
+apiBaokim.post('/deleteCannelOrder', deleteCannelOrder);
+apiBaokim.post('/getPayfee', getPayfee);
+
+// apiBaokim.post('/calculateBankFee', calculateBankFee);
+
   module.exports = apiBaokim;

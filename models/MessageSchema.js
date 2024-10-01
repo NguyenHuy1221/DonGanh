@@ -6,6 +6,11 @@ const MessageSchema = new Schema({
   imageUrl: {type:String,required:true},
   videoUrl: {type:String,required:true},
   seen: {type:Boolean,default : false},
+  msgByUserId : {
+      type : mongoose.Schema.ObjectId,
+      required : true,
+      ref : 'User'
+  }
 },{
   timestamps:true
 });

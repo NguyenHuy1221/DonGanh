@@ -25,7 +25,7 @@ const HoaDonSchema = new Schema({
     TongTien: Number,
     TrangThai: Number,
     ThanhToan: { type: Boolean, default: false },
-    transactionId: { type: Number,},
+    transactionId: { type: Number},
     chiTietHoaDon: [
       {
         

@@ -3,6 +3,7 @@ const sanphamRouter = express.Router();
 const {
   getlistSanPham,
   createSanPham,
+  updateHinhBoSung,
   createThuocTinhSanPham,
   createSanPhamVoiBienThe,
   getlistBienTheFake,
@@ -32,6 +33,9 @@ sanphamRouter.get("/getlistSanPham", async function (req, res) {
 sanphamRouter.post("/createSanPham", async function (req, res) {
   return createSanPham(req, res);
 });
+sanphamRouter.post("/updateHinhBoSung/:IDSanPham", async function (req, res) {
+  return updateHinhBoSung(req, res);
+});
 
 sanphamRouter.post("/createThuocTinhSanPham", async function (req, res) {
   return createThuocTinhSanPham(req, res);
@@ -43,6 +47,10 @@ sanphamRouter.post("/createbienthesanpham", async function (req, res) {
 sanphamRouter.post("/createSanPhamVoiBienThe", async function (req, res) {
   return createSanPhamVoiBienThe(req, res);
 });
+
+
+
+
 
 sanphamRouter.get("/getlistBienTheFake", async function (req, res) {
   return getlistBienTheFake(req, res);

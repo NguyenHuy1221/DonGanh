@@ -10,7 +10,7 @@ const multer = require("multer");
 async function getlistDanhMuc(req, res, next) {
 
     try {
-        const DanhMucs = await DanhMucModel.find().select('-DanhMucCon');
+        const DanhMucs = await DanhMucModel.find();
         res.status(200).json(DanhMucs);
     } catch (error) {
         console.error(error);

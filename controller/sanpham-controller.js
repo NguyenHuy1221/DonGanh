@@ -4,8 +4,12 @@ const ThuocTinhGiaTriModel = require("../models/GiaTriThuocTinhSchema");
 const BienTheSchema = require("../models/BienTheSchema");
 const mongoose = require("mongoose");
 
-require("dotenv").config();
+const fs = require('fs');
+const path = require('path');
 
+
+require("dotenv").config();
+const { upload } = require("../untils/index");
 //ham lay danh sach thuoc tinh
 async function getlistSanPham(req, res, next) {
   try {
@@ -22,7 +26,6 @@ async function createSanPham(req, res, next) {
   const {
     IDSanPham,
     TenSanPham,
-    HinhSanPham,
     DonGiaNhap,
     DonGiaBan,
     SoLuongNhap,
@@ -39,6 +42,18 @@ async function createSanPham(req, res, next) {
     IDDanhMucCon,
   } = req.body;
   try {
+
+    upload.single('file')(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(500).json({ error: err });
+      } else if (err) {
+        return res.status(500).json({   
+      error: err });
+      }
+      const newPath = req.file.path.replace(
+        "public",
+         process.env.URL_IMAGE
+      );
     // Kiểm tra xem ThuocTinhID đã tồn tại chưa
     // const existingThuocTinh = await SanPhamModel.findOne({ IDGiaTriThuocTinh });
 
@@ -55,7 +70,7 @@ async function createSanPham(req, res, next) {
     const newSanPham = new SanPhamModel({
       IDSanPham,
       TenSanPham,
-      HinhSanPham,
+      HinhSanPham: newPath,
       DonGiaNhap,
       DonGiaBan,
       SoLuongNhap,
@@ -72,17 +87,83 @@ async function createSanPham(req, res, next) {
     });
     // Lưu đối tượng vào cơ sở dữ liệu
     const savedSanPham = await newSanPham.save();
-
-    // Trả về kết quả cho client
     res.status(201).json(newSanPham);
+  });
+    // Trả về kết quả cho client
+   
   } catch (error) {
     if (error.code === 11000) {
       console.error("Lỗi thêm sản phẩm đã tồn tại");
+      res.status(409).json({ message: 'Sản phẩm đã tồn tại' });
     } else {
       console.error("Lỗi khác:", error);
+      res.status(500).json({ error: 'Lỗi hệ thống' });
     }
   }
 }
+
+
+async function updateHinhBoSung(req, res, next) {
+  const { IDSanPham } = req.params;
+  try {
+    await upload.array('files', 4)(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(500).json({ error: err });
+      } else if (err) {
+        return res.status(500).json({ error: err });
+      }
+
+      const hinhBoSung = req.files.map(file => ({
+        TenAnh: file.originalname,
+        UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
+      }));
+
+      const sanPham = await SanPhamModel.findById(IDSanPham);
+      if (!sanPham) {
+        return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+      }
+
+      // Xóa ảnh cũ nếu tổng số ảnh vượt quá 4
+      const totalImages = sanPham.HinhBoSung.length + hinhBoSung.length;
+      if (totalImages > 4) {
+        const imagesToRemove = totalImages - 4;
+        for (let i = 0; i < imagesToRemove; i++) {
+          const oldImage = sanPham.HinhBoSung.shift();
+          const oldImagePath = path.join(__dirname, 'public', oldImage.UrlAnh.replace(process.env.URL_IMAGE, ''));
+          fs.unlink(oldImagePath, (err) => {
+            if (err) console.error('Lỗi xóa ảnh cũ:', err);
+          });
+        }
+      }
+
+      sanPham.HinhBoSung = sanPham.HinhBoSung.concat(hinhBoSung);
+      await sanPham.save();
+
+      res.status(200).json(sanPham);
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật ảnh bổ sung:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // //hàm thêm thuộc tính vào sản phẩm
 // async function createThuocTinhSanPham(req, res, next) {
@@ -603,6 +684,7 @@ async function findSanPhamByDanhMuc(req, res, next) {
 module.exports = {
   getlistSanPham,
   createSanPham,
+  updateHinhBoSung,
   createSanPhamVoiBienThe,
   createThuocTinhSanPham,
   getlistBienTheFake,

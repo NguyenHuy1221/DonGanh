@@ -35,6 +35,7 @@
     "path": "^0.12.7",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.0",
+    "socket.io-client": "^4.8.0",
     "uid": "^2.0.2",
     "vietqr": "^0.0.1"
   },

@@ -1,13 +1,16 @@
 const DiaChiModel = require("../models/DiaChiSchema");
 const LoaiKhuyenMaiModel = require("../models/LoaiKhuyenMaiSchema")
-require("dotenv").config();
+// require("dotenv").config();
 
 //trangthai 1 tat ca san pham , trang thai 0 chi 1 san pham
 async function getDiaChiByUserId(req, res, next) {
     try {
         const { userId } = req.params;
-        const diaChi = await DiaChiModel.findOne({ IDUser: userId });
-        if (!diaChi) {
+        const diaChi = await DiaChiModel.findOne({
+            IDUser: userId,
+            'diaChiList.isDeleted': false
+        });
+        if (diaChi.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy địa chỉ' });
         }
         res.status(200).json(diaChi);
@@ -16,7 +19,6 @@ async function getDiaChiByUserId(req, res, next) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách địa chỉ' });
     }
 }
-
 async function createDiaChi(req, res, next) {
     try {
         const { userId } = req.params;

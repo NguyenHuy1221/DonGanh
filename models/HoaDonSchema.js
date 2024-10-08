@@ -12,7 +12,6 @@ const getCurrentDate = () => {
 };
 const HoaDonSchema = new Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    orderId: {type : String},
     khuyenmaiId: { type: mongoose.Schema.Types.ObjectId, ref: "KhuyenMai" },
     diaChi: {
       tinhThanhPho: String,

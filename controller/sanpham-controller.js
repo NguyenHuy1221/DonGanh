@@ -9,6 +9,7 @@ const path = require('path');
 
 
 require("dotenv").config();
+const multer = require("multer");
 const { upload } = require("../untils/index");
 //ham lay danh sach thuoc tinh
 async function getlistSanPham(req, res, next) {
@@ -87,7 +88,7 @@ async function createSanPham(req, res, next) {
     // if (!validationThuocTinh.valid) {
     //   return res.status(404).json({ message: validationThuocTinh.message });
     // }
-    await upload.single('file')(req, res, async (err) => {
+     upload.single('file')(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
       } else if (err) {
@@ -98,19 +99,6 @@ async function createSanPham(req, res, next) {
         "public",
          process.env.URL_IMAGE
       );
-
-      await upload.array('files', 4)(req, res, async (err) => {
-        if (err instanceof multer.MulterError) {
-          return res.status(500).json({ error: err });
-        } else if (err) {
-          return res.status(500).json({ error: err });
-        }
-  
-        const hinhBoSung = req.files.map(file => ({
-          TenAnh: file.originalname,
-          UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
-        }));
-
 
 
         const newSanPham = new SanPhamModel({
@@ -126,7 +114,7 @@ async function createSanPham(req, res, next) {
           TinhTrang,
           MoTa,
           Unit,
-          HinhBoSung : hinhBoSung,
+          // HinhBoSung : "",
           DanhSachThuocTinh: DanhSachThuocTinh,
           IDDanhMuc,
           IDDanhMucCon,
@@ -134,10 +122,6 @@ async function createSanPham(req, res, next) {
         // Lưu đối tượng vào cơ sở dữ liệu
         const savedSanPham = await newSanPham.save();
         res.status(201).json(newSanPham);
-      });
-
-
-
 
     // Kiểm tra xem ThuocTinhID đã tồn tại chưa
     // const existingThuocTinh = await SanPhamModel.findOne({ IDGiaTriThuocTinh });
@@ -227,7 +211,7 @@ async function updateSanPham(req, res, next) {
     Unit,
     TenAnh,
     UrlAnh,
-    DanhSachThuocTinh,
+    // DanhSachThuocTinh,
     IDDanhMuc,
     IDDanhMucCon,
   } = req.body;
@@ -253,11 +237,11 @@ async function updateSanPham(req, res, next) {
         return res.status(500).json({ error: err });
       }
 
-      // Xóa ảnh cũ
-      const oldImagePath = path.join(__dirname, 'public', sanPham.HinhSanPham.replace(process.env.URL_IMAGE, ''));
-      fs.unlink(oldImagePath, (err) => {
-        if (err) console.error('Lỗi xóa ảnh cũ:', err);
-      });
+      // // Xóa ảnh cũ
+      // const oldImagePath = path.join(__dirname, 'public', sanPham.HinhSanPham.replace(process.env.URL_IMAGE, ''));
+      // fs.unlink(oldImagePath, (err) => {
+      //   if (err) console.error('Lỗi xóa ảnh cũ:', err);
+      // });
 
       const newPath = req.file.path.replace("public", process.env.URL_IMAGE);
 
@@ -271,7 +255,7 @@ async function updateSanPham(req, res, next) {
       sanPham.TinhTrang = TinhTrang;
       sanPham.MoTa = MoTa;
       sanPham.Unit = Unit;
-      sanPham.DanhSachThuocTinh = DanhSachThuocTinh;
+      // sanPham.DanhSachThuocTinh = DanhSachThuocTinh;
       sanPham.IDDanhMuc = IDDanhMuc;
       sanPham.IDDanhMucCon = IDDanhMucCon;
 

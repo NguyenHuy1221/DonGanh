@@ -199,6 +199,10 @@ console.log(orderResponse.data.payment_url,orderResponse.data.redirect_url,order
         transactionId : transactionId,
         chiTietHoaDon: chiTietHoaDon,
         GhiChu: ghiChu,
+        payment_url:orderResponse.data.payment_url,
+        redirect_url:orderResponse.data.redirect_url,
+        mrc_order_id:orderId,
+        order_id:orderResponse.data.order_id,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
      const savedHoaDon = await newHoaDon.save();
@@ -263,7 +267,7 @@ async function updateHoaDonThanhToan(req, res, next) {
 
   async function Checkdonhangbaokim(req, res, next) {
 
-  const orderId = req.params;
+  const orderId = req.params.orderId;
   console.log(orderId)
   const order = await HoaDonModel.findById(orderId); // Lấy thông tin đơn hàng từ DB
   const token = refreshToken();
@@ -293,6 +297,7 @@ async function updateHoaDonThanhToan(req, res, next) {
                 mrc_order_id :mrc_order_id,
             }
         });
+        console.log(response)
         return response.data;
     } catch (error) {
         return 'Error  check Order methods:', error;

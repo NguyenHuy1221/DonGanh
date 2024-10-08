@@ -5,7 +5,7 @@ const {
   toggleSanPhamMoi,
   getSanPhamListNew_Old,
   createSanPham,
-  updateHinhBoSung,
+  // updateHinhBoSung,
   createThuocTinhSanPham,
   createSanPhamVoiBienThe,
   getlistBienThe,
@@ -82,7 +82,7 @@ sanphamRouter.get("/findSanPhambyID:IDSanPham", async function (req, res) {
   return findSanPhambyID(req, res);
 });
 sanphamRouter.get(
-  "/getlistBienTheInSanPham:IDSanPham",
+  "/getlistBienTheInSanPham/:IDSanPham",
   async function (req, res) {
     return getlistBienTheInSanPham(req, res);
   }

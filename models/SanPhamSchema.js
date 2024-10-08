@@ -3,10 +3,10 @@ const Schema = mongoose.Schema;
 const {convertToVietnamTimezone} = require('../middleware/index');
 const SanPhamSchema = new Schema({
   IDSanPham: { type: String, required: true, unique: true }, // Khóa chính, duy nhất
-  TenSanPham: { type: String, required: true },
+  TenSanPham: { type: String},
   HinhSanPham: { type: String }, // Giả sử lưu đường dẫn hoặc ID hình ảnh
-  DonGiaNhap: { type: Number, required: true },
-  DonGiaBan: { type: Number, required: true },
+  DonGiaNhap: { type: Number},
+  DonGiaBan: { type: Number},
   SoLuongNhap: { type: Number, default: 0 },
   SoLuongHienTai: { type: Number, default: 0 },
   PhanTramGiamGia: { type: Number },
@@ -17,8 +17,8 @@ const SanPhamSchema = new Schema({
   MoTa: { type: String },
   Unit: { type: String }, // Đơn vị tính
   HinhBoSung: [{
-    TenAnh: { type: String, required: true },
-    UrlAnh: { type: String, required: true },
+    TenAnh: { type: String},
+    UrlAnh: { type: String },
   }],
   DanhSachThuocTinh: [{
     thuocTinh: { type: Schema.Types.ObjectId, ref: 'ThuocTinh' }

@@ -10,6 +10,7 @@ const path = require('path');
 
 require("dotenv").config();
 const multer = require("multer");
+const { uid } = require("uid");
 // const { upload } = require("../untils/index");
 //ham lay danh sach thuoc tinh
 async function getlistSanPham(req, res, next) {

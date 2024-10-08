@@ -9,7 +9,6 @@ const {
   getlistBienTheFake,
   createBienTheFake,
   updateSanPham,
-  deleteSanPham,
   findSanPham,
   getlistPageSanPham,
   // createimageSanPham,
@@ -48,6 +47,9 @@ sanphamRouter.post("/createSanPhamVoiBienThe", async function (req, res) {
   return createSanPhamVoiBienThe(req, res);
 });
 
+sanphamRouter.put("/updateSanPham", async function (req, res) {
+  return updateSanPham(req, res);
+});
 
 
 

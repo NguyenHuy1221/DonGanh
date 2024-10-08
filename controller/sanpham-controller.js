@@ -43,7 +43,7 @@ async function createSanPham(req, res, next) {
   } = req.body;
   try {
 
-    upload.single('file')(req, res, async (err) => {
+    await upload.single('file')(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
       } else if (err) {
@@ -54,40 +54,61 @@ async function createSanPham(req, res, next) {
         "public",
          process.env.URL_IMAGE
       );
+
+      await upload.array('files', 4)(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+          return res.status(500).json({ error: err });
+        } else if (err) {
+          return res.status(500).json({ error: err });
+        }
+  
+        const hinhBoSung = req.files.map(file => ({
+          TenAnh: file.originalname,
+          UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
+        }));
+
+
+
+        const newSanPham = new SanPhamModel({
+          IDSanPham,
+          TenSanPham,
+          HinhSanPham: newPath,
+          DonGiaNhap,
+          DonGiaBan,
+          SoLuongNhap,
+          SoLuongHienTai,
+          PhanTramGiamGia,
+          NgayTao,
+          TinhTrang,
+          MoTa,
+          Unit,
+          HinhBoSung : hinhBoSung,
+          DanhSachThuocTinh: DanhSachThuocTinh,
+          IDDanhMuc,
+          IDDanhMucCon,
+        });
+        // Lưu đối tượng vào cơ sở dữ liệu
+        const savedSanPham = await newSanPham.save();
+        res.status(201).json(newSanPham);
+      });
+
+
+
+
     // Kiểm tra xem ThuocTinhID đã tồn tại chưa
     // const existingThuocTinh = await SanPhamModel.findOne({ IDGiaTriThuocTinh });
 
     // if (existingThuocTinh) {
     //     return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
     // }
-    const newHinhSanPhams = [
-      {
-        TenAnh,
-        UrlAnh,
-      },
-    ];
+    // const newHinhSanPhams = [
+    //   {
+    //     TenAnh,
+    //     UrlAnh,
+    //   },
+    // ];
     // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
-    const newSanPham = new SanPhamModel({
-      IDSanPham,
-      TenSanPham,
-      HinhSanPham: newPath,
-      DonGiaNhap,
-      DonGiaBan,
-      SoLuongNhap,
-      SoLuongHienTai,
-      PhanTramGiamGia,
-      NgayTao,
-      TinhTrang,
-      MoTa,
-      Unit,
-      newHinhSanPhams,
-      DanhSachThuocTinh,
-      IDDanhMuc,
-      IDDanhMucCon,
-    });
-    // Lưu đối tượng vào cơ sở dữ liệu
-    const savedSanPham = await newSanPham.save();
-    res.status(201).json(newSanPham);
+    
   });
     // Trả về kết quả cho client
    
@@ -148,7 +169,68 @@ async function updateHinhBoSung(req, res, next) {
 }
 
 
+async function updateSanPham(req, res, next) {
+  const {
+    IDSanPham,
+    TenSanPham,
+    DonGiaNhap,
+    DonGiaBan,
+    SoLuongNhap,
+    SoLuongHienTai,
+    PhanTramGiamGia,
+    TinhTrang,
+    MoTa,
+    Unit,
+    TenAnh,
+    UrlAnh,
+    DanhSachThuocTinh,
+    IDDanhMuc,
+    IDDanhMucCon,
+  } = req.body;
 
+  try {
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+    if (!sanPham) {
+      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+    }
+
+    await upload.single('file')(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(500).json({ error: err });
+      } else if (err) {
+        return res.status(500).json({ error: err });
+      }
+
+      // Xóa ảnh cũ
+      const oldImagePath = path.join(__dirname, 'public', sanPham.HinhSanPham.replace(process.env.URL_IMAGE, ''));
+      fs.unlink(oldImagePath, (err) => {
+        if (err) console.error('Lỗi xóa ảnh cũ:', err);
+      });
+
+      const newPath = req.file.path.replace("public", process.env.URL_IMAGE);
+
+      sanPham.TenSanPham = TenSanPham;
+      sanPham.HinhSanPham = newPath;
+      sanPham.DonGiaNhap = DonGiaNhap;
+      sanPham.DonGiaBan = DonGiaBan;
+      sanPham.SoLuongNhap = SoLuongNhap;
+      sanPham.SoLuongHienTai = SoLuongHienTai;
+      sanPham.PhanTramGiamGia = PhanTramGiamGia;
+      sanPham.TinhTrang = TinhTrang;
+      sanPham.MoTa = MoTa;
+      sanPham.Unit = Unit;
+      sanPham.DanhSachThuocTinh = DanhSachThuocTinh;
+      sanPham.IDDanhMuc = IDDanhMuc;
+      sanPham.IDDanhMucCon = IDDanhMucCon;
+
+      await sanPham.save();
+      res.status(200).json(sanPham);
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật sản phẩm:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
 
 
 
@@ -264,48 +346,6 @@ async function createSanPhamVoiBienThe(req, res) {
 }
 
 //code them thuoc tinh vao ben trong san pham
-
-async function themThuocTinhVaGiaTri(req, res) {
-  const { idSanPham, thuocTinhId, giaTriId } = req.body;
-  try {
-    // Tìm sản phẩm
-    const sanPham = await SanPhamModel.findById(idSanPham);
-    if (!sanPham) {
-      return "Sản phẩm không tồn tại";
-    }
-
-    // Kiểm tra xem thuộc tính đã tồn tại trong sản phẩm chưa
-    const thuocTinhDaTonTai = sanPham.thuocTinh.find(
-      (t) => t.thuocTinh.toString() === thuocTinhId.toString()
-    );
-    if (thuocTinhDaTonTai) {
-      // Kiểm tra xem giá trị đã tồn tại trong thuộc tính chưa
-      const giaTriDaTonTai = thuocTinhDaTonTai.giaTri.find(
-        (g) => g.toString() === giaTriId.toString()
-      );
-      if (giaTriDaTonTai) {
-        return "Giá trị đã tồn tại cho thuộc tính này";
-      } else {
-        // Thêm giá trị vào thuộc tính
-        thuocTinhDaTonTai.giaTri.push(giaTriId);
-      }
-    } else {
-      // Thêm thuộc tính mới cho sản phẩm
-      sanPham.thuocTinh.push({
-        thuocTinh: thuocTinhId,
-        giaTri: [giaTriId],
-      });
-    }
-
-    // Lưu lại thay đổi
-    await sanPham.save();
-    return "Thêm thuộc tính và giá trị thành công";
-  } catch (error) {
-    console.error(error);
-    return "Có lỗi xảy ra";
-  }
-}
-
 async function createThuocTinhSanPham(req, res, next) {
   const { IDSanPham, ThuocTinhID } = req.body;
 
@@ -443,50 +483,6 @@ async function createBienTheFake(req, res, next) {
   }
 }
 
-async function updateSanPham(req, res, next) {
-  // const { ThuocTinhID } = req.params;
-  const { IDGiaTriThuocTinh, GiaTri } = req.body;
-
-  try {
-    const updatedThuocTinhGiaTri = await SanPhamModel.findOneAndUpdate(
-      { IDGiaTriThuocTinh },
-      { GiaTri },
-      { new: true }
-    );
-
-    if (!updatedThuocTinhGiaTri) {
-      return res
-        .status(404)
-        .json({ message: "Không tìm thấy giá trị thuộc tính" });
-    }
-
-    res.status(200).json(updatedThuocTinhGiaTri);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi khi cập nhật giá trị thuộc tính" });
-  }
-}
-
-async function deleteSanPham(req, res, next) {
-  const { IDGiaTriThuocTinh } = req.params;
-
-  try {
-    const deletedThuocTinhGiaTri = await SanPhamModel.findOneAndDelete(
-      IDGiaTriThuocTinh
-    );
-
-    if (!deletedThuocTinhGiaTri) {
-      return res
-        .status(404)
-        .json({ message: "Không tìm thấy giá trị thuộc tính" });
-    }
-
-    res.status(200).json({ message: "Xóa thuộc giá trị tính thành công" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Lỗi khi xóa giá trị thuộc tính" });
-  }
-}
 
 async function findSanPham(req, res, next) {
   const { ThuocTinhID } = req.params;
@@ -690,7 +686,6 @@ module.exports = {
   getlistBienTheFake,
   createBienTheFake,
   updateSanPham,
-  deleteSanPham,
   findSanPham,
   findSanPhamByDanhMuc,
   getlistPageSanPham,

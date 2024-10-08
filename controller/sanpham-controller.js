@@ -10,7 +10,7 @@ const path = require('path');
 
 require("dotenv").config();
 const multer = require("multer");
-const { upload } = require("../untils/index");
+// const { upload } = require("../untils/index");
 //ham lay danh sach thuoc tinh
 async function getlistSanPham(req, res, next) {
   try {
@@ -57,9 +57,21 @@ async function getSanPhamListNew_Old(req, res, next) {
     res.status(500).json({ error: 'Lỗi hệ thống' });
   }
 }
+// Cấu hình Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploads/');
+  },
+  filename: (req, file, cb) => {
+    console.log(file);
+    const id = uid();
+    cb(null, `${id}-${file.originalname}`); // mặc định sẽ save name của hình ảnh
+    // là name gốc, chúng ta có thể rename nó.
+  },
+});
 
+const upload = multer({ storage: storage });
 
-//hàm thêm sản phẩm
 async function createSanPham(req, res, next) {
   const {
     IDSanPham,
@@ -73,73 +85,55 @@ async function createSanPham(req, res, next) {
     TinhTrang,
     MoTa,
     Unit,
-    TenAnh,
-    UrlAnh,
     DanhSachThuocTinh,
     IDDanhMuc,
     IDDanhMucCon,
   } = req.body;
+
+  // Kiểm tra nếu IDSanPham không được cung cấp hoặc là null
+  if (!IDSanPham) {
+    return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
+  }
+
   try {
-    // const validation = await validateSanPham(IDSanPham, TenSanPham);
-    // if (!validation.valid) {
-    //   return res.status(404).json({ message: validation.message });
-    // }
-    // const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
-    // if (!validationThuocTinh.valid) {
-    //   return res.status(404).json({ message: validationThuocTinh.message });
-    // }
-     upload.single('file')(req, res, async (err) => {
+    // Xử lý tệp chính và các tệp bổ sung
+    upload.fields([{ name: 'file', maxCount: 1 }, { name: 'files', maxCount: 10 }])(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
       } else if (err) {
-        return res.status(500).json({   
-      error: err });
+        return res.status(500).json({ error: err });
       }
-      const newPath = req.file.path.replace(
-        "public",
-         process.env.URL_IMAGE
-      );
 
+      const newPath = req.files['file'][0].path.replace("public", process.env.URL_IMAGE);
 
-        const newSanPham = new SanPhamModel({
-          IDSanPham,
-          TenSanPham,
-          HinhSanPham: newPath,
-          DonGiaNhap,
-          DonGiaBan,
-          SoLuongNhap,
-          SoLuongHienTai,
-          PhanTramGiamGia,
-          NgayTao,
-          TinhTrang,
-          MoTa,
-          Unit,
-          // HinhBoSung : "",
-          DanhSachThuocTinh: DanhSachThuocTinh,
-          IDDanhMuc,
-          IDDanhMucCon,
-        });
-        // Lưu đối tượng vào cơ sở dữ liệu
-        const savedSanPham = await newSanPham.save();
-        res.status(201).json(newSanPham);
+      const hinhBoSung = req.files['files'].map(file => ({
+        TenAnh: file.originalname,
+        UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
+      }));
 
-    // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    // const existingThuocTinh = await SanPhamModel.findOne({ IDGiaTriThuocTinh });
+      const newSanPham = new SanPhamModel({
+        IDSanPham,
+        TenSanPham,
+        HinhSanPham: newPath,
+        DonGiaNhap,
+        DonGiaBan,
+        SoLuongNhap,
+        SoLuongHienTai,
+        PhanTramGiamGia,
+        NgayTao,
+        TinhTrang,
+        MoTa,
+        Unit,
+        HinhBoSung: hinhBoSung,
+        DanhSachThuocTinh: DanhSachThuocTinh,
+        IDDanhMuc,
+        IDDanhMucCon,
+      });
 
-    // if (existingThuocTinh) {
-    //     return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
-    // }
-    // const newHinhSanPhams = [
-    //   {
-    //     TenAnh,
-    //     UrlAnh,
-    //   },
-    // ];
-    // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
-    
-  });
-    // Trả về kết quả cho client
-   
+      // Lưu đối tượng vào cơ sở dữ liệu
+      const savedSanPham = await newSanPham.save();
+      res.status(201).json(savedSanPham);
+    });
   } catch (error) {
     if (error.code === 11000) {
       console.error("Lỗi thêm sản phẩm đã tồn tại");
@@ -150,6 +144,100 @@ async function createSanPham(req, res, next) {
     }
   }
 }
+
+// //hàm thêm sản phẩm
+// async function createSanPham(req, res, next) {
+  
+//   const {
+//     IDSanPham,
+//     TenSanPham,
+//     DonGiaNhap,
+//     DonGiaBan,
+//     SoLuongNhap,
+//     SoLuongHienTai,
+//     PhanTramGiamGia,
+//     NgayTao,
+//     TinhTrang,
+//     MoTa,
+//     Unit,
+//     TenAnh,
+//     UrlAnh,
+//     DanhSachThuocTinh,
+//     IDDanhMuc,
+//     IDDanhMucCon,
+//   } = req.body;
+//   console.log(IDSanPham)
+//   try {
+//     // const validation = await validateSanPham(IDSanPham, TenSanPham);
+//     // if (!validation.valid) {
+//     //   return res.status(404).json({ message: validation.message });
+//     // }
+//     // const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
+//     // if (!validationThuocTinh.valid) {
+//     //   return res.status(404).json({ message: validationThuocTinh.message });
+//     // }
+//     //  upload.single('file')(req, res, async (err) => {
+//     //   if (err instanceof multer.MulterError) {
+//     //     return res.status(500).json({ error: err });
+//     //   } else if (err) {
+//     //     return res.status(500).json({   
+//     //   error: err });
+//     //   }
+//     //   const newPath = req.file.path.replace(
+//     //     "public",
+//     //      process.env.URL_IMAGE
+//     //   );
+
+
+//         const newSanPham = new SanPhamModel({
+//           IDSanPham:IDSanPham,
+//           TenSanPham,
+//           // HinhSanPham: newPath,
+//           DonGiaNhap,
+//           DonGiaBan,
+//           SoLuongNhap,
+//           SoLuongHienTai,
+//           PhanTramGiamGia,
+//           NgayTao,
+//           TinhTrang,
+//           MoTa,
+//           Unit,
+//           // HinhBoSung : "",
+//           DanhSachThuocTinh: DanhSachThuocTinh,
+//           IDDanhMuc,
+//           IDDanhMucCon,
+//         });
+//         // Lưu đối tượng vào cơ sở dữ liệu
+//         const savedSanPham = await newSanPham.save();
+//         res.status(201).json(savedSanPham);
+
+//     // Kiểm tra xem ThuocTinhID đã tồn tại chưa
+//     // const existingThuocTinh = await SanPhamModel.findOne({ IDGiaTriThuocTinh });
+
+//     // if (existingThuocTinh) {
+//     //     return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
+//     // }
+//     // const newHinhSanPhams = [
+//     //   {
+//     //     TenAnh,
+//     //     UrlAnh,
+//     //   },
+//     // ];
+//     // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
+    
+//   // });
+//     // Trả về kết quả cho client
+   
+//   } catch (error) {
+//     if (error.code === 11000) {
+//       console.error("Lỗi thêm sản phẩm đã tồn tại");
+//       res.status(409).json({ message: 'Sản phẩm đã tồn tại' });
+//     } else {
+//       console.error("Lỗi khác:", error);
+//       res.status(500).json({ error: 'Lỗi hệ thống' });
+//     }
+//   }
+// }
 
 
 async function updateHinhBoSung(req, res, next) {

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const {convertToVietnamTimezone} = require('../middleware/index');
 const SanPhamSchema = new Schema({
-  IDSanPham: { type: String, required: true, unique: true }, // Khóa chính, duy nhất
+  IDSanPham: { type: String, unique: true }, // Khóa chính, duy nhất
   TenSanPham: { type: String},
   HinhSanPham: { type: String }, // Giả sử lưu đường dẫn hoặc ID hình ảnh
   DonGiaNhap: { type: Number},
@@ -15,7 +15,7 @@ const SanPhamSchema = new Schema({
   SanPhamMoi: { type: Boolean , default:false},// sản phẩm vừa tạo sẽ không được bán luôn , phải tự tay xác nhận mới được bán
   //  TinhTrang: { type: String, enum: ['Còn hàng', 'Hết hàng', 'Ngừng kinh doanh'] },
   MoTa: { type: String },
-  Unit: { type: String }, // Đơn vị tính
+  Unit: { type: String ,default: "1"}, // Đơn vị tính
   HinhBoSung: [{
     TenAnh: { type: String},
     UrlAnh: { type: String },

@@ -23,7 +23,7 @@ const HoaDonSchema = new Schema({
       SoDienThoai: { type: String },
     },
     TongTien: Number,
-    TrangThai: Number,
+    TrangThai: Number,//0 : dang chờ duyệt , 1 , đã thanh toán , 2 , đang chờ thanh toán , 3 , Thanh Toán thất bại , 4 , Hủy.    //Stat = c : thành công d: đã huỷ (hoặc thất bại )p: chưa thanh toán
     ThanhToan: { type: Boolean, default: false },
     transactionId: { type: Number},
     chiTietHoaDon: [
@@ -48,6 +48,11 @@ const HoaDonSchema = new Schema({
       },
     ],
     GhiChu: String,
+    payment_url:{type:String},
+    redirect_url:{type:String},
+    mrc_order_id:{type:String},
+    order_id:{type:Number},
+    expiresAt: { type: Date, required: true , default:Date(Date.now() + 30 * 60 * 1000)},
     NgayTao: { type: Date, default: getCurrentDate },
 });
 convertToVietnamTimezone(HoaDonSchema)

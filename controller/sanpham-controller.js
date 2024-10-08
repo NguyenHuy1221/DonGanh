@@ -79,14 +79,14 @@ async function createSanPham(req, res, next) {
     IDDanhMucCon,
   } = req.body;
   try {
-    const validation = await validateSanPham(IDSanPham, TenSanPham);
-    if (!validation.valid) {
-      return res.status(404).json({ message: validation.message });
-    }
-    const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
-    if (!validationThuocTinh.valid) {
-      return res.status(404).json({ message: validationThuocTinh.message });
-    }
+    // const validation = await validateSanPham(IDSanPham, TenSanPham);
+    // if (!validation.valid) {
+    //   return res.status(404).json({ message: validation.message });
+    // }
+    // const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
+    // if (!validationThuocTinh.valid) {
+    //   return res.status(404).json({ message: validationThuocTinh.message });
+    // }
     await upload.single('file')(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
@@ -237,15 +237,15 @@ async function updateSanPham(req, res, next) {
     if (!sanPham) {
       return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
     }
-    const validation = await validateSanPham(IDSanPham, TenSanPham);
-    if (!validation.valid) {
-      return res.status(404).json({ message: validation.message });
-    }
+    // const validation = await validateSanPham(IDSanPham, TenSanPham);
+    // if (!validation.valid) {
+    //   return res.status(404).json({ message: validation.message });
+    // }
     
-    const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
-    if (!validationThuocTinh.valid) {
-      return res.status(404).json({ message: validationThuocTinh.message });
-    }
+    // const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
+    // if (!validationThuocTinh.valid) {
+    //   return res.status(404).json({ message: validationThuocTinh.message });
+    // }
     await upload.single('file')(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
@@ -330,10 +330,10 @@ async function createSanPhamVoiBienThe(req, res) {
   };
   const {IDSanPham} = req.params;
   const { sku,gia,soLuong, } = req.body;
-  const validation = validateSanPhamData(sku, gia, soLuong);
-  if (!validation.valid) {
-    return res.status(400).json({ errors: validation.errors });
-  }
+  // const validation = validateSanPhamData(sku, gia, soLuong);
+  // if (!validation.valid) {
+  //   return res.status(400).json({ errors: validation.errors });
+  // }
   const product = await SanPhamModel.findById(IDSanPham).populate(
     "DanhSachThuocTinh.thuocTinh"
   );
@@ -402,10 +402,10 @@ async function createThuocTinhSanPham(req, res, next) {
 
     // Thêm ThuocTinhID vào mảng DanhSachThuocTinh
     sanPham.DanhSachThuocTinh.push(ThuocTinhID);
-    const validationThuocTinh = await validateDanhSachThuocTinh(sanPham.DanhSachThuocTinh);
-    if (!validationThuocTinh.valid) {
-      return res.status(404).json({ message: validationThuocTinh.message });
-    }
+    // const validationThuocTinh = await validateDanhSachThuocTinh(sanPham.DanhSachThuocTinh);
+    // if (!validationThuocTinh.valid) {
+    //   return res.status(404).json({ message: validationThuocTinh.message });
+    // }
     // Lưu thay đổi
     const sanPhamUpdated = await sanPham.save();
 

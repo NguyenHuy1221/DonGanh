@@ -5,6 +5,9 @@ const moment = require('moment-timezone');
 require("dotenv").config();
 const axios = require('axios');
 const { refreshToken } = require('../jwt/index');
+
+//xoa dau tieng viet 
+const removeAccents = require('remove-accents');
 // qr
 // const PayOS = require('@payos/node')
 // const pauos = require('client_oid','api_key','checksum-key')
@@ -99,8 +102,8 @@ async function getHoaDonByHoaDonId(req, res) {
 
 
 async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
-    const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang2,YeuCauNhanHang2,giohangId,TongTien,transactionId } = req.body;
-    console.log(ChiTietGioHang2,YeuCauNhanHang2)
+    const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang,YeuCauNhanHang,giohangId,TongTien,transactionId } = req.body;
+    console.log(ChiTietGioHang,YeuCauNhanHang)
     console.log(diaChiMoi,ghiChu,khuyenmaiId,giohangId,TongTien,transactionId)
 const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').format('YYYYMMDDHHmmss');
     // Tạo một object để lưu trữ các trường cần cập nhật
@@ -146,6 +149,7 @@ const chiTietHoaDon = giohang.chiTietGioHang.map(item => ({
   soLuong: item.soLuong,
   donGia: item.donGia
 }));
+
 const orderData = {
   mrc_order_id: orderId,
   total_amount: TongTien,
@@ -157,24 +161,32 @@ const orderData = {
   bpm_id: transactionId,
   webhooks: "https://baokim.vn/",
   customer_email: user.gmail,
-  customer_phone: user.soDienThoai,
-  customer_name: "user.tenNguoiDung",
-  customer_address: "lll",
-  items: JSON.stringify({}),
-  extension: {
-    items: chiTietHoaDon.map(item => ({
-      item_id: item.BienThe.IDSanPham,
-      item_code: item.BienThe.sku,
-      item_name: item.BienThe.TenSanPham,
-      price_amount: item.BienThe.gia,
-      quantity: item.soLuong,
-      url: process.env.BASE_URL + item.BienThe.IDSanPham,
-    })),
-  },
+  customer_phone: "0358748103",
+  customer_name: "ho duc hau",
+  customer_address: diaChiMoi.tinhThanhPho+" "+diaChiMoi.quanHuyen+" "+diaChiMoi.phuongXa+" "+diaChiMoi.duongThon,
+  items: JSON.stringify(chiTietHoaDon.map(item => ({
+    item_id: item.BienThe.IDSanPham,
+    item_code: item.BienThe.sku,
+    item_name: item.BienThe.TenSanPham,
+    price_amount: item.BienThe.gia,
+    quantity: item.soLuong,
+    url: process.env.BASE_URL + item.BienThe.IDSanPham,
+  }))),
+  // extension: {
+  //   items: chiTietHoaDon.map(item => ({
+  //     item_id: item.BienThe.IDSanPham,
+  //     item_code: item.BienThe.sku,
+  //     item_name: item.BienThe.TenSanPham,
+  //     price_amount: item.BienThe.gia,
+  //     quantity: item.soLuong,
+  //     url: process.env.BASE_URL + item.BienThe.IDSanPham,
+  //   })),
+  // },
 };
 console.log(orderData)
+console.log(removeAccents(user.tenNguoiDung))
 const orderResponse = await createOrder(orderData);
-console.log(orderResponse)
+console.log(orderResponse.data.payment_url,orderResponse.data.redirect_url,orderResponse.data.order_id)
       // user.diaChi = diaChiMoi;
       // await user.save();
       const newHoaDon = new HoaDonModel({
@@ -189,13 +201,13 @@ console.log(orderResponse)
         GhiChu: ghiChu,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
-    // const savedHoaDon = await newHoaDon.save();
+     const savedHoaDon = await newHoaDon.save();
 
 
     
 
 
-      res.status(200).json("savedHoaDon");
+      res.status(200).json(savedHoaDon);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Lỗi khi Tạo Đơn Hàng' });
@@ -244,6 +256,46 @@ async function updateHoaDonThanhToan(req, res, next) {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Lỗi khi cập nhật hoa don' });
+    }
+  }
+
+
+
+  async function Checkdonhangbaokim(req, res, next) {
+
+  const orderId = req.params;
+  console.log(orderId)
+  const order = await HoaDonModel.findById(orderId); // Lấy thông tin đơn hàng từ DB
+  const token = refreshToken();
+  // Kiểm tra thời gian hết hạn của đơn hàng
+  // if (new Date() > order.expiresAt) {
+  //   return res.status(400).json({ message: 'Đơn hàng đã hết hạn' });
+  // }
+
+  // Nếu đơn hàng còn hạn, kiểm tra trạng thái với API của Bảo Kim
+  try {
+    const checkResult = getCheckOrder(token,order.order_id,order.mrc_order_id);
+    res.status(200).json(checkResult);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi kiểm tra đơn hàng', error: error.message });
+  }
+  }
+
+
+
+  async function getCheckOrder(token,orderid,mrc_order_id) {
+    
+    try {
+        const response = await axios.get(process.env.API_URL_getCheckOrder, {
+            params: {
+                jwt: token,
+                id: orderid	,
+                mrc_order_id :mrc_order_id,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        return 'Error  check Order methods:', error;
     }
   }
 
@@ -350,4 +402,5 @@ module.exports = {
     findThuocTinh,
     createUserDiaChivaThongTinGiaoHang,
     updateHoaDonThanhToan,
+    Checkdonhangbaokim,
 };

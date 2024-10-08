@@ -3,6 +3,8 @@ const GioHangModel = require("../models/GioHangSchema")
 const UserModel = require("../models/NguoiDungSchema")
 const moment = require('moment-timezone');
 require("dotenv").config();
+const axios = require('axios');
+const { refreshToken } = require('../jwt/index');
 // qr
 // const PayOS = require('@payos/node')
 // const pauos = require('client_oid','api_key','checksum-key')
@@ -97,7 +99,8 @@ async function getHoaDonByHoaDonId(req, res) {
 
 
 async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
-    const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang,YeuCauNhanHang,giohangId,TongTien,transactionId } = req.body;
+    const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang2,YeuCauNhanHang2,giohangId,TongTien,transactionId } = req.body;
+    console.log(ChiTietGioHang2,YeuCauNhanHang2)
     console.log(diaChiMoi,ghiChu,khuyenmaiId,giohangId,TongTien,transactionId)
 const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').format('YYYYMMDDHHmmss');
     // Tạo một object để lưu trữ các trường cần cập nhật
@@ -148,15 +151,15 @@ const orderData = {
   total_amount: TongTien,
   description: ghiChu,
   url_success: "https://baokim.vn/",
-  merchant_id: parseInt(process.env.MERCHANT_ID, 10),
+  merchant_id: parseInt(process.env.MERCHANT_ID),
   url_detail: "https://baokim.vn/",
-  lang: "vi",
+  lang: "en",
   bpm_id: transactionId,
   webhooks: "https://baokim.vn/",
   customer_email: user.gmail,
   customer_phone: user.soDienThoai,
-  customer_name: user.tenNguoiDung,
-  customer_address: diaChiMoi,
+  customer_name: "user.tenNguoiDung",
+  customer_address: "lll",
   items: JSON.stringify({}),
   extension: {
     items: chiTietHoaDon.map(item => ({
@@ -169,7 +172,7 @@ const orderData = {
     })),
   },
 };
-
+console.log(orderData)
 const orderResponse = await createOrder(orderData);
 console.log(orderResponse)
       // user.diaChi = diaChiMoi;
@@ -186,18 +189,43 @@ console.log(orderResponse)
         GhiChu: ghiChu,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
-    const savedHoaDon = await newHoaDon.save();
+    // const savedHoaDon = await newHoaDon.save();
 
 
     
 
 
-      res.status(200).json(savedHoaDon);
+      res.status(200).json("savedHoaDon");
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Lỗi khi Tạo Đơn Hàng' });
     }
   }
+
+  async function createOrder(orderData) {
+    try {
+      // Tách riêng việc tạo token
+      const token = refreshToken();
+      const response = await axios.post(process.env.API_URL_createOrder, orderData, {
+        params: {
+          jwt: token
+      },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      let errorMessage = 'Error creating order';
+      if (error.response) {
+        errorMessage = error.response.data.message || error.response.statusText;
+      }
+      throw new Error(errorMessage);
+    }
+  }
+
+
 
 
 async function updateHoaDonThanhToan(req, res, next) {

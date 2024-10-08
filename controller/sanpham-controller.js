@@ -21,6 +21,43 @@ async function getlistSanPham(req, res, next) {
   }
 }
 
+async function toggleSanPhamMoi(req, res, next) {
+  const { IDSanPham } = req.params;
+  try {
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+    if (!sanPham) {
+      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+    }
+    // Đổi trạng thái SanPhamMoi
+    sanPham.SanPhamMoi = !sanPham.SanPhamMoi;
+    await sanPham.save();
+    res.status(200).json({ message: `Trạng thái SanPhamMoi đã được đổi thành ${sanPham.SanPhamMoi}` });
+  } catch (error) {
+    console.error("Lỗi cập nhật trạng thái SanPhamMoi:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
+
+async function getSanPhamListNew_Old(req, res, next) {
+  const { SanPhamMoi } = req.query;
+
+  try {
+    // Kiểm tra giá trị của SanPhamMoi
+    // if (typeof SanPhamMoi !== 'boolean') {
+    //   return res.status(400).json({ message: 'Giá trị SanPhamMoi phải là boolean' });
+    // }
+
+    // Lấy danh sách sản phẩm dựa trên giá trị SanPhamMoi
+    const sanPhamList = await SanPhamModel.find({ SanPhamMoi });
+
+    res.status(200).json(sanPhamList);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách sản phẩm:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
+
+
 //hàm thêm sản phẩm
 async function createSanPham(req, res, next) {
   const {
@@ -42,7 +79,14 @@ async function createSanPham(req, res, next) {
     IDDanhMucCon,
   } = req.body;
   try {
-
+    const validation = await validateSanPham(IDSanPham, TenSanPham);
+    if (!validation.valid) {
+      return res.status(404).json({ message: validation.message });
+    }
+    const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
+    if (!validationThuocTinh.valid) {
+      return res.status(404).json({ message: validationThuocTinh.message });
+    }
     await upload.single('file')(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
@@ -170,8 +214,8 @@ async function updateHinhBoSung(req, res, next) {
 
 
 async function updateSanPham(req, res, next) {
+  const { IDSanPham } = req.params;
   const {
-    IDSanPham,
     TenSanPham,
     DonGiaNhap,
     DonGiaBan,
@@ -193,7 +237,15 @@ async function updateSanPham(req, res, next) {
     if (!sanPham) {
       return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
     }
-
+    const validation = await validateSanPham(IDSanPham, TenSanPham);
+    if (!validation.valid) {
+      return res.status(404).json({ message: validation.message });
+    }
+    
+    const validationThuocTinh = await validateDanhSachThuocTinh(DanhSachThuocTinh);
+    if (!validationThuocTinh.valid) {
+      return res.status(404).json({ message: validationThuocTinh.message });
+    }
     await upload.single('file')(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
         return res.status(500).json({ error: err });
@@ -232,63 +284,64 @@ async function updateSanPham(req, res, next) {
   }
 }
 
+async function deleteSanPham(req, res, next) {
+  const { IDSanPham } = req.params;
 
+  try {
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+    if (!sanPham) {
+      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+    }
+    // Cập nhật trạng thái sản phẩm thành "Đã xóa"
+    sanPham.TinhTrang = 'Đã xóa';
+    await sanPham.save();
 
+    res.status(200).json({ message: 'Sản phẩm đã được cập nhật trạng thái thành "Đã xóa"' });
+  } catch (error) {
+    console.error("Lỗi cập nhật trạng thái sản phẩm:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
 
+async function updateTinhTrangSanPham(req, res, next) {
+  const { IDSanPham } = req.params;
+  const { TinhTrang } = req.body;
 
+  try {
+    const sanPham = await SanPhamModel.findById(IDSanPham);
+    if (!sanPham) {
+      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+    }
+    // Cập nhật trạng thái sản phẩm thành "Đã xóa"
+    sanPham.TinhTrang = TinhTrang;
+    await sanPham.save();
 
-
-
-
-
-
-
-
-
-
-
-// //hàm thêm thuộc tính vào sản phẩm
-// async function createThuocTinhSanPham(req, res, next) {
-//     const { IDSanPham,ThuocTinhID} = req.body;
-//     try {
-//         const sanPham = await SanPhamModel.find({IDSanPham:IDSanPham});
-//         if (!sanPham) {
-//           return 'Không tìm thấy sản phẩm';
-//         }
-
-//         sanPham.DanhSachThuocTinh.push(ThuocTinhID);
-//         const sanPhamUpdated = await sanPham.save();
-//         return sanPhamUpdated;
-//       } catch (error) {
-//         console.error('Lỗi khi thêm thuộc tính:', error);
-//         return null;
-//       }
-// }
-
+    res.status(200).json({ message: 'Sản phẩm đã được cập nhật trạng thái thành '+TinhTrang });
+  } catch (error) {
+    console.error("Lỗi cập nhật trạng thái sản phẩm:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
 async function createSanPhamVoiBienThe(req, res) {
   // Tạo sản phẩm gốc
   const projection = {
     _id: 1,
     // Set chapters to null explicitly
   };
-  const { IDSanPham } = req.body;
+  const {IDSanPham} = req.params;
+  const { sku,gia,soLuong, } = req.body;
+  const validation = validateSanPhamData(sku, gia, soLuong);
+  if (!validation.valid) {
+    return res.status(400).json({ errors: validation.errors });
+  }
   const product = await SanPhamModel.findById(IDSanPham).populate(
     "DanhSachThuocTinh.thuocTinh"
   );
+  if(!product){
+    return res.status(404).json({message :"sản phẩm không tồn tại"});
+  }
   const attributeIds = product.DanhSachThuocTinh;
   console.log(attributeIds);
-  // let attributeValuesMap = []
-  // // const ThuocTinhID = Product.DanhSachThuocTinh;
-  // //     console.log(ThuocTinhID)
-  //     for (let i = 0; i < attributeIds.length; i++) {
-  //       console.log(attributeIds[i]); // In ra từng phần tử
-  //       const thuocTinhgiatri = await ThuocTinhGiaTriModel.find({ThuocTinhID:attributeIds[i]},projection);
-
-  //       attributeValuesMap[attributeIds[i]] = thuocTinhgiatri;
-
-  //   }
-  //   console.log(attributeValuesMap)
-
   // // Tạo các biến thể sản phẩm
   const createVariants = async (product, thuocTinhs, currentVariant = {}) => {
     if (thuocTinhs.length === 0) {
@@ -299,24 +352,13 @@ async function createSanPhamVoiBienThe(req, res) {
           IDGiaTriThuocTinh: value,
         })
       );
-      // const KetHopThuocTinh2 = [{IDGiaTriThuocTinh:"66c0166f71819b042379ac36"},
-      //   {IDGiaTriThuocTinh:"66c01a35577ef0bfbf76962c"}
-      // ]
-      // console.log("updatedVariant",KetHopThuocTinh);
-      // console.log("KetHopThuocTinh2",KetHopThuocTinh2);
       const newVariant = new BienTheSchema({
         IDSanPham: product._id,
-        sku: "aa",
-        gia: 100,
-        soLuong: 10,
-        // ... các trường khác
-        //ketHopThuocTinh: Object.values(updatedVariant)
+        sku: sku,
+        gia: gia,
+        soLuong: soLuong,
         KetHopThuocTinh: KetHopThuocTinh,
       });
-      // if (!newVariant.ketHopThuocTinh) {
-      //   console.log(newVariant);
-      //   return console.log("ket hop thuoc tinh rong");
-      // }
       await newVariant.save();
       console.log(newVariant);
     } else {
@@ -329,25 +371,27 @@ async function createSanPhamVoiBienThe(req, res) {
       console.log(giaTriThuocTinhList);
       for (const giaTri of giaTriThuocTinhList) {
         const IDGiaTriThuocTinh = giaTri._id; // Destructure to get the value ID
-        //currentVariant = { ...currentVariant, [thuocTinh]: _id }; // Update currentVariant
         currentVariant = { ...currentVariant, [thuocTinh]: IDGiaTriThuocTinh };
         await createVariants(product, [...thuocTinhs], currentVariant);
       }
-      // for (const giaTri of giaTriThuocTinhList) {
-      //   //const IDGiaTriThuocTinh= giaTri._id
-      //   currentVariant[thuocTinh] = giaTri._id;
-      //   await createVariants(product, [...thuocTinhs], { ...currentVariant });
-      // }
+
     }
   };
 
   await createVariants(product, attributeIds);
+// Điều kiện dừng: Kiểm tra nếu tất cả các biến thể đã được tạo xong
+const totalCombinations = attributeIds.reduce((acc, attr) => acc * attr.length, 1);
+const variantsCount = await BienTheSchema.countDocuments({ IDSanPham: product._id });
+if (variantsCount === totalCombinations) {
+  console.log("Tất cả các biến thể đã được tạo xong");
+}
   return product;
 }
 
 //code them thuoc tinh vao ben trong san pham
 async function createThuocTinhSanPham(req, res, next) {
-  const { IDSanPham, ThuocTinhID } = req.body;
+  const {ThuocTinhID } = req.body;
+  const {IDSanPham} = req.params
 
   try {
     // Tìm sản phẩm theo ID
@@ -358,7 +402,10 @@ async function createThuocTinhSanPham(req, res, next) {
 
     // Thêm ThuocTinhID vào mảng DanhSachThuocTinh
     sanPham.DanhSachThuocTinh.push(ThuocTinhID);
-
+    const validationThuocTinh = await validateDanhSachThuocTinh(sanPham.DanhSachThuocTinh);
+    if (!validationThuocTinh.valid) {
+      return res.status(404).json({ message: validationThuocTinh.message });
+    }
     // Lưu thay đổi
     const sanPhamUpdated = await sanPham.save();
 
@@ -370,80 +417,11 @@ async function createThuocTinhSanPham(req, res, next) {
 }
 
 //hamdequy
-async function createbienthesanpham(req, res, next) {
-  const { IDSanPham } = req.body;
-  const projection = {
-    _id: 0,
-    GiaTri: 1,
-    // Set chapters to null explicitly
-  };
-  const sanPham = await SanPhamModel.findById(IDSanPham);
-  if (!sanPham) {
-    return res.status(404).json({ message: "Không tìm thấy sản phẩm" }); // Trả về lỗi HTTP 404
-  }
-  // Lấy danh sách ID thuộc tính
-  let attributeValuesMap = {};
-  const ThuocTinhID = sanPham.DanhSachThuocTinh;
-  console.log(ThuocTinhID);
-  for (let i = 0; i < ThuocTinhID.length; i++) {
-    console.log(ThuocTinhID[i]); // In ra từng phần tử
-    const thuocTinhgiatri = await ThuocTinhGiaTriModel.find(
-      { ThuocTinhID: ThuocTinhID[i] },
-      projection
-    );
-    attributeValuesMap[ThuocTinhID[i]] = thuocTinhgiatri;
-  }
-  console.log(attributeValuesMap);
-  // const attributeValuesMap = {
-  //     ThuocTinhID[i]: ['a1', 'a2'],
-  //     'thu bbb': ['b1', 'b2', 'b3']
-  //   };
-  // Giả sử các giá trị của thuộc tính là: a1, a2, a3, b1, b2, b3
-  //   const attributeValues = ["a1", "a2", "a3", "b1", "b2", "b3"];
-
-  //   // Tạo một hàm đệ quy để tạo các tổ hợp
-  //   function generateCombinations(current, remaining) {
-  //     if (!remaining.length) {
-  //       combinations.push(current.join(''));
-  //       return;
-  //     }
-
-  //     const next = remaining[0];
-  //     for (let i = 0; i < attributeValuesMap.length; i++) {
-  //         for (const value of attributeValuesMap[i]) {
-  //             generateCombinations([...current, value], remaining.slice(1));
-  //           }
-
-  //     }
-
-  //   }
-  function generateCombinations(current, remaining) {
-    if (!remaining.length) {
-      combinations.push(current.join(","));
-      return;
-    }
-
-    const nextId = remaining[0];
-    const values = attributeValuesMap[nextId];
-
-    for (const value of values) {
-      generateCombinations([...current, value], remaining.slice(1));
-    }
-  }
-  // Khởi tạo mảng để lưu các tổ hợp
-  const combinations = [];
-
-  // Gọi hàm đệ quy để tạo các tổ hợp
-  generateCombinations([], ThuocTinhID);
-  console.log(combinations);
-  return combinations;
-}
-
-async function getlistBienTheFake(req, res, next) {
-  const { IDSanPham } = req.body;
+async function getlistBienThe(req, res, next) {
+  const { IDSanPham } = req.params;
   console.log(IDSanPham);
   try {
-    const BienThe = await BienTheSchema.find({ IDSanPham: IDSanPham });
+    const BienThe = await BienTheSchema.find({ IDSanPham: IDSanPham }).populate('KetHopThuocTinh.IDGiaTriThuocTinh');
     res.status(200).json(BienThe);
   } catch (error) {
     console.error(error);
@@ -451,15 +429,11 @@ async function getlistBienTheFake(req, res, next) {
   }
 }
 //create biến thể sản phẩm chay , dự phòng
-async function createBienTheFake(req, res, next) {
-  const { IDSanPham, sku, gia, soLuong, KetHopThuocTinh } = req.body;
+async function createBienTheThuCong(req, res, next) {
+  const { IDSanPham } = req.params;
+  const {  sku, gia, soLuong, KetHopThuocTinh } = req.body;
   try {
-    // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    // const existingThuocTinh = await SanPhamModel.findOne({ IDGiaTriThuocTinh });
-
-    // if (existingThuocTinh) {
-    //     return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
-    // }
+    // truyền vào một kethopthuoctinh có 2 id của giatrithuoctinh la dc biến của giá trị thuộc tính là IDGiaTriThuocTinh 
 
     // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
     const newBienThe = new BienTheSchema({
@@ -677,15 +651,77 @@ async function findSanPhamByDanhMuc(req, res, next) {
 //     console.error('Lỗi khi lấy ngày tạo:', error);
 //   }
 // }
+
+async function validateSanPham(IDSanPham, TenSanPham) {
+  const sanPham = await SanPhamModel.findOne({ IDSanPham, TenSanPham });
+  if (!sanPham) {
+    return { valid: false, message: 'Sản phẩm không tồn tại' };
+  }
+  return { valid: true, sanPham };
+}
+function validateDanhSachThuocTinh(DanhSachThuocTinh) {
+  if (!Array.isArray(DanhSachThuocTinh)) {
+    return { valid: false, message: 'Danh sách thuộc tính phải là một mảng' };
+  }
+
+  const idSet = new Set();
+
+  for (const thuocTinh of DanhSachThuocTinh) {
+    if (!thuocTinh.IDThuocTinh) {
+      return { valid: false, message: 'Mỗi thuộc tính phải có IDThuocTinh' };
+    }
+
+    if (idSet.has(thuocTinh.IDThuocTinh)) {
+      return { valid: false, message: `Thuộc tính với ID ${thuocTinh.IDThuocTinh} bị trùng` };
+    }
+
+    idSet.add(thuocTinh.IDThuocTinh);
+  }
+
+  return { valid: true };
+}
+function validateSanPhamData(sku, gia, soLuong) {
+  const errors = [];
+
+  // Kiểm tra sku
+  if (!sku) {
+    errors.push('SKU không được để trống');
+  }
+
+  // Kiểm tra gia
+  if (gia === undefined || gia === null) {
+    errors.push('Giá không được để trống');
+  } else if (typeof gia !== 'number') {
+    errors.push('Giá phải là số');
+  }
+
+  // Kiểm tra soLuong
+  if (soLuong === undefined || soLuong === null) {
+    errors.push('Số lượng không được để trống');
+  } else if (typeof soLuong !== 'number') {
+    errors.push('Số lượng phải là số');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+
 module.exports = {
   getlistSanPham,
+  getSanPhamListNew_Old,
+  toggleSanPhamMoi,
   createSanPham,
   updateHinhBoSung,
   createSanPhamVoiBienThe,
   createThuocTinhSanPham,
-  getlistBienTheFake,
-  createBienTheFake,
+  getlistBienThe,
+  createBienTheThuCong,
   updateSanPham,
+  deleteSanPham,
+  updateTinhTrangSanPham,
   findSanPham,
   findSanPhamByDanhMuc,
   getlistPageSanPham,

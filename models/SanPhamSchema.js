@@ -12,6 +12,7 @@ const SanPhamSchema = new Schema({
   PhanTramGiamGia: { type: Number },
   NgayTao: { type: Date, default: Date.now },
   TinhTrang: { type: String }, // Ví dụ: 'Còn hàng', 'Hết hàng'
+  SanPhamMoi: { type: Boolean , default:false},// sản phẩm vừa tạo sẽ không được bán luôn , phải tự tay xác nhận mới được bán
   //  TinhTrang: { type: String, enum: ['Còn hàng', 'Hết hàng', 'Ngừng kinh doanh'] },
   MoTa: { type: String },
   Unit: { type: String }, // Đơn vị tính

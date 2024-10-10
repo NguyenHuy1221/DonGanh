@@ -67,8 +67,9 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     console.log(file);
     const id = uid();
-    cb(null, `${id}-${file.originalname}`); // mặc định sẽ save name của hình ảnh
-    // là name gốc, chúng ta có thể rename nó.
+    const ext = path.extname(file.originalname).toLowerCase();
+    const newFilename = `${id}-${file.originalname.replace(ext, '.jpg')}`;
+    cb(null, newFilename);
   },
 });
 
@@ -91,7 +92,7 @@ async function createSanPham(req, res, next) {
     IDDanhMuc,
     IDDanhMucCon,
   } = req.body;
-
+  // const IDSanPham = "kkakakak"
   // Kiểm tra nếu IDSanPham không được cung cấp hoặc là null
   if (!IDSanPham) {
     return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
@@ -111,7 +112,7 @@ async function createSanPham(req, res, next) {
       TenAnh: file.originalname,
       UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
     })) : [];
-
+console.log(newPath,hinhBoSung)
       const newSanPham = new SanPhamModel({
         IDSanPham,
         TenSanPham,

@@ -28,20 +28,7 @@ const HoaDonSchema = new Schema({
     chiTietHoaDon: [
       {
         
-        BienThe: { 
-        IDSanPham: { type: Schema.Types.ObjectId, ref: 'SanPham' },
-        sku: String,
-        gia: Number,
-        soLuong: Number,
-        KetHopThuocTinh: [{
-          GiaTriThuocTinh:{
-            ThuocTinh: {
-              TenThuocTinh: { type: String, required: true }, // Tham chiếu đến thuộc tính
-            },
-          GiaTri: { type: String, required: true },
-        }
-      }]
-         },
+        idBienThe: {type: mongoose.Schema.Types.ObjectId, ref: "BienThe"},
         soLuong: Number,
         donGia: Number,
       },

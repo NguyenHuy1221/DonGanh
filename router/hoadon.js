@@ -27,7 +27,7 @@ hoadonRouter.post('/createUserDiaChivaThongTinGiaoHang', async function (req, re
 hoadonRouter.post('/updateHoaDonThanhToan', async function (req, res) {
     return updateHoaDonThanhToan(req, res);
 })
-hoadonRouter.post('/Checkdonhangbaokim/:orderId', async function (req, res) {
+hoadonRouter.get('/Checkdonhangbaokim/:orderId', async function (req, res) {
     return Checkdonhangbaokim(req, res);
 })
 

@@ -353,7 +353,7 @@ async function updateDanhMucCon(req, res, next) {
         if (!danhMucCon) {
           return res.status(404).json({ message: 'Danh mục con không tồn tại' });
         }
-        danhMucCon.IDDanhMucCon = IDDanhMucContudat;
+        danhMucCon.IDDanhMucCon = IDDanhMucCon;
         danhMucCon.TenDanhMucCon = TenDanhMucCon;
         danhMucCon.MieuTa = MieuTa;
   
@@ -374,35 +374,38 @@ async function updateDanhMucCon(req, res, next) {
 
   async function deleteDanhMucCon(req, res, next) {
     try {
-        const { IDDanhMucCha,IDDanhMucCon } = req.params;
+      // Lấy ID từ params
+      const { IDDanhMucCha, IDDanhMucCon } = req.params;
+      
+      // Kiểm tra nếu thiếu ID nào
       if (!IDDanhMucCha || !IDDanhMucCon) {
         return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
       }
   
-      try {
-        const danhMucCha = await DanhMucModel.findById(IDDanhMucCha);
-        if (!danhMucCha) {
-          return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
-        }
-  
-        const danhMucCon = danhMucCha.DanhMucCon.id(IDDanhMucCon);
-        if (!danhMucCon) {
-          return res.status(404).json({ message: 'Danh mục con không tồn tại' });
-        }
-  
-        danhMucCon.remove();
-        await danhMucCha.save();
-  
-        res.status(200).json({ message: 'Xóa danh mục con thành công' });
-      } catch (error) {
-        console.error('Lỗi khi xóa danh mục con:', error);
-        res.status(500).json({ message: 'Lỗi server', error });
+      // Tìm danh mục cha theo ID
+      const danhMucCha = await DanhMucModel.findById(IDDanhMucCha);
+      if (!danhMucCha) {
+        return res.status(404).json({ message: 'Danh mục cha không tồn tại' });
       }
+  
+      // Sử dụng pull() để xóa danh mục con theo ID
+      const updatedDanhMucCha = await DanhMucModel.findByIdAndUpdate(
+        IDDanhMucCha,
+        { $pull: { DanhMucCon: { _id: IDDanhMucCon } } },
+        { new: true }
+      );
+  
+      if (!updatedDanhMucCha) {
+        return res.status(404).json({ message: 'Không tìm thấy danh mục cha sau khi cập nhật' });
+      }
+  
+      res.status(200).json({ message: 'Xóa danh mục con thành công' });
     } catch (error) {
-      console.error('Lỗi chung:', error);
+      console.error('Lỗi khi xóa danh mục con:', error);
       res.status(500).json({ message: 'Lỗi server', error });
     }
   }
+  
   
 
 module.exports = {

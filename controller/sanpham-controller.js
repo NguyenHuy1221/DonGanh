@@ -67,13 +67,15 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     console.log(file);
     const id = uid();
-    cb(null, `${id}-${file.originalname}`); // mặc định sẽ save name của hình ảnh
-    // là name gốc, chúng ta có thể rename nó.
+    const ext = path.extname(file.originalname).toLowerCase();
+    const newFilename = `${id}-${file.originalname.replace(ext, '.jpg')}`;
+    cb(null, newFilename);
   },
 });
 
 const upload = multer({ storage: storage });
 const uploadFields = util.promisify(upload.fields([{ name: 'file', maxCount: 1 }, { name: 'files', maxCount: 10 }]));
+
 async function createSanPham(req, res, next) {
   const {
     IDSanPham,
@@ -83,7 +85,6 @@ async function createSanPham(req, res, next) {
     SoLuongNhap,
     SoLuongHienTai,
     PhanTramGiamGia,
-    NgayTao,
     TinhTrang,
     MoTa,
     Unit,
@@ -91,7 +92,19 @@ async function createSanPham(req, res, next) {
     IDDanhMuc,
     IDDanhMucCon,
   } = req.body;
-
+  //  const IDSanPham = "dddd"
+  //  const TenSanPham="numberone"
+  //  const DonGiaNhap=12313
+  //  const DonGiaBan=12313
+  //  const SoLuongNhap=3444
+  //  const SoLuongHienTai=3333
+  //  const PhanTramGiamGia=11
+  //  const TinhTrang=1
+  //  const MoTa="aaa"
+  //  const Unit=2
+  //  const DanhSachThuocTinh= []
+  //  const IDDanhMuc="adwwdadw"
+  //  const IDDanhMucCon="fewfesfsef"
   // Kiểm tra nếu IDSanPham không được cung cấp hoặc là null
   if (!IDSanPham) {
     return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
@@ -111,9 +124,9 @@ async function createSanPham(req, res, next) {
       TenAnh: file.originalname,
       UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
     })) : [];
-
+console.log(newPath,hinhBoSung)
       const newSanPham = new SanPhamModel({
-        IDSanPham,
+         IDSanPham,
         TenSanPham,
         HinhSanPham: newPath,
         DonGiaNhap,
@@ -121,7 +134,6 @@ async function createSanPham(req, res, next) {
         SoLuongNhap,
         SoLuongHienTai,
         PhanTramGiamGia,
-        NgayTao,
         TinhTrang,
         MoTa,
         Unit,
@@ -135,16 +147,71 @@ async function createSanPham(req, res, next) {
       const savedSanPham = await newSanPham.save();
       res.status(201).json(savedSanPham);
   } catch (error) {
-    if (error.code === 11000) {
-      console.error("Lỗi thêm sản phẩm đã tồn tại");
-      res.status(409).json({ message: 'Sản phẩm đã tồn tại' });
-    } else {
-      console.error("Lỗi khác:", error);
-      res.status(500).json({ error: 'Lỗi hệ thống' });
-    }
+    console.error("Lỗi Them san pham bổ sung:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
   }
 }
 
+
+async function createSanPhamtest(req, res, next) {
+  const {
+    IDSanPham,
+    TenSanPham,
+    DonGiaNhap,
+    DonGiaBan,
+    SoLuongNhap,
+    SoLuongHienTai,
+    PhanTramGiamGia,
+    TinhTrang,
+    MoTa,
+    Unit,
+    DanhSachThuocTinh,
+    IDDanhMuc,
+    IDDanhMucCon,
+  } = req.body;
+ console.log(IDSanPham,
+  TenSanPham,
+  DonGiaNhap,
+  DonGiaBan,
+  SoLuongNhap,
+  SoLuongHienTai,
+  PhanTramGiamGia,
+  TinhTrang,
+  MoTa,
+  Unit,
+  DanhSachThuocTinh,
+  IDDanhMuc,
+  IDDanhMucCon)
+  if (!IDSanPham) {
+    return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
+  }
+
+  try {
+
+      const newSanPham = new SanPhamModel({
+         IDSanPham,
+        TenSanPham,
+        DonGiaNhap,
+        DonGiaBan,
+        SoLuongNhap,
+        SoLuongHienTai,
+        PhanTramGiamGia,
+        TinhTrang,
+        MoTa,
+        Unit,
+        DanhSachThuocTinh: DanhSachThuocTinh,
+        IDDanhMuc,
+        IDDanhMucCon,
+      });
+
+      // Lưu đối tượng vào cơ sở dữ liệu
+      const savedSanPham = await newSanPham.save();
+      res.status(201).json(savedSanPham);
+  } catch (error) {
+    console.error("Lỗi Them san pham bổ sung:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
 // //hàm thêm sản phẩm
 // async function createSanPham(req, res, next) {
   
@@ -900,4 +967,5 @@ module.exports = {
   // findSanPham,
   // findSanPhambyID,
   // getlistPageSanPham,
+  createSanPhamtest,
 };

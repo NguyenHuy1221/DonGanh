@@ -24,8 +24,10 @@ const {
   sapXepSanPhamNgayTaoGiamDan,
   sapXepSanPhamBanChayNhat,
   sapXepSanPhamCoGiamGia,
+  createSanPhamtest,
 } = require("../controller/sanpham-controller");
-
+sanphamRouter.post("/createSanPhamtest", async function (req, res) {return createSanPhamtest(req, res);
+});
 sanphamRouter.get("/getlistSanPham", async function (req, res) {return getlistSanPham(req, res);
 });
 sanphamRouter.get("/getSanPhamListNew_Old", async function (req, res) {return getSanPhamListNew_Old(req, res);

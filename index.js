@@ -5,7 +5,6 @@ const apiRoute = require("./router");
 const apiBaokim = require("./baokim");
 require("./models/mongo-provider.js");
 const app = express();
-require("dotenv").config();
 const session = require("express-session");
 const passport = require("./config/passportConfig");
 app.use(express.json());
@@ -18,10 +17,18 @@ const cors = require('cors');
 app.use(cors());
 //chat
 const http = require("http"); // Needed to set up a server with socket.io
-const socketIO = require("socket.io"); // Socket.IO for real-time functionality
-const server = http.createServer(app); // Use http server
-const io = socketIO(server); // Initialize socket.io on the server
-
+// const socketIO = require("socket.io"); // Socket.IO for real-time functionality
+var server = http.createServer(app); // Use http server
+// const io = socketIO(server); // Initialize socket.io on the server
+var io = require('socket.io')(server,{
+  cors: {
+      origin: '*',
+      methods: ['GET', 'POST'],
+      credentials: true
+  },
+  transports: ['websocket']
+  
+});
 
 // // Thư mục chứa hình ảnh
 const publicPath = path.join(__dirname, "public");
@@ -107,6 +114,11 @@ app.get("/logout", (req, res) => {
 // Socket.IO implementation
 io.on("connection", (socket) => {
   console.log("New client connected");
+  console.log(socket.id, "has joined");
+  socket.on("/test", (mgs) =>{
+      console.log(mgs);
+      // io.emit("/test", mgs);
+  })
 
   // Listen for chat messages
   socket.on("chat message", (msg) => {
@@ -121,8 +133,8 @@ io.on("connection", (socket) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+server.listen(3000,"0.0.0.0", () => {
+  console.log("Server  is running on port 3000");
 });
 
 //gpt 

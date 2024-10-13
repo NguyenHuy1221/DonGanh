@@ -101,7 +101,7 @@ async function getHoaDonByHoaDonId(req, res) {
 
 
 async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
-    const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang,YeuCauNhanHang,giohangId,TongTien,transactionId } = req.body;
+    const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang,YeuCauNhanHang,giohangId,TongTien } = req.body;
 // const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').format('YYYYMMDDHHmmss');
     // Tạo một object để lưu trữ các trường cần cập nhật
     const TrangThai = 0
@@ -165,7 +165,7 @@ console.log(removeAccents(user.tenNguoiDung))
       // await user.save();
       const newHoaDon = new HoaDonModel({
         userId,
-        orderId: orderId,
+        
         diaChi:diaChiMoi,
         TrangThai,
         TongTien,

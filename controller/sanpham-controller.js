@@ -77,39 +77,7 @@ const upload = multer({ storage: storage });
 const uploadFields = util.promisify(upload.fields([{ name: 'file', maxCount: 1 }, { name: 'files', maxCount: 10 }]));
 
 async function createSanPham(req, res, next) {
-  const {
-    IDSanPham,
-    TenSanPham,
-    DonGiaNhap,
-    DonGiaBan,
-    SoLuongNhap,
-    SoLuongHienTai,
-    PhanTramGiamGia,
-    TinhTrang,
-    MoTa,
-    Unit,
-    DanhSachThuocTinh,
-    IDDanhMuc,
-    IDDanhMucCon,
-  } = req.body;
-  //  const IDSanPham = "dddd"
-  //  const TenSanPham="numberone"
-  //  const DonGiaNhap=12313
-  //  const DonGiaBan=12313
-  //  const SoLuongNhap=3444
-  //  const SoLuongHienTai=3333
-  //  const PhanTramGiamGia=11
-  //  const TinhTrang=1
-  //  const MoTa="aaa"
-  //  const Unit=2
-  //  const DanhSachThuocTinh= []
-  //  const IDDanhMuc="adwwdadw"
-  //  const IDDanhMucCon="fewfesfsef"
-  // Kiểm tra nếu IDSanPham không được cung cấp hoặc là null
-  if (!IDSanPham) {
-    return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
-  }
-
+  
   try {
     // Xử lý tệp chính và các tệp bổ sung
     await uploadFields(req, res);
@@ -124,6 +92,52 @@ async function createSanPham(req, res, next) {
       TenAnh: file.originalname,
       UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
     })) : [];
+    const {
+      IDSanPham,
+      TenSanPham,
+      DonGiaNhap,
+      DonGiaBan,
+      SoLuongNhap,
+      SoLuongHienTai,
+      PhanTramGiamGia,
+      TinhTrang,
+      MoTa,
+      Unit,
+      DanhSachThuocTinh,
+      IDDanhMuc,
+      IDDanhMucCon,
+    } = req.body;
+    console.log(IDSanPham,
+      TenSanPham,
+      DonGiaNhap,
+      DonGiaBan,
+      SoLuongNhap,
+      SoLuongHienTai,
+      PhanTramGiamGia,
+      TinhTrang,
+      MoTa,
+      Unit,
+      DanhSachThuocTinh,
+      IDDanhMuc,
+      IDDanhMucCon,)
+    //  const IDSanPham = "dddd"
+    //  const TenSanPham="numberone"
+    //  const DonGiaNhap=12313
+    //  const DonGiaBan=12313
+    //  const SoLuongNhap=3444
+    //  const SoLuongHienTai=3333
+    //  const PhanTramGiamGia=11
+    //  const TinhTrang=1
+    //  const MoTa="aaa"
+    //  const Unit=2
+    //  const DanhSachThuocTinh= []
+    //  const IDDanhMuc="adwwdadw"
+    //  const IDDanhMucCon="fewfesfsef"
+    // Kiểm tra nếu IDSanPham không được cung cấp hoặc là null
+    if (!IDSanPham) {
+      return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
+    }
+  
 console.log(newPath,hinhBoSung)
       const newSanPham = new SanPhamModel({
          IDSanPham,

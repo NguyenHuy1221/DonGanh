@@ -5,7 +5,17 @@ const {refreshTokenUser} = require('../jwt/index')
 require("dotenv").config();
 const { hashPassword, comparePassword, generateToken } = require("../untils");
 const crypto = require("crypto");
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.CLIENT_ID);
 
+async function verifyGoogleToken(token) {
+  const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  return payload;
+}
 
 async function RegisterUser(req, res) {
   const { tenNguoiDung, gmail, matKhau } = req.body;
@@ -62,6 +72,58 @@ async function RegisterUser(req, res) {
   }
 }
 
+async function RegisterUserGG(req, res) {
+  const { token } = req.body;
+  try {
+    const googleUser = await verifyGoogleToken(token);
+    let user = await UserModel.findOne({ gmail: googleUser.email });
+    
+    if (!user) {
+      // Create new user if not exist
+      user = await UserModel.create({
+        tenNguoiDung: googleUser.name,
+        gmail: googleUser.email,
+        isVerified: true,
+      });
+    }
+    return res.json({
+      message:
+        "đăng nhập thành công ",user
+    } );
+ } catch (error) {
+    console.error("Lỗi khi thêm người dùng:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi thêm người dùng" });
+  }
+}
+
+async function LoginUserGG(req, res) {
+  const { gmail, matKhau } = req.body;
+
+  try {
+    if (!gmail || !matKhau) {
+      return res.status(400).json({ message: "Vui lòng cung cấp đầy đủ thông tin đăng nhập" });
+    }
+
+    const user = await UserModel.findOne({ gmail: gmail });
+    if (!user) {
+      return res.status(400).json({ message: "Người dùng không tồn tại" });
+    }
+
+    const isMatch = await comparePassword(matKhau, user.matKhau);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Sai mật khẩu" });
+    }
+
+    // Tạo token (nếu cần thiết) và trả về dữ liệu người dùng
+    return res.json({ message: "Đăng nhập thành công", user });
+  } catch (error) {
+    console.error("Lỗi khi đăng nhập người dùng:", error);
+    return res.status(500).json({ message: "Đã xảy ra lỗi khi đăng nhập người dùng" });
+  }
+
+}
 async function VerifyOTP(req, res) {
   const { gmail, otp } = req.body;
 
@@ -379,5 +441,7 @@ module.exports = {
   updateUser,
   updateUserDiaChi,
   ResendOTP,
-  saveChat
+  saveChat,
+  RegisterUserGG,
+  LoginUserGG,
 };

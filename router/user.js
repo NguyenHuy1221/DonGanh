@@ -32,6 +32,8 @@ const {
   updateUserDiaChi,
   ResendOTP,
   saveChat,
+  RegisterUserGG,
+  LoginUserGG,
 } = require("../controller/user-controller");
 
 // show user
@@ -84,6 +86,13 @@ userRoute.put("/updateUserDiaChi", async function (req, res) {
 userRoute.post("/saveChat", async function (req, res) {
   return saveChat(req, res);
 });
+userRoute.post("/RegisterUserGG", async function (req, res) {
+  return RegisterUserGG(req, res);
+});
 
+//update image user
+userRoute.post("/LoginUserGG/", async function (req, res) {
+  return LoginUserGG(req, res);
+});
 
 module.exports = userRoute;

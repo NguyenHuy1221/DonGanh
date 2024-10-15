@@ -297,8 +297,9 @@ const orderData2 = {
        }))),
 
 };
+const now = new Date().toISOString
   // Kiểm tra thời gian hết hạn của đơn hàng
-  if (new Date() > order.expiresAt) {
+  if (new Date(now) > order.expiresAt) {
     // const donhangmoi = await createOrder(orderData2)
     // res.status(200).json(donhangmoi);
      return res.status(400).json({ message: 'Đơn hàng đã hết hạn' });

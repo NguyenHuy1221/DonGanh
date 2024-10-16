@@ -47,9 +47,10 @@ async function getHoaDonByUserId(req, res) {
       return res.status(400).json({ message: "Thiếu thông tin userid" });
     }
 
-    const hoadon = await HoaDonModel.find({userId:userId}).populate("userId")
-    .populate('khuyenmaiId')
-    .populate('transactionId')
+    const hoadon = await HoaDonModel.find({userId:userId})
+    // .populate("userId")
+    // .populate('khuyenmaiId')
+    // .populate('transactionId')
     // .populate({
     //   path: 'chiTietHoaDon.BienThe.IDSanPham',
     //   model: 'SanPham',

@@ -607,6 +607,7 @@ async function updateSanPham(req, res, next) {
     res.status(500).json({ error: 'Lỗi hệ thống' });
   }
 }
+
 async function deleteSanPham(req, res, next) {
   const { IDSanPham } = req.params;
 

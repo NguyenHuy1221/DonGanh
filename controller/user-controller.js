@@ -73,7 +73,8 @@ async function RegisterUser(req, res) {
 }
 
 async function RegisterUserGG(req, res) {
-  const { token } = req.body;
+  // const { token } = req.body;
+  const token = "token: ya29.a0AcM612z48YHaFI8SEgUmL3rY8Jpd0ZBYU8RgI43Rq4l2n9XYxjE0gAKSiYocJE1vJ7yB48d_Xy6lA15Yqf5Hw46jmBoX2CykCI26oXDHYxbBCDfY6IZe-9Q0RI8ObIehIRXbTICQI65Tr7unbjlImBc6USZhjQ_0zbLvdbKMaCgYKAV8SARMSFQHGX2MiyXabvheMI9f25miC8dIP0A0175"
   try {
     const googleUser = await verifyGoogleToken(token);
     let user = await UserModel.findOne({ gmail: googleUser.email });

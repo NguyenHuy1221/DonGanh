@@ -6,6 +6,8 @@ const {getlistHoaDon,
     createUserDiaChivaThongTinGiaoHang,
     updateTransactionHoaDon,
     Checkdonhangbaokim,
+    updatetrangthaihuydonhang,
+    updateTransactionHoaDonCOD,
     } = require("../controller/HoaDon-controller")
 
 hoadonRouter.get('/getlistHoaDon', async function (req, res) {
@@ -30,6 +32,13 @@ hoadonRouter.post('/updateTransactionHoaDon/:hoadonId', async function (req, res
 hoadonRouter.get('/Checkdonhangbaokim/:orderId', async function (req, res) {
     return Checkdonhangbaokim(req, res);
 })
+hoadonRouter.put('/updatetrangthaihuydonhang/:hoadonId', async function (req, res) {
+    return updatetrangthaihuydonhang(req, res);
+})
+hoadonRouter.put('/updateTransactionHoaDonCOD/:hoadonId', async function (req, res) {
+    return updateTransactionHoaDonCOD(req, res);
+})
+
 
 // hoadonRouter.get('/findThuocTinh', async function (req, res) {
 //     return findThuocTinh(req, res);

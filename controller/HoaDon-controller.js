@@ -335,6 +335,43 @@ const now = new Date().toISOString
         return 'Error  check Order methods:', error;
     }
   }
+  async function updatetrangthaihuydonhang(req, res, next) {
+    const hoadonId = req.params.hoadonId
+    
+      try {
+        
+    const hoadon = await HoaDonModel.findById(hoadonId)// Lấy thông tin đơn hàng từ DB
+        if (!hoadon) {
+          return 'hoa don không tồn tại';
+        }
+        hoadon.TrangThai = 4;
+        await hoadon.save();
+        res.status(200).json("Huy don hang thanh cong");
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi cập nhật trang thái hủy hoa don' });
+      }
+    }
+
+    
+async function updateTransactionHoaDonCOD(req, res, next) {
+  const hoadonId = req.params.hoadonId
+    const { transactionId } = req.body;
+  
+    try {
+      
+  const hoadon = await HoaDonModel.findById(hoadonId)// Lấy thông tin đơn hàng từ DB
+      if (!hoadon) {
+        return 'hoa don không tồn tại';
+      }
+      hoadon.transactionId = transactionId;
+      await hoadon.save();
+      res.status(200).json({message: "Tạo dơn hàng thành công"});
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Lỗi khi cập nhật hoa don' });
+    }
+  }
 
 //hàm thêm thuộc tính
 async function createThuocTinh(req, res, next) {
@@ -440,4 +477,6 @@ module.exports = {
     createUserDiaChivaThongTinGiaoHang,
     updateTransactionHoaDon,
     Checkdonhangbaokim,
+    updatetrangthaihuydonhang,
+    updateTransactionHoaDonCOD,
 };

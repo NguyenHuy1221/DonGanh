@@ -569,7 +569,7 @@ async function updateSanPham(req, res, next) {
     }
 
     const {
-      IDSanPhamtudat,
+      // IDSanPhamtudat,
       TenSanPham,
       DonGiaNhap,
       DonGiaBan,
@@ -585,7 +585,7 @@ async function updateSanPham(req, res, next) {
       IDDanhMucCon,
     } = req.body;
 
-    if (IDSanPhamtudat !== undefined) sanPham.IDSanPham = IDSanPhamtudat;
+    if (IDSanPham !== undefined) sanPham.IDSanPham = IDSanPham;
     if (TenSanPham !== undefined) sanPham.TenSanPham = TenSanPham;
     if (DonGiaNhap !== undefined) sanPham.DonGiaNhap = DonGiaNhap;
     if (DonGiaBan !== undefined) sanPham.DonGiaBan = DonGiaBan;

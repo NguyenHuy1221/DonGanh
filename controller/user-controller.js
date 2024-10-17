@@ -73,14 +73,12 @@ async function RegisterUser(req, res) {
 }
 
 async function RegisterUserGG(req, res) {
-  // const { token } = req.body;
-  const token = "ya29.a0AcM612z48YHaFI8SEgUmL3rY8Jpd0ZBYU8RgI43Rq4l2n9XYxjE0gAKSiYocJE1vJ7yB48d_Xy6lA15Yqf5Hw46jmBoX2CykCI26oXDHYxbBCDfY6IZe-9Q0RI8ObIehIRXbTICQI65Tr7unbjlImBc6USZhjQ_0zbLvdbKMaCgYKAV8SARMSFQHGX2MiyXabvheMI9f25miC8dIP0A0175"
+   const { token } = req.body;
+
   try {
     const googleUser = await verifyGoogleToken(token);
     let user = await UserModel.findOne({ gmail: googleUser.email });
-    
-    if (!user) {
-      // Create new user if not exist
+    if (!user) {// Create new user if not exist
       user = await UserModel.create({
         tenNguoiDung: googleUser.name,
         gmail: googleUser.email,
@@ -88,9 +86,7 @@ async function RegisterUserGG(req, res) {
       });
     }
     return res.json({
-      message:
-        "đăng nhập thành công ",user
-    } );
+      message:"đăng nhập thành công ",user} );
  } catch (error) {
     console.error("Lỗi khi thêm người dùng:", error);
     return res

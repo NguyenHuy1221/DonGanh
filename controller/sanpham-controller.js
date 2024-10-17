@@ -535,10 +535,9 @@ async function updateHinhBoSung(req, res, next) {
 
 async function updateSanPham(req, res, next) {
   try {
-    const { IDSanPham } = req.params;
-    console.log(IDSanPham);
+    const { id } = req.params;
     
-    const sanPham = await SanPhamModel.findById(IDSanPham);
+    const sanPham = await SanPhamModel.findById(id);
     if (!sanPham) {
       return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
     }
@@ -569,7 +568,7 @@ async function updateSanPham(req, res, next) {
     }
 
     const {
-      IDSanPhamtudat,
+      IDSanPham,
       TenSanPham,
       DonGiaNhap,
       DonGiaBan,
@@ -585,7 +584,7 @@ async function updateSanPham(req, res, next) {
       IDDanhMucCon,
     } = req.body;
 
-    if (IDSanPhamtudat !== undefined) sanPham.IDSanPham = IDSanPhamtudat;
+    if (IDSanPham !== undefined) sanPham.IDSanPham = IDSanPham;
     if (TenSanPham !== undefined) sanPham.TenSanPham = TenSanPham;
     if (DonGiaNhap !== undefined) sanPham.DonGiaNhap = DonGiaNhap;
     if (DonGiaBan !== undefined) sanPham.DonGiaBan = DonGiaBan;

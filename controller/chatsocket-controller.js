@@ -6,7 +6,6 @@ require("dotenv").config();
 async function Createconversation(req, res, next) {
     try {
         const { sender_id, receiver_id } = req.body;
-    
         // Kiểm tra xem conversation đã tồn tại chưa
         let conversation = await ConversationModel.findOne({ sender_id, receiver_id });
         if (!conversation) {

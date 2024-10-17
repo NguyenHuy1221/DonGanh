@@ -44,7 +44,7 @@ sanphamRouter.post("/createbienthesanpham", async function (req, res) {return cr
 });
 sanphamRouter.post("/createSanPhamVoiBienThe/:IDSanPham", async function (req, res) {return createSanPhamVoiBienThe(req, res);
 });
-sanphamRouter.put("/updateSanPham/:IDSanPham", async function (req, res) {return updateSanPham(req, res);
+sanphamRouter.put("/updateSanPham/:id", async function (req, res) {return updateSanPham(req, res);
 });
 sanphamRouter.put("/deleteSanPham/:IDSanPham", async function (req, res) {return deleteSanPham(req, res);
 });

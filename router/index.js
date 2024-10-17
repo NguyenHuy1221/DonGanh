@@ -13,6 +13,7 @@ const hoadonRoute = require("../router/hoadon");
 const khuyenmaiRoute = require("../router/khuyenmai");
 const khuyenmaimanageRoute = require("../router/khuyenmai-manage");
 const diachiRoute = require("../router/diachi");
+const chatsocket = require("../router/chatsoccket");
 // const phuongthucthanhtoanRoute = require("../router/phuongthucthanhtoan")
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
@@ -93,12 +94,13 @@ apiRoute.use(
   },
   diachiRoute
 );
-// apiRoute.use(
-//   "/phuongthucthanhtoan",
-//   (req, res, next) => {
-//     console.log("call phuong thuc thanh toan api router");
-//     next();
-//   },
-//   phuongthucthanhtoanRoute
-// );
+apiRoute.use(
+  "/chatsocket",
+  (req, res, next) => {
+    console.log("call chat socket api router");
+    next();
+  },
+  chatsocket
+);
+
 module.exports = apiRoute;

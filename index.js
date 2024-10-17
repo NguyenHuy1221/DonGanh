@@ -11,10 +11,12 @@ app.use(express.json());
 app.use("/api", apiRoute);
 app.use("/apiBaokim", apiBaokim);
 const path = require("path");
-
+const ConversationModel = require("./models/ConversationSchema.js");
+const MessageModel = require("./models/MessageSchema.js");
 //chat ong an do thu 3
 const cors = require('cors');
 app.use(cors());
+const jwt = require('jsonwebtoken')
 //chat
 const http = require("http"); // Needed to set up a server with socket.io
 // const socketIO = require("socket.io"); // Socket.IO for real-time functionality
@@ -110,30 +112,74 @@ app.get("/logout", (req, res) => {
 });
 
 //chat
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
 
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return next(new Error('Authentication error'));
+    }
+    socket.userId = decoded.userId;
+    next();
+  });
+});
 // Socket.IO implementation
 io.on("connection", (socket) => {
   console.log("New client connected");
-  console.log(socket.id, "has joined");
+  console.log('a user connected:', socket.userId)
   socket.on("/test", (mgs) =>{
       console.log(mgs);
       // io.emit("/test", mgs);
   })
 
-  // Listen for chat messages
-  socket.on("chat message", (msg) => {
-    console.log("Message received: ", msg);
+  
+  socket.on('join', async ({ token, conversationId }) => {
+    try {
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
+      const userId = decoded.userId;
 
-    // Broadcast message to all connected clients
-    io.emit("chat message", msg);
+      const conversation = await ConversationModel.findById(conversationId);
+      if (conversation) {
+        socket.join(conversationId);
+        console.log(`User ${userId} joined conversation ${conversationId}`);
+      } else {
+        socket.emit('error', { message: 'Conversation not found' });
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      socket.emit('error', { message: 'Invalid token' });
+    }
   });
 
+  socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
+    try {
+      const message = new MessageModel({
+        text,
+        imageUrl,
+        videoUrl,
+        msgByUserId: socket.userId,
+      });
+      await message.save();
+
+      const conversation = await ConversationModel.findById(conversationId);
+      conversation.messages.push(message._id);
+      await conversation.save();
+
+      io.to(conversationId).emit('message', { conversationId, message });
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+
+  })
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
 });
 
-server.listen(5000,"0.0.0.0", () => {
+server.listen(3000,"0.0.0.0", () => {
   console.log("Server  is running on port 3000");
 });
 

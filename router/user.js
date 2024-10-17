@@ -4,22 +4,22 @@ const UserModel = require("../models/NguoiDungSchema");
 const bodyParser = require('body-parser');
 
 userRoute.use(bodyParser.json());
-userRoute.use(bodyParser.urlencoded({extended:true}));
+userRoute.use(bodyParser.urlencoded({ extended: true }));
 userRoute.use(express.static('public'));
 const path = require('path')
-const multer =require('multer');
+const multer = require('multer');
 
 const storage = multer.diskStorage({
-  destination:function(req,file,cb){
-    cb(null, path.join(__dirname,'../public/images'));
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../public/images'));
   },
-  filename:function(req, file,cb){
-    const name = Date.now()+'-'+file.originalname;
-    cb(null,name)
+  filename: function (req, file, cb) {
+    const name = Date.now() + '-' + file.originalname;
+    cb(null, name)
   }
 })
 
-const upload = multer({storage:storage})
+const upload = multer({ storage: storage })
 const {
   RegisterUser,
   loginUser,

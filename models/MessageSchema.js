@@ -3,8 +3,8 @@ const { Schema } = mongoose;
 const {convertToVietnamTimezone} = require('../middleware/index');
 const MessageSchema = new Schema({
   text: {type:String,required:true},
-  imageUrl: {type:String,required:true},
-  videoUrl: {type:String,required:true},
+  imageUrl: {type:String,required:false},
+  videoUrl: {type:String,required:false},
   seen: {type:Boolean,default : false},
   msgByUserId : {
       type : mongoose.Schema.ObjectId,

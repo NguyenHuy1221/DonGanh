@@ -25,6 +25,7 @@ const {
   sapXepSanPhamBanChayNhat,
   sapXepSanPhamCoGiamGia,
   createSanPhamtest,
+  getDanhSachThuocTinhTrongSanPham,
 } = require("../controller/sanpham-controller");
 sanphamRouter.post("/createSanPhamtest", async function (req, res) {return createSanPhamtest(req, res);
 });
@@ -52,7 +53,9 @@ sanphamRouter.put("/updateTinhTrangSanPham/:IDSanPham", async function (req, res
 });
 
 
-
+sanphamRouter.get("/getDanhSachThuocTinhTrongSanPham/:IDSanPham", async function (req, res) {
+  return getDanhSachThuocTinhTrongSanPham(req, res);
+});
 sanphamRouter.get("/getlistBienThe/:IDSanPham", async function (req, res) {
   return getlistBienThe(req, res);
 });

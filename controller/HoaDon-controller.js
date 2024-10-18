@@ -105,6 +105,9 @@ async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
     const { userId, diaChiMoi,ghiChu,khuyenmaiId,ChiTietGioHang,YeuCauNhanHang,giohangId,TongTien } = req.body;
 // const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').format('YYYYMMDDHHmmss');
     // Tạo một object để lưu trữ các trường cần cập nhật
+    if(!ghiChu){
+      ghiChu = "khong co"
+    }
     const TrangThai = 0
     try {
       const user = await UserModel.findById(userId);
@@ -251,6 +254,7 @@ const orderData2 = {
       }
       
       const donhangmoi = await createOrder(orderData2)
+      console.log(donhangmoi)
       hoadon.transactionId = transactionId;
       hoadon.payment_url = donhangmoi.data.payment_url
       hoadon.mrc_order_id = orderIdbaokim 

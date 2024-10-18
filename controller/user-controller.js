@@ -1,7 +1,7 @@
 const UserModel = require("../models/NguoiDungSchema");
 const transporter = require("./mailer");
 const ChatModel = require('../models/MessageSchema')
-const {refreshTokenUser} = require('../jwt/index')
+const { refreshTokenUser } = require('../jwt/index')
 require("dotenv").config();
 const { hashPassword, comparePassword, generateToken } = require("../untils");
 const crypto = require("crypto");
@@ -10,8 +10,8 @@ const client = new OAuth2Client(process.env.CLIENT_ID);
 
 async function verifyGoogleToken(token) {
   const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.CLIENT_ID,
+    idToken: token,
+    audience: process.env.CLIENT_ID,
   });
   const payload = ticket.getPayload();
   return payload;
@@ -72,26 +72,66 @@ async function RegisterUser(req, res) {
   }
 }
 
+// async function RegisterUserGG(req, res) {
+//    const { tenNguoiDung ,gmail,googleId  } = req.body;
+// console.log(tenNguoiDung ,gmail,googleId)
+//   try {
+//     const user = await UserModel.findOne({ gmail: gmail });
+//     if (!user) {// Create new user if not exist
+//       // user = await UserModel.create({
+//       //   tenNguoiDung: tenNguoiDung,
+//       //   gmail: gmail,
+//       //   googleId:googleId,
+//       //   isVerified: "true",
+//       // });
+//       user.tenNguoiDung = tenNguoiDung,
+//       user.gmail =gmail
+//       user.googleId =googleId
+//       await user.save();
+//     }
+//     console.log("Thanh cong")
+//     return res.json({
+//       message:"đăng nhập thành công ",user} );
+//  } catch (error) {
+//     console.error("Lỗi khi thêm người dùng:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Đã xảy ra lỗi khi thêm người dùng" });
+//   }
+// }
 async function RegisterUserGG(req, res) {
-   const { token } = req.body;
+  const { tenNguoiDung, gmail, googleId } = req.body;
+  // const tenNguoiDung = "huy 111"
+  // const gmail = "huylop090@gmail.com"
+  // const googleId = "102999632489815117168"
+
+
+  console.log(tenNguoiDung, gmail, googleId);
 
   try {
-    const googleUser = await verifyGoogleToken(token);
-    let user = await UserModel.findOne({ gmail: googleUser.email });
-    if (!user) {// Create new user if not exist
+    let user = await UserModel.findOne({ gmail: gmail });
+
+    if (!user) {
+      // Create new user if not exist
       user = await UserModel.create({
-        tenNguoiDung: googleUser.name,
-        gmail: googleUser.email,
+        tenNguoiDung: tenNguoiDung,
+        gmail: gmail,
+        googleId: googleId,
         isVerified: true,
       });
+    } else {
+      // Update existing user's information
+      user.tenNguoiDung = tenNguoiDung;
+      user.gmail = gmail;
+      user.googleId = googleId;
+      await user.save();
     }
-    return res.json({
-      message:"đăng nhập thành công ",user} );
- } catch (error) {
+    const token = generateToken(user._id, user.role);
+    console.log("Thành công");
+    return res.json({ message: "Đăng nhập thành công", token });
+  } catch (error) {
     console.error("Lỗi khi thêm người dùng:", error);
-    return res
-      .status(500)
-      .json({ message: "Đã xảy ra lỗi khi thêm người dùng" });
+    return res.status(500).json({ message: "Đã xảy ra lỗi khi thêm người dùng" });
   }
 }
 
@@ -167,7 +207,7 @@ async function loginUser(req, res) {
     if (!check) {
       return res.status(400).json({ message: "Mật khẩu không đúng" });
     }
-    
+
     const token = generateToken(user._id, user.role);
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {
@@ -244,17 +284,13 @@ async function ResetPassword(req, res) {
 async function showUserById(req, res) {
   try {
     const { userId } = req.params;
-
     if (!userId) {
       return res.status(400).json({ message: "Thiếu thông tin userId" });
     }
-
     const user = await UserModel.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
-
     return res.json(user);
   } catch (error) {
     console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -413,18 +449,18 @@ async function updateUserDiaChi(req, res, next) {
     res.status(500).json({ message: "Lỗi khi cập nhật người dùng" });
   }
 }
-async function saveChat(req,res, next){
-  try{
+async function saveChat(req, res, next) {
+  try {
     new ChatModel({
-        sender_id:req.body.sender_id,
-        receiver_id:req.body.receiver_id,
-        message:req.body.message,
+      sender_id: req.body.sender_id,
+      receiver_id: req.body.receiver_id,
+      message: req.body.message,
     }),
 
-    await ChatModel.save;
-    res.status(200).send({success:true,msg:'chat inserted'})
-  }catch(error){
-    res.status(400).send({success:false ,msg:error.message})
+      await ChatModel.save;
+    res.status(200).send({ success: true, msg: 'chat inserted' })
+  } catch (error) {
+    res.status(400).send({ success: false, msg: error.message })
   }
 }
 module.exports = {

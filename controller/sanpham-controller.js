@@ -2,6 +2,7 @@ const SanPhamModel = require("../models/SanPhamSchema");
 const ThuocTinhModel = require("../models/ThuocTinhSchema");
 const ThuocTinhGiaTriModel = require("../models/GiaTriThuocTinhSchema");
 const BienTheSchema = require("../models/BienTheSchema");
+const GiaTriThuocTinhModel = require("../models/GiaTriThuocTinhSchema")
 const mongoose = require("mongoose");
 
 const fs = require('fs');
@@ -710,7 +711,28 @@ if (variantsCount === totalCombinations) {
 }
   return product;
 }
+async function getDanhSachThuocTinhTrongSanPham(req, res) {
+  const { IDSanPham} = req.params
+  try {
+    // Tìm sản phẩm và populate các thuộc tính
+    const sanPham = await SanPhamModel.findById(IDSanPham).populate({
+      path: 'DanhSachThuocTinh.thuocTinh',
+      populate: {
+        path: 'GiaTriThuocTinh',
+        model: 'GiaTriThuocTinh'
+      }
+    });
 
+    if (!sanPham) {
+      throw new Error('Sản phẩm không tồn tại');
+    }
+
+    return res.json(sanPham.DanhSachThuocTinh); 
+  } catch (error) {
+    console.error("Lỗi khi get list giá trị thuộc tính", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" }); 
+  }
+}
 //code them thuoc tinh vao ben trong san pham
 async function createThuocTinhSanPham(req, res, next) {
   const {ThuocTinhID } = req.body;
@@ -1072,4 +1094,5 @@ module.exports = {
   // findSanPhambyID,
   // getlistPageSanPham,
   createSanPhamtest,
+  getDanhSachThuocTinhTrongSanPham,
 };

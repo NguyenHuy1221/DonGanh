@@ -15,13 +15,35 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     console.log(file);
     const id = uid();
-    cb(null, `${id}-${file.originalname}`); // mặc định sẽ save name của hình ảnh
+    // cb(null, `${id}-${file.originalname}`);
+    cb(null, Date.now() + path.extname(file.originalname)); // mặc định sẽ save name của hình ảnh
     // là name gốc, chúng ta có thể rename nó.
   },
 });
 
 
+const storageForvideoandimage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, 'public/upload/'); // Thư mục ảnh
+    } else if (file.mimetype.startsWith('video/')) {
+      cb(null, 'public/upload/_videos/'); // Thư mục video
+    } else {
+      cb(new Error('Invalid file type'), false);
+    }
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+
 const upload = multer({ storage: storage });
+const uploadVideoOrImage = multer({ storageForvideoandimage: storageForvideoandimage });
+const uploadFiles = upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+])
 
 async function comparePassword(plaintextPassword, hash) {
   const result = await bcrypt.compare(plaintextPassword, hash);
@@ -40,10 +62,24 @@ function generateToken(payLoad) {
 
   return token;
 }
+function decodeToken(token) {
+  const secretKey = process.env.SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("SECRET_KEY is not defined");
+  }
 
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    return decoded;
+  } catch (error) {
+    throw new Error("Token verification failed: " + error.message);
+  }
+}
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
   upload,
+  uploadFiles,
+  decodeToken,
 };

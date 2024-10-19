@@ -16,7 +16,8 @@ const MessageModel = require("./models/MessageSchema.js");
 //chat ong an do thu 3
 const cors = require("cors");
 app.use(cors());
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken')
+
 //chat
 const http = require("http"); // Needed to set up a server with socket.io
 // const socketIO = require("socket.io"); // Socket.IO for real-time functionality
@@ -113,117 +114,7 @@ app.get("/logout", (req, res) => {
 });
 
 //chat
-// io.use((socket, next) => {
-//   const token = socket.handshake.auth.token;
-//   if (!token) {
-//     return next(new Error('Authentication error'));
-//   }
 
-//   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-//     if (err) {
-//       return next(new Error('Authentication error'));
-//     }
-//     socket.userId = decoded.userId;
-//     next();
-//   });
-// });
-
-// io.use((socket, next) => {
-//   const token = socket.handshake.auth.token;
-//   console.log(token)
-//   if (!token) {
-//     return next(new Error('Authentication error token'));
-//   }
-
-//   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-//     if (err) {
-//       return next(new Error('Authentication error 2'));
-//     }
-//     socket.userId = decoded.userId;
-//     next();
-//   });
-// });
-// io.use((socket, next) => {
-//   const token = socket.handshake.auth.token;
-//   if (!token) {
-//     return next(new Error('Authentication error token'));
-//   }
-//   jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-//     if (err) {
-//       return next(new Error('Authentication error 2'));
-//     }
-//     socket.userId = decoded.userId;
-//     next();
-//   });
-// })
-// // Socket.IO implementation
-// io.on("connection", (socket) => {
-//   // const token = socket.handshake.auth.token;
-//    console.log("New client connected"+socket);
-//   // console.log('a token connected:', token)
-//   // let userid;
-//   // jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-//   //   if (err) {
-//   //     console.log('Token verification failed:', err);
-//   //   } else {
-//   //     console.log('Decoded token:', decoded);
-//   //     userid = decoded.data
-//   //   }
-//   // })
-//   // socket.on("/test", (mgs) =>{
-//   //     console.log(mgs);
-//   //     // io.emit("/test", mgs);
-//   // })
-
-//   socket.on('join', async ({ conversationId }) => {
-//     try {
-//       // const decoded = jwt.verify(token, process.env.SECRET_KEY);
-//       // console.log(decoded)
-//       // const userId = decoded.userId;
-
-//       const conversation = await ConversationModel.findById(conversationId).populate('messages');
-//       console.log("data " + conversation)
-//       if (conversation) {
-//         socket.join(conversationId);
-//         console.log(`User ${userid} joined conversation ${conversationId}`);
-
-//           socket.emit('Joined', {
-//           conversationId,
-//           messages: conversation.messages,
-//         });
-//       } else {
-//         socket.emit('error', { message: 'Conversation not found' });
-//       }
-//     } catch (error) {
-//       console.error('Authentication error:', error);
-//       socket.emit('error', { message: 'Invalid token' });
-//     }
-//   });
-
-//   socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
-//     try {
-//       const message = new MessageModel({
-//         text,
-//         imageUrl,
-//         videoUrl,
-//         msgByUserId: userid,
-//       });
-//       await message.save();
-
-//       const conversation = await ConversationModel.findById(conversationId);
-//       conversation.messages.push(message._id);
-//       await conversation.save();
-
-//       io.to(conversationId).emit('message', { conversationId, message });
-//     } catch (error) {
-//       console.error('Error sending message:', error);
-//     }
-
-//   })
-//   socket.on("disconnect", () => {
-//     console.log("Client disconnected");
-//   });
-// });
 io.on("connection", (socket) => {
   console.log(`New client connected: ${socket.id}`);
   // Lấy token từ handshake
@@ -232,9 +123,6 @@ io.on("connection", (socket) => {
   let userid;
   // Xác thực token
   try {
-    // const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    // console.log('Decoded token:', decoded);
-    // userid = decoded.data; // Gán userid từ token
     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
       if (err) {
         console.log("Token verification failed:", err);
@@ -260,39 +148,6 @@ io.on("connection", (socket) => {
     // io.emit("/test", mgs);
   });
 
-  // Token verification
-  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-    if (err) {
-      console.log("Token verification failed:", err);
-      socket.emit("error", { message: "Authentication failed" });
-      return; // Stop execution if authentication fails
-    }
-    console.log("Decoded token:", decoded);
-    userid = decoded.data; // Adjust according to how your token is structured
-  });
-  console.log(userid);
-  // socket.on('join', async ({ conversationId }) => {
-  //   try {
-  //     const conversation = await ConversationModel.findById(conversationId).populate('messages');
-
-  //     if (conversation) {
-  //       socket.join(conversationId);
-  //       console.log(`User ${userid} joined conversation ${conversationId}`);
-
-  //       // const sortedMessages = conversation.messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-  //       socket.emit('Joined', {
-  //         conversationId,
-  //         messages: conversation.messages,
-  //       });
-  //     } else {
-  //       socket.emit('error', { message: 'Conversation not found' });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error during join:', error);
-  //     socket.emit('error', { message: 'An error occurred while joining' });
-  //   }
-  // });
   console.log(userid); // Đảm bảo userid đã được gán trước khi sử dụng
 
   socket.on("join", async ({ conversationId }) => {
@@ -332,32 +187,27 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(
-    "sendMessage",
-    async ({ conversationId, text, imageUrl, videoUrl }) => {
-      try {
-        const message = new MessageModel({
-          text,
-          imageUrl,
-          videoUrl,
-          msgByUserId: userid,
-        });
-        console.log(message);
-        // Gửi phản hồi nhanh chóng tới client
-        // io.to(conversationId).emit('message', { conversationId, message });
-        // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ
-        await message.save();
-        const conversation = await ConversationModel.findById(conversationId);
-        conversation.messages.push(message._id);
-        await conversation.save();
-      } catch (error) {
-        console.error("Error sending message:", error);
-        socket.emit("error", {
-          message: "An error occurred while sending the message",
-        });
-      }
+  socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
+    try {
+      const message = new MessageModel({
+        text,
+        imageUrl,
+        videoUrl,
+        msgByUserId: userid,
+      });
+      // Gửi phản hồi nhanh chóng tới client
+      io.to(conversationId).emit('message', { conversationId, message });
+      // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ
+      await message.save();
+      const conversation = await ConversationModel.findById(conversationId);
+      console.log(conversation)
+      conversation.messages.push(message._id);
+      await conversation.save();
+    } catch (error) {
+      console.error('Error sending message:', error);
+      socket.emit('error', { message: 'An error occurred while sending the message' });
     }
-  );
+  });
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");

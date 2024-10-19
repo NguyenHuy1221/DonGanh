@@ -3,7 +3,7 @@ const transporter = require("./mailer");
 const ChatModel = require('../models/MessageSchema')
 const { refreshTokenUser } = require('../jwt/index')
 require("dotenv").config();
-const { hashPassword, comparePassword, generateToken } = require("../untils");
+const { hashPassword, comparePassword, generateToken, decodeToken } = require("../untils");
 const crypto = require("crypto");
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.CLIENT_ID);
@@ -126,8 +126,7 @@ async function RegisterUserGG(req, res) {
       user.googleId = googleId;
       await user.save();
     }
-    const token = generateToken(user._id, user.role);
-    console.log("Thành công");
+    const token = generateToken(user, user.role);
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {
     console.error("Lỗi khi thêm người dùng:", error);

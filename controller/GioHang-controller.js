@@ -126,8 +126,14 @@ async function getGioHangByUserId(req, res, next) {
         ],
       });
 
+
     if (!gioHang) {
-      return res.status(404).json({ error: "Giỏ hàng không tồn tại" });
+      // return res.status(404).json({ error: "Giỏ hàng không tồn tại" });
+      gioHang = new GioHang({
+        userId,
+        chiTietGioHang: [],
+      });
+      await gioHang.save();
     }
 
     res.status(200).json(gioHang);

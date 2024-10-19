@@ -8,7 +8,7 @@ userRoute.use(bodyParser.urlencoded({ extended: true }));
 userRoute.use(express.static('public'));
 const path = require('path')
 const multer = require('multer');
-
+const { uploadFiles } = require("../untils/index.js")
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, '../public/images'));
@@ -86,6 +86,22 @@ userRoute.put("/updateUserDiaChi", async function (req, res) {
 userRoute.post("/saveChat", async function (req, res) {
   return saveChat(req, res);
 });
+
+userRoute.post('/upload_ImageOrVideo', uploadFiles, (req, res) => {
+  try {
+    if (!req.files || (!req.files['image'] && !req.files['video'])) {
+      return res.status(400).json({ message: 'File is required, thieu image hoac video' });
+    }
+
+    const imageUrl = req.files['image'] ? req.files['image'][0].path.replace("public", process.env.URL_IMAGE) : null;
+    const videoUrl = req.files['video'] ? req.files['video'][0].path.replace("public", process.env.URL_VIDEO) : null;
+
+    res.status(200).json({ imageUrl, videoUrl });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ message: 'An error occurred while uploading the file' });
+  }
+})
 userRoute.post("/RegisterUserGG", async function (req, res) {
   return RegisterUserGG(req, res);
 });

@@ -6,12 +6,16 @@ const LoaiKhuyenMaiModel = require("../models/LoaiKhuyenMaiSchema")
 async function getDiaChiByUserId(req, res, next) {
     try {
         const { userId } = req.params;
-        const diaChi = await DiaChiModel.findOne({
+        let diaChi = await DiaChiModel.findOne({
             IDUser: userId,
             'diaChiList.isDeleted': false
         });
-        if (diaChi.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy địa chỉ' });
+        if (!diaChi) {
+            diaChi = await DiaChiModel.findOneAndUpdate(
+                { IDUser: userId },
+                { $setOnInsert: { diaChiList: [] } },  // Chỉ tạo tài liệu mới nếu chưa tồn tại
+                { new: true, upsert: true }
+            );
         }
         res.status(200).json(diaChi);
     } catch (error) {
@@ -24,7 +28,7 @@ async function createDiaChi(req, res, next) {
         const { userId } = req.params;
         // const diaChiList = req.body;
         // console.log(diaChiList)
-        const { tinhThanhPho, quanHuyen, phuongXa, duongThon,Name,SoDienThoai } = req.body;
+        const { tinhThanhPho, quanHuyen, phuongXa, duongThon, Name, SoDienThoai } = req.body;
 
         // Tạo đối tượng địa chỉ mới
         const newDiaChi = {
@@ -38,7 +42,7 @@ async function createDiaChi(req, res, next) {
         };
         const diaChi = await DiaChiModel.findOneAndUpdate(
             { IDUser: userId },
-            { $push: { diaChiList:newDiaChi} },
+            { $push: { diaChiList: newDiaChi } },
             { new: true, upsert: true }
         );
         console.log(diaChi)
@@ -51,7 +55,7 @@ async function createDiaChi(req, res, next) {
 async function updateDiaChi(req, res, next) {
     try {
         const { userId, diaChiId } = req.params;
-        const { tinhThanhPho, quanHuyen, phuongXa, duongThon,Name,SoDienThoai } = req.body;
+        const { tinhThanhPho, quanHuyen, phuongXa, duongThon, Name, SoDienThoai } = req.body;
 
         // Tạo đối tượng địa chỉ mới
         const updatedDiaChi = {
@@ -66,7 +70,7 @@ async function updateDiaChi(req, res, next) {
 
         const diaChi = await DiaChiModel.findOneAndUpdate(
             { IDUser: userId, 'diaChiList._id': diaChiId },
-            { $set: { 'diaChiList.$': updatedDiaChi }},
+            { $set: { 'diaChiList.$': updatedDiaChi } },
             { new: true }
         );
         if (!diaChi) {
@@ -83,12 +87,15 @@ async function deleteDiaChi(req, res, next) {
     try {
         const { userId, diaChiId } = req.params;
 
-        const diaChi = await DiaChiModel.findOneAndUpdate(
+        const diaChi = await DiaChiModel.findOneAndDelete(
             { IDUser: userId, 'diaChiList._id': diaChiId },
-            { $set: { 'diaChiList.$.isDeleted': true } },
-            { new: true }
         );
-
+        //hamdoi trang thai
+        // const diaChi = await DiaChiModel.findOneAndUpdate(
+        //     { IDUser: userId, 'diaChiList._id': diaChiId },
+        //     { $set: { 'diaChiList.$.isDeleted': true } },
+        //     { new: true }
+        // );
         if (!diaChi) {
             return res.status(404).json({ message: 'Không tìm thấy địa chỉ' });
         }

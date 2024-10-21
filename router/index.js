@@ -14,11 +14,12 @@ const khuyenmaiRoute = require("../router/khuyenmai");
 const khuyenmaimanageRoute = require("../router/khuyenmai-manage");
 const diachiRoute = require("../router/diachi");
 const chatsocket = require("../router/chatsoccket");
+const danhgiaRoute = require("../router/danhgia")
 // const phuongthucthanhtoanRoute = require("../router/phuongthucthanhtoan")
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
 apiRoute.use("/banner", bannerRoutes);
-
+apiRoute.use("/danhgia", danhgiaRoute);
 apiRoute.use(
   "/sanpham",
   (req, res, next) => {

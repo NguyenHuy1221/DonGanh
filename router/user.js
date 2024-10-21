@@ -24,7 +24,9 @@ const {
   RegisterUser,
   loginUser,
   VerifyOTP,
-  ForgotPassword,
+  SendOtpForgotPassword,
+  CheckOtpForgotPassword,
+  SendPassword,
   ResetPassword,
   createAnhDaiDien,
   showUserById,
@@ -61,12 +63,19 @@ userRoute.post("/login", async function (req, res) {
 });
 
 // forgot password
-userRoute.post("/forgotPassword", async function (req, res) {
-  return ForgotPassword(req, res);
+userRoute.post("/SendOtpForgotPassword", async function (req, res) {
+  return SendOtpForgotPassword(req, res);
+});
+
+userRoute.post("/CheckOtpForgotPassword", async function (req, res) {
+  return CheckOtpForgotPassword(req, res);
 });
 
 // reset password
-userRoute.post("/resetPassword", async function (req, res) {
+userRoute.post("/SendPassword", async function (req, res) {
+  return SendPassword(req, res);
+});
+userRoute.post("/ResetPassword", async function (req, res) {
   return ResetPassword(req, res);
 });
 
@@ -92,10 +101,20 @@ userRoute.post('/upload_ImageOrVideo', uploadFiles, (req, res) => {
     if (!req.files || (!req.files['image'] && !req.files['video'])) {
       return res.status(400).json({ message: 'File is required, thieu image hoac video' });
     }
+    console.log("dulieu upload", req.files)
+    let imageUrl = null;
+    let videoUrl = null;
 
-    const imageUrl = req.files['image'] ? req.files['image'][0].path.replace("public", process.env.URL_IMAGE) : null;
-    const videoUrl = req.files['video'] ? req.files['video'][0].path.replace("public", process.env.URL_VIDEO) : null;
+    if (req.files['image'] && req.files['image'][0].path) {
+      imageUrl = req.files['image'][0].path.replace("public", process.env.URL_IMAGE);
+    }
+    if (req.files['video'] && req.files['video'][0].path) {
+      videoUrl = req.files['video'][0].path.replace("public", process.env.URL_IMAGE);
+    }
 
+    // const imageUrl = req.files['image'] ? req.files['image'][0].path.replace("public", process.env.URL_IMAGE) : null;
+    // const videoUrl = req.files['video'] ? req.files['video'][0].path.replace("public", process.env.URL_VIDEO) : null;
+    console.log("link url", imageUrl, videoUrl)
     res.status(200).json({ imageUrl, videoUrl });
   } catch (error) {
     console.error('Error uploading file:', error);

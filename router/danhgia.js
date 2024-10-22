@@ -7,9 +7,10 @@ const {
     deleteDanhGia,
     addPhanHoi,
     updatePhanHoi,
-    deletePhanHoi, } = require("../controller/danhgia-controller")
+    deletePhanHoi,
+    updateLike, } = require("../controller/danhgia-controller")
 
-DanhGiaRouter.get('/getListDanhGiaInSanPhamById/:IDSanPham', async function (req, res) {
+DanhGiaRouter.get('/getListDanhGiaInSanPhamById/:IDSanPham/:userId', async function (req, res) {
     return getListDanhGiaInSanPhamById(req, res);
 })
 
@@ -22,7 +23,7 @@ DanhGiaRouter.post('/updateDanhGia/:danhGiaId', async function (req, res) {
     return updateDanhGia(req, res);
 })
 
-DanhGiaRouter.delete('/deleteDanhGia/:danhGiaId', async function (req, res) {
+DanhGiaRouter.delete('/deleteDanhGia/:sanphamId/:danhGiaId', async function (req, res) {
     return deleteDanhGia(req, res);
 })
 
@@ -37,6 +38,9 @@ DanhGiaRouter.post('/updatePhanHoi/:danhGiaId/:phanHoiId', async function (req, 
 
 DanhGiaRouter.delete('/deletePhanHoi/:phanHoiId', async function (req, res) {
     return deletePhanHoi(req, res);
+})
+DanhGiaRouter.put('/updateLike/:phanHoiId/:userId', async function (req, res) {
+    return updateLike(req, res);
 })
 
 

@@ -109,9 +109,12 @@ async function getHoaDonByHoaDonIdFullVersion(req, res) {
       .populate("userId")
       //.populate('khuyenmaiId')
       .populate({
-        path: 'chiTietHoaDon.BienThe.IDSanPham',
-        model: 'SanPham',
-      })
+        path: 'chiTietHoaDon.idBienThe',
+        populate: {
+          path: 'IDSanPham',
+          model: 'SanPham' // Thay 'SanPham' bằng tên model của bạn
+        }
+      });
     if (!hoadon) {
       return res.status(404).json({ message: "Không tìm thấy hoa don" });
     }

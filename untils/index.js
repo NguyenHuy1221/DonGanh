@@ -7,6 +7,7 @@ async function hashPassword(plaintextPassword) {
   return hash;
 }
 const multer = require("multer");
+const path = require('path')
 const { uid } = require("uid");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -25,25 +26,49 @@ const storage = multer.diskStorage({
 const storageForvideoandimage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
-      cb(null, 'public/upload/'); // Thư mục ảnh
+      cb(null, 'public/uploads/'); // Thư mục ảnh
     } else if (file.mimetype.startsWith('video/')) {
-      cb(null, 'public/upload/_videos/'); // Thư mục video
+      cb(null, 'public/uploads/_videos/'); // Thư mục video
     } else {
       cb(new Error('Invalid file type'), false);
     }
   },
   filename: (req, file, cb) => {
+    console.log(file);
+    const id = uid();
     cb(null, `${id}-${file.originalname}`);
   }
 });
+// const storageForvideoandimage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     if (file.mimetype.startsWith('image/')) {
+//       cb(null, 'public/upload/'); // Thư mục ảnh
+//     } else if (file.mimetype.startsWith('video/')) {
+//       cb(null, 'public/upload/_videos/'); // Thư mục video
+//     } else {
+//       cb(new Error('Invalid file type'), false);
+//     }
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueId = Date.now().toString(); // Tạo ID duy nhất
+//     cb(null, `${uniqueId}-${file.originalname}`);
+//   }
 
-
-const upload = multer({ storage: storage });
-const uploadVideoOrImage = multer({ storageForvideoandimage: storageForvideoandimage });
-const uploadFiles = uploadVideoOrImage.fields([
+// })
+const uploadFiles = multer({
+  storage: storageForvideoandimage,
+  limits: { fileSize: 1024 * 1024 * 50 } // Giới hạn kích thước file
+}).fields([
   { name: 'image', maxCount: 1 },
   { name: 'video', maxCount: 1 }
 ])
+
+// const uploadVideoOrImage = multer({ storageForvideoandimage: storageForvideoandimage });
+// const uploadFiles = uploadVideoOrImage.fields([
+//   { name: 'image', maxCount: 1 },
+//   { name: 'video', maxCount: 1 }
+// ])
+const upload = multer({ storage: storage });
 
 async function comparePassword(plaintextPassword, hash) {
   const result = await bcrypt.compare(plaintextPassword, hash);

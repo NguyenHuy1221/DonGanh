@@ -14,6 +14,11 @@ const DanhGiaSchema = new Schema({
       NgayTao: { type: Date, default: Date.now },
     },
   ],
+  likes: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
+  ],
   NgayTao: { type: Date, default: Date.now },
 });
 

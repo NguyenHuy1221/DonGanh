@@ -4,17 +4,40 @@ require("dotenv").config();
 const { upload } = require("../untils/index");
 const fs = require('fs');
 //ham lay danh sach thuoc tinh
+// async function getListDanhGiaInSanPhamById(req, res, next) {
+//     const { IDSanPham } = req.params;
+//     try {
+//         const Danhgias = await DanhGiamodel.find({ sanphamId: IDSanPham }).populate("userId");
+//         res.status(200).json(Danhgias);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Lỗi khi lấy danh sách đánh giá' });
+//     }
+// }
+
 async function getListDanhGiaInSanPhamById(req, res, next) {
-    const { IDSanPham } = req.params;
+    const { IDSanPham, userId } = req.params;
+
     try {
-        const Danhgias = await DanhGiamodel.find({ sanphamId: IDSanPham });
-        res.status(200).json(Danhgias);
+        const Danhgias = await DanhGiamodel.find({ sanphamId: IDSanPham })
+            .populate("userId")
+            .populate({
+                path: 'likes',
+                match: { userId: userId } // Chỉ lấy những like của người dùng hiện tại
+            });
+
+        // Thêm trường isLiked vào mỗi đối tượng đánh giá để chỉ ra người dùng đã like hay chưa
+        const danhGiasWithLikeInfo = Danhgias.map(danhGia => {
+            const isLiked = danhGia.likes.some(like => like.userId.toString() === userId.toString());
+            return { ...danhGia._doc, isLiked };
+        });
+
+        res.status(200).json(danhGiasWithLikeInfo);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Lỗi khi lấy danh sách đánh giá' });
     }
 }
-
 
 async function createDanhGia(req, res) {
     try {
@@ -82,9 +105,30 @@ async function updateDanhGia(req, res) {
     }
 }
 
+
+async function updateLike(req, res) {
+    try {
+        const { phanHoiId, userId } = req.params;
+        const updatedDanhGia = await DanhGiamodel.findOneAndUpdate({ _id: phanHoiId, userId, userId }, {
+            $push: { likes: userId }, // Add user ID to likes array
+        })
+
+        if (!updatedDanhGia) {
+            return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
+        }
+
+        res.status(200).json(updatedDanhGia);
+
+    } catch (error) {
+        console.error('Lỗi khi cập nhật đánh giá:', error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi khi cập nhật đánh giá' });
+    }
+}
+
+
 async function deleteDanhGia(req, res) {
     try {
-        const { danhGiaId } = req.params;
+        const { sanphamId, danhGiaId } = req.params;
 
         const deletedDanhGia = await DanhGiamodel.findByIdAndDelete(danhGiaId);
 
@@ -94,7 +138,8 @@ async function deleteDanhGia(req, res) {
         if (deletedDanhGia.HinhAnh) {
             await deleteImage(deletedDanhGia.HinhAnh);
         }
-        res.status(200).json(deletedDanhGia);
+        const Danhgias = await DanhGiamodel.find({ sanphamId: sanphamId });
+        res.status(200).json(Danhgias);
     } catch (error) {
         console.error('Lỗi khi xóa đánh giá:', error);
         res.status(500).json({ message: 'Đã xảy ra lỗi khi xóa đánh giá' });
@@ -196,4 +241,5 @@ module.exports = {
     addPhanHoi,
     updatePhanHoi,
     deletePhanHoi,
+    updateLike,
 };

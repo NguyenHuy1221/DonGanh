@@ -86,46 +86,20 @@ async function createSanPham(req, res, next) {
       return res.status(400).json({ message: 'File is required' });
     }
     const newPath = req.files['file'][0].path.replace("public", process.env.URL_IMAGE);
-    // let newPath;
-    // if (req.files && req.files['file'] && req.files['file'][0]) {
-    //   // Nếu có tệp chính, xử lý và lưu đường dẫn
-    //   newPath = req.files['file'][0].path.replace("public", process.env.URL_IMAGE);
-    // } else {
-    //   // Nếu không có tệp chính, đặt một đường dẫn mặc định (hoặc để trống nếu không cần)
-    //   newPath = process.env.DEFAULT_IMAGE_URL || ""; // Có thể đặt giá trị mặc định trong .env hoặc để trống
-    // }
     const hinhBoSung = req.files['files'] ? req.files['files'].map(file => ({
       TenAnh: file.originalname,
       UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
     })) : [];
-    // const hinhBoSung = req.files['files'] ? req.files['files'].map(file => ({
-    //   TenAnh: file.originalname,
-    //   UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
-    // })) : [];
+
     const { luachon, IDSanPham, TenSanPham, DonGiaNhap, DonGiaBan, SoLuongNhap, SoLuongHienTai, PhanTramGiamGia, TinhTrang, MoTa, Unit, DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
     } = req.body;
     const { sku, gia, soLuong, KetHopThuocTinh } = req.body;
-    // Kiểm tra nếu IDSanPham không được cung cấp hoặc là null
     if (!IDSanPham) {
       return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
     }
-    // console.log(newPath, hinhBoSung)
     const newSanPham = new SanPhamModel({
-      IDSanPham,
-      TenSanPham,
-      HinhSanPham: newPath,
-      DonGiaNhap,
-      DonGiaBan,
-      SoLuongNhap,
-      SoLuongHienTai,
-      PhanTramGiamGia,
-      TinhTrang,
-      MoTa,
-      Unit,
-      HinhBoSung: hinhBoSung,
-      DanhSachThuocTinh: DanhSachThuocTinh,
-      IDDanhMuc,
-      IDDanhMucCon,
+      IDSanPham, TenSanPham, HinhSanPham: newPath, DonGiaNhap, DonGiaBan,
+      SoLuongNhap, SoLuongHienTai, PhanTramGiamGia, TinhTrang, MoTa, Unit, HinhBoSung: hinhBoSung, DanhSachThuocTinh: DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
     const savedSanPham = await newSanPham.save();

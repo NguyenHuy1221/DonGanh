@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 require("dotenv").config();
 const axios = require('axios');
 const { refreshToken } = require('../jwt/index');
-
+const transporter = require("./mailer");
 //xoa dau tieng viet 
 const removeAccents = require('remove-accents');
 // qr
@@ -254,7 +254,7 @@ async function updateTransactionHoaDon(req, res, next) {
       mrc_order_id: orderIdbaokim,
       total_amount: hoadon.TongTien,
       description: hoadon.GhiChu,
-      url_success: "https://baokim.vn/",
+      url_success: `${process.env.MAIN_BASE_URL}api/hoadon/NhanThanhToanTuBaoKim/${hoadon._id}`,
       merchant_id: parseInt(process.env.MERCHANT_ID),
       url_detail: "https://baokim.vn/",
       lang: "en",
@@ -309,7 +309,7 @@ async function Checkdonhangbaokim(req, res, next) {
     mrc_order_id: orderIdbaokim,
     total_amount: order.TongTien,
     description: order.GhiChu,
-    url_success: "https://baokim.vn/",
+    url_success: `${process.env.MAIN_BASE_URL}api/hoadon/NhanThanhToanTuBaoKim/${order._id}`,
     merchant_id: parseInt(process.env.MERCHANT_ID),
     url_detail: "https://baokim.vn/",
     lang: "en",
@@ -404,97 +404,55 @@ async function updateTransactionHoaDonCOD(req, res, next) {
   }
 }
 
-//hàm thêm thuộc tính
-async function createThuocTinh(req, res, next) {
-  const { ThuocTinhID, TenThuocTinh } = req.body;
+
+
+async function NhanThanhToanTuBaoKim(req, res) {
   try {
-
-    // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    const existingThuocTinh = await ThuocTinhModel.findOne({ ThuocTinhID });
-
-    if (existingThuocTinh) {
-      return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
+    const { hoadonId } = req.params;
+    const hoadon = await HoaDonModel.findById(hoadonId).populate("userId")
+    if (!hoadon) {
+      return res.status(404).json({ message: "Đơn hàng không tồn tại" });
     }
-    // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
-    const newThuocTinh = new ThuocTinhModel({
-      ThuocTinhID,
-      TenThuocTinh
+    hoadon.TrangThai = 1
+    await hoadon.save();
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: hoadon.userId.gmail,
+      subject: "Xác nhận khôi phục mật khẩu",
+      text: `Chào ${hoadon.userId.tenNguoiDung},\n\nĐơn hàng của bạn đã được thanh toán thành công\n\nTrân trọng,\nĐội ngũ hỗ trợ`,
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Lỗi khi gửi email:", error);
+      } else {
+        console.log("Email đã được gửi:", info.response);
+      }
     });
 
-    // Lưu đối tượng vào cơ sở dữ liệu
-    const savedThuocTinh = await newThuocTinh.save();
+    const mailOptionForAdmin = {
+      from: process.env.EMAIL_USER,
+      to: hoadon.userId.gmail,
+      subject: "Đã Thanh toán bảo kim",
+      text: `Chào Admin,\n\nĐơn hàng ${hoadon._id} đã được thanh toán tổng số ${hoadon.TongTien}. VND\n\nTrân trọng,\nĐội ngũ hỗ trợ`,
+    };
 
-    // Trả về kết quả cho client
-    res.status(201).json(savedThuocTinh);
+    transporter.sendMail(mailOptionForAdmin, (error, info) => {
+      if (error) {
+        console.error("Lỗi khi gửi email admin:", error);
+      } else {
+        console.log("Email đã được gửi admin:", info.response);
+      }
+    });
+
+
+    return res.json("đơn hàng đã được thanh toán thành công");
   } catch (error) {
-    if (error.code === 11000) {
-      console.error('ThuocTinhID đã tồn tại');
-    } else {
-      console.error('Lỗi khác:', error);
-    }
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi lấy thông tin người dùng" });
   }
 }
-
-
-async function updateThuocTinh(req, res, next) {
-  // const { ThuocTinhID } = req.params;
-  const { TenThuocTinh, ThuocTinhID } = req.body;
-
-  try {
-    const updatedThuocTinh = await ThuocTinhModel.findOneAndUpdate(
-      { ThuocTinhID },
-      { TenThuocTinh },
-      { new: true }
-    );
-
-    if (!updatedThuocTinh) {
-      return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
-    }
-
-    res.status(200).json(updatedThuocTinh);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi khi cập nhật thuộc tính' });
-  }
-}
-
-async function deleteThuocTinh(req, res, next) {
-  const { ThuocTinhID } = req.params;
-
-  try {
-    const deletedThuocTinh = await ThuocTinhModel.findOneAndDelete(ThuocTinhID);
-
-    if (!deletedThuocTinh) {
-      return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
-    }
-
-    res.status(200).json({ message: 'Xóa thuộc tính thành công' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi khi xóa thuộc tính' });
-  }
-}
-
-async function findThuocTinh(req, res, next) {
-  const { ThuocTinhID, TenThuocTinh } = req.body;
-
-  let query = {};
-  if (ThuocTinhID) {
-    query.ThuocTinhID = ThuocTinhID;
-  }
-  if (TenThuocTinh) {
-    query.TenThuocTinh = { $regex: TenThuocTinh, $options: 'i' }; // Tìm kiếm không phân biệt hoa thường
-  }
-
-  try {
-    const thuocTinhs = await ThuocTinhModel.find(query);
-    res.status(200).json(thuocTinhs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi khi tìm kiếm thuộc tính' });
-  }
-}
-
 
 
 module.exports = {
@@ -502,13 +460,10 @@ module.exports = {
   getHoaDonByUserId,
   getHoaDonByHoaDonId,
   getHoaDonByHoaDonIdFullVersion,
-  createThuocTinh,
-  updateThuocTinh,
-  deleteThuocTinh,
-  findThuocTinh,
   createUserDiaChivaThongTinGiaoHang,
   updateTransactionHoaDon,
   Checkdonhangbaokim,
   updatetrangthaihuydonhang,
   updateTransactionHoaDonCOD,
+  NhanThanhToanTuBaoKim,
 };

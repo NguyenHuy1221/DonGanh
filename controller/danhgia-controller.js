@@ -21,14 +21,15 @@ async function getListDanhGiaInSanPhamById(req, res, next) {
     try {
         const Danhgias = await DanhGiamodel.find({ sanphamId: IDSanPham })
             .populate("userId")
-            .populate({
-                path: 'likes',
-                match: { userId: userId } // Chỉ lấy những like của người dùng hiện tại
-            });
+        // .populate("likes")
 
         // Thêm trường isLiked vào mỗi đối tượng đánh giá để chỉ ra người dùng đã like hay chưa
+        // const danhGiasWithLikeInfo = Danhgias.map(danhGia => {
+        //     const isLiked = danhGia.likes.some(like => like._id.toString() === userId.toString());
+        //     return { ...danhGia._doc, isLiked };
+        // });
         const danhGiasWithLikeInfo = Danhgias.map(danhGia => {
-            const isLiked = danhGia.likes.some(like => like.userId.toString() === userId.toString());
+            const isLiked = danhGia.likes.includes(userId);
             return { ...danhGia._doc, isLiked };
         });
 
@@ -77,26 +78,30 @@ async function updateDanhGia(req, res) {
             }
             const { danhGiaId } = req.params;
             const { XepHang, BinhLuan } = req.body;
-            // const hinhAnh = req.file ? req.file.path.replace('public', process.env.URL_IMAGE) : null;
-
-            const updatedDanhGia = await DanhGiamodel.findByIdAndUpdate(
-                danhGiaId,
-                { HinhAnh: hinhAnh, XepHang, BinhLuan, NgayTao: new Date() },
-                { new: true }
-            );
-
+            //const hinhAnh = req.file ? req.file.path.replace('public', process.env.URL_IMAGE) : null;
+            // Tìm đánh giá để cập nhật
+            console.log(danhGiaId, XepHang, BinhLuan)
+            let updatedDanhGia = await DanhGiamodel.findById(danhGiaId);
             if (!updatedDanhGia) {
                 return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
             }
+
+            // Cập nhật đánh giá
+            updatedDanhGia.XepHang = XepHang;
+            updatedDanhGia.BinhLuan = BinhLuan;
+            updatedDanhGia.NgayTao = new Date();
+
             if (req.file) {
                 // Xóa ảnh cũ (nếu có)
                 if (updatedDanhGia.HinhAnh) {
-                    // Hàm xóa ảnh dựa trên đường dẫn
                     await deleteImage(updatedDanhGia.HinhAnh);
                 }
                 // Cập nhật đường dẫn ảnh mới
                 updatedDanhGia.HinhAnh = req.file.path.replace('public', process.env.URL_IMAGE);
             }
+
+            // Lưu đánh giá đã cập nhật
+            await updatedDanhGia.save();
             res.status(200).json(updatedDanhGia);
         });
     } catch (error) {
@@ -109,16 +114,29 @@ async function updateDanhGia(req, res) {
 async function updateLike(req, res) {
     try {
         const { phanHoiId, userId } = req.params;
-        const updatedDanhGia = await DanhGiamodel.findOneAndUpdate({ _id: phanHoiId, userId, userId }, {
-            $push: { likes: userId }, // Add user ID to likes array
-        })
 
-        if (!updatedDanhGia) {
+        // Tìm kiếm đánh giá để kiểm tra xem userId đã tồn tại trong mảng likes hay chưa
+        const danhGia = await DanhGiamodel.findById(phanHoiId);
+        if (!danhGia) {
             return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
         }
 
-        res.status(200).json(updatedDanhGia);
+        let update;
+        if (danhGia.likes.includes(userId)) {
+            // Nếu userId đã tồn tại, xóa nó khỏi mảng likes
+            update = { $pull: { likes: userId } };
+        } else {
+            // Nếu userId chưa tồn tại, thêm nó vào mảng likes
+            update = { $addToSet: { likes: userId } };
+        }
 
+        const updatedDanhGia = await DanhGiamodel.findOneAndUpdate(
+            { _id: phanHoiId },
+            update,
+            { new: true }
+        );
+
+        res.status(200).json(updatedDanhGia);
     } catch (error) {
         console.error('Lỗi khi cập nhật đánh giá:', error);
         res.status(500).json({ message: 'Đã xảy ra lỗi khi cập nhật đánh giá' });

@@ -24,7 +24,7 @@ const HoaDonSchema = new Schema({
   TongTien: Number,
   TrangThai: Number,//0 : dang chờ duyệt , 1 , đã thanh toán , 2 , đang chờ thanh toán , 3 , Thanh Toán thất bại , 4 , Hủy.    //Stat = c : thành công d: đã huỷ (hoặc thất bại )p: chưa thanh toán
   ThanhToan: { type: Boolean, default: false },
-  transactionId: { type: Number },
+  transactionId: { type: Number, default: 0 },
   chiTietHoaDon: [
     {
       idBienThe: { type: mongoose.Schema.Types.ObjectId, ref: "BienThe" },

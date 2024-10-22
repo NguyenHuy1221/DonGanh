@@ -1,33 +1,45 @@
 const express = require('express');
-const thuoctinhgiatriRouter = express.Router();
+const DanhGiaRouter = express.Router();
 const {
-    getlistThuocTinhGiaTri,
-    createThuocTinhGiaTri,
-    updateThuocTinhGiaTri,
-    deleteThuocTinhGiaTri,
-    findThuocTinhGiaTri, } = require("../controller/thuoctinhgiatri-controller")
+    getListDanhGiaInSanPhamById,
+    createDanhGia,
+    updateDanhGia,
+    deleteDanhGia,
+    addPhanHoi,
+    updatePhanHoi,
+    deletePhanHoi, } = require("../controller/danhgia-controller")
 
-thuoctinhgiatriRouter.get('/getlistThuocTinhGiaTri', async function (req, res) {
-    return getlistThuocTinhGiaTri(req, res);
+DanhGiaRouter.get('/getListDanhGiaInSanPhamById/:IDSanPham', async function (req, res) {
+    return getListDanhGiaInSanPhamById(req, res);
 })
 
 
-thuoctinhgiatriRouter.get('/findThuocTinhGiaTri/:ThuocTinhID', async function (req, res) {
-    return findThuocTinhGiaTri(req, res);
+DanhGiaRouter.post('/createDanhGia', async function (req, res) {
+    return createDanhGia(req, res);
 })
 
-thuoctinhgiatriRouter.post('/createThuocTinhGiaTri', async function (req, res) {
-    return createThuocTinhGiaTri(req, res);
+DanhGiaRouter.post('/updateDanhGia/:danhGiaId', async function (req, res) {
+    return updateDanhGia(req, res);
 })
 
-thuoctinhgiatriRouter.put('/updateThuocTinhGiaTri', async function (req, res) {
-    return updateThuocTinhGiaTri(req, res);
-})
-thuoctinhgiatriRouter.delete('/deleteThuocTinhGiaTri', async function (req, res) {
-    return deleteThuocTinhGiaTri(req, res);
+DanhGiaRouter.delete('/deleteDanhGia/:danhGiaId', async function (req, res) {
+    return deleteDanhGia(req, res);
 })
 
 
+DanhGiaRouter.post('/addPhanHoi/:danhGiaId', async function (req, res) {
+    return addPhanHoi(req, res);
+})
+
+DanhGiaRouter.post('/updatePhanHoi/:danhGiaId/:phanHoiId', async function (req, res) {
+    return updatePhanHoi(req, res);
+})
+
+DanhGiaRouter.delete('/deletePhanHoi/:phanHoiId', async function (req, res) {
+    return deletePhanHoi(req, res);
+})
 
 
-module.exports = thuoctinhgiatriRouter;
+
+
+module.exports = DanhGiaRouter;

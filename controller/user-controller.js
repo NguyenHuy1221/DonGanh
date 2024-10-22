@@ -7,6 +7,7 @@ const { hashPassword, comparePassword, generateToken, decodeToken } = require(".
 const crypto = require("crypto");
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.CLIENT_ID);
+const jwt = require("jsonwebtoken")
 
 async function verifyGoogleToken(token) {
   const ticket = await client.verifyIdToken({
@@ -215,7 +216,7 @@ async function loginUser(req, res) {
   }
 }
 
-async function ForgotPassword(req, res) {
+async function SendOtpForgotPassword(req, res) {
   const { gmail } = req.body;
 
   try {
@@ -223,8 +224,13 @@ async function ForgotPassword(req, res) {
     if (!user) {
       return res.status(400).json({ message: "Email không tồn tại" });
     }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP 6 chữ số
+    if (user.otp && user.otpExpiry > Date.now()) {
+      // Kiểm tra xem OTP đã quá 5 phút chưa
+      if (Date.now() - (user.otpExpiry - 15 * 60 * 1000) <= 5 * 60 * 1000) {
+        return res.status(400).json({ message: "OTP đã được gửi, vui lòng chờ trước khi yêu cầu mới" });
+      }
+    }
+    const otp = Math.floor(1000 + Math.random() * 9000).toString(); // Tạo mã OTP 6 chữ số
     const otpExpiry = Date.now() + 15 * 60 * 1000; // OTP hết hạn sau 15 phút
 
     user.otp = otp;
@@ -235,7 +241,7 @@ async function ForgotPassword(req, res) {
       from: process.env.EMAIL_USER,
       to: gmail,
       subject: "Xác nhận khôi phục mật khẩu",
-      text: `Chào ${user.tenNguoiDung},\n\nVui lòng sử dụng mã OTP sau để xác nhận khôi phục mật khẩu của bạn:\n\n${otp}\n\nTrân trọng,\nĐội ngũ hỗ trợ`,
+      text: `Chào ${user.tenNguoiDung},\n\nVui lòng sử dụng mã OTP sau để xác nhận khôi phục mật khẩu của bạn:\n\n${otp}\n\n thời hạn 5 phút \n\nTrân trọng,\nĐội ngũ hỗ trợ`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -255,11 +261,67 @@ async function ForgotPassword(req, res) {
   }
 }
 
-async function ResetPassword(req, res) {
-  const { gmail, matKhauMoi } = req.body;
+async function CheckOtpForgotPassword(req, res) {
+  const { gmail, otp } = req.body;
 
   try {
     const user = await UserModel.findOne({ gmail });
+
+    if (!user) {
+      return res.status(400).json({ message: "Người dùng không tồn tại" });
+    }
+    const otpIssuedTime = user.otpExpiry - 15 * 60 * 1000; // Thời gian tạo OTP
+    if (Date.now() - otpIssuedTime > 5 * 60 * 1000) {
+      return res.status(400).json({ message: "OTP đã quá 5 phút, vui lòng yêu cầu OTP mới" });
+    }
+    if (user.otp != otp) {
+      return res.status(400).json({ message: "otp không chính xác" });
+
+    }
+
+
+    const resetToken = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '15m' })
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save()
+    return res.json({
+      message: "otp đã được kiểm tra thành công", resetToken
+    });
+  } catch (error) {
+    console.error("Lỗi khi đặt lại mật khẩu:", error);
+    return res
+      .status(500)
+      .json({ message: "Đã xảy ra lỗi khi đặt lại mật khẩu" });
+  }
+}
+
+async function SendPassword(req, res) {
+  const { gmail, matKhauMoi, resetToken } = req.body;
+  const decoded = jwt.verify(resetToken, process.env.SECRET_KEY);
+  try {
+    const user = await UserModel.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(400).json({ message: "Người dùng không tồn tại" });
+    }
+    if (!user.gmail === gmail) {
+      return res.status(400).json({ message: "Tài khoản và dữ liệu gửi đến không khớp vui lòng thử lại hoặc liên hệ đến quản lý app" });
+
+    }
+    const hash_pass = await hashPassword(matKhauMoi);
+    user.matKhau = hash_pass;
+    await user.save();
+    return res.json({ message: "Thay đổi mật khẩu thành công" });
+  } catch (error) {
+    console.error("Lỗi khi thay đổi mật khẩu:", error);
+    return res.status(500).json({ message: "Đã xảy ra lỗi khi thay đổi mật khẩu" });
+  }
+}
+async function ResetPassword(req, res) {
+  const { gmail, matKhauMoi, } = req.body;
+  // const decoded = jwt.verify(resetToken, process.env.SECRET_KEY);
+  try {
+    const user = await UserModel.findOne({ gmail: gmail });
 
     if (!user) {
       return res.status(400).json({ message: "Người dùng không tồn tại" });
@@ -361,7 +423,7 @@ async function createAnhDaiDien(req, res, next) {
       if (!IDNguoiDung || !req.file) {
         return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
       }
-
+      console.log(req.file)
       const newPath = req.file.path.replace("public", process.env.URL_IMAGE);
       try {
         const updateNguoiDung = await UserModel.findOneAndUpdate(
@@ -466,7 +528,9 @@ module.exports = {
   RegisterUser,
   VerifyOTP,
   loginUser,
-  ForgotPassword,
+  SendOtpForgotPassword,
+  CheckOtpForgotPassword,
+  SendPassword,
   ResetPassword,
   createAnhDaiDien,
   showUserById,

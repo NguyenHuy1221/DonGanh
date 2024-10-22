@@ -1,6 +1,6 @@
 const express = require('express');
 const hoadonRouter = express.Router();
-const {getlistHoaDon,
+const { getlistHoaDon,
     getHoaDonByUserId,
     getHoaDonByHoaDonId,
     createUserDiaChivaThongTinGiaoHang,
@@ -8,18 +8,22 @@ const {getlistHoaDon,
     Checkdonhangbaokim,
     updatetrangthaihuydonhang,
     updateTransactionHoaDonCOD,
-    } = require("../controller/HoaDon-controller")
+    getHoaDonByHoaDonIdFullVersion,
+} = require("../controller/HoaDon-controller")
 
 hoadonRouter.get('/getlistHoaDon', async function (req, res) {
-        return getlistHoaDon(req, res);
+    return getlistHoaDon(req, res);
 })
-    
+
 
 hoadonRouter.get("/getHoaDonByUserId/:userId", function (req, res) {
     return getHoaDonByUserId(req, res);
-      });
+});
 hoadonRouter.get("/getHoaDonByHoaDonId/:hoadonId", function (req, res) {
     return getHoaDonByHoaDonId(req, res);
+});
+hoadonRouter.get("/getHoaDonByHoaDonIdFullVersion/:hoadonId", function (req, res) {
+    return getHoaDonByHoaDonIdFullVersion(req, res);
 });
 
 

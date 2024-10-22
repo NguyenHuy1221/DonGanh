@@ -87,9 +87,11 @@ async function deleteDiaChi(req, res, next) {
     try {
         const { userId, diaChiId } = req.params;
 
-        const diaChi = await DiaChiModel.findOneAndDelete(
-            { IDUser: userId, 'diaChiList._id': diaChiId },
-        );
+        const diaChi = await DiaChiModel.findOneAndUpdate(
+            { IDUser: userId },
+            { $pull: { diaChiList: { _id: diaChiId } } },
+            { new: true }
+        )
         //hamdoi trang thai
         // const diaChi = await DiaChiModel.findOneAndUpdate(
         //     { IDUser: userId, 'diaChiList._id': diaChiId },

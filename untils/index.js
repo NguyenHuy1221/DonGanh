@@ -15,8 +15,8 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     console.log(file);
     const id = uid();
-    // cb(null, `${id}-${file.originalname}`);
-    cb(null, Date.now() + path.extname(file.originalname)); // mặc định sẽ save name của hình ảnh
+    cb(null, `${id}-${file.originalname}`);
+    // cb(null, Date.now() + path.extname(file.originalname)); // mặc định sẽ save name của hình ảnh
     // là name gốc, chúng ta có thể rename nó.
   },
 });
@@ -33,14 +33,14 @@ const storageForvideoandimage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, `${id}-${file.originalname}`);
   }
 });
 
 
 const upload = multer({ storage: storage });
 const uploadVideoOrImage = multer({ storageForvideoandimage: storageForvideoandimage });
-const uploadFiles = upload.fields([
+const uploadFiles = uploadVideoOrImage.fields([
   { name: 'image', maxCount: 1 },
   { name: 'video', maxCount: 1 }
 ])

@@ -90,7 +90,6 @@ async function createSanPham(req, res, next) {
       TenAnh: file.originalname,
       UrlAnh: file.path.replace("public", process.env.URL_IMAGE),
     })) : [];
-
     const { luachon, IDSanPham, TenSanPham, DonGiaNhap, DonGiaBan, SoLuongNhap, SoLuongHienTai, PhanTramGiamGia, TinhTrang, MoTa, Unit, DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
     } = req.body;
     const { sku, gia, soLuong, KetHopThuocTinh } = req.body;
@@ -98,8 +97,12 @@ async function createSanPham(req, res, next) {
       return res.status(400).json({ message: 'IDSanPham is required and cannot be null' });
     }
     const newSanPham = new SanPhamModel({
-      IDSanPham, TenSanPham, HinhSanPham: newPath, DonGiaNhap, DonGiaBan,
-      SoLuongNhap, SoLuongHienTai, PhanTramGiamGia, TinhTrang, MoTa, Unit, HinhBoSung: hinhBoSung, DanhSachThuocTinh: DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
+      IDSanPham, TenSanPham,
+      HinhSanPham: newPath,
+      DonGiaNhap, DonGiaBan,
+      SoLuongNhap, SoLuongHienTai, PhanTramGiamGia, TinhTrang, MoTa, Unit,
+      HinhBoSung: hinhBoSung,
+      DanhSachThuocTinh: DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
     const savedSanPham = await newSanPham.save();
@@ -108,10 +111,10 @@ async function createSanPham(req, res, next) {
       try {
         const newBienThe = new BienTheSchema({
           IDSanPham: savedSanPham._id,
-          sku,
-          gia,
-          soLuong,
-          KetHopThuocTinh,
+          sku: "bama",
+          gia: DonGiaBan,
+          soLuong: SoLuongNhap,
+
         });
         const savedBienThe = await newBienThe.save();
       } catch (error) {
@@ -135,9 +138,7 @@ async function ToHopBienThe(IDSanPham, sku, gia, soLuong) {
     _id: 1,
     // Set chapters to null explicitly
   };
-  const product = await SanPhamModel.findById(IDSanPham).populate(
-    "DanhSachThuocTinh.thuocTinh"
-  );
+  const product = await SanPhamModel.findById(IDSanPham)
   if (!product) {
     return res.status(404).json({ message: "sản phẩm không tồn tại" });
   }
@@ -164,11 +165,12 @@ async function ToHopBienThe(IDSanPham, sku, gia, soLuong) {
       console.log(newVariant);
     } else {
       const thuocTinh = thuocTinhs.shift();
+      const giaTriThuocTinhList = thuocTinh.giaTriThuocTinh
       console.log("thuoc tinh abababa la zap", thuocTinh);
-      const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find(
-        { ThuocTinhID: thuocTinh.thuocTinh._id },
-        projection
-      );
+      // const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find(
+      //   { ThuocTinhID: thuocTinh.thuocTinh._id },
+      //   projection
+      // );
       if (!giaTriThuocTinhList) {
         return res.json("Thuộc tính này không có giá trị",);
       }
@@ -191,6 +193,77 @@ async function ToHopBienThe(IDSanPham, sku, gia, soLuong) {
   }
   return product;
 }
+
+
+
+
+
+
+
+
+
+
+// async function ToHopBienThe(IDSanPham, sku, gia, soLuong) {
+//   const projection = {
+//     _id: 1,
+//     // Set chapters to null explicitly
+//   };
+//   const product = await SanPhamModel.findById(IDSanPham).populate(
+//     "DanhSachThuocTinh.thuocTinh"
+//   );
+//   if (!product) {
+//     return res.status(404).json({ message: "sản phẩm không tồn tại" });
+//   }
+//   const attributeIds = product.DanhSachThuocTinh;
+//   console.log(attributeIds);
+//   // // Tạo các biến thể sản phẩm
+//   const createVariants = async (product, thuocTinhs, currentVariant = {}) => {
+//     if (thuocTinhs.length === 0) {
+//       // Tạo biến thể mới
+//       console.log("check  ket hop", currentVariant);
+//       const KetHopThuocTinh = Object.entries(currentVariant).map(
+//         ([key, value]) => ({
+//           IDGiaTriThuocTinh: value,
+//         })
+//       );
+//       const newVariant = new BienTheSchema({
+//         IDSanPham: product._id,
+//         sku: sku,
+//         gia: gia,
+//         soLuong: soLuong,
+//         KetHopThuocTinh: KetHopThuocTinh,
+//       });
+//       await newVariant.save();
+//       console.log(newVariant);
+//     } else {
+//       const thuocTinh = thuocTinhs.shift();
+//       console.log("thuoc tinh abababa la zap", thuocTinh);
+//       const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find(
+//         { ThuocTinhID: thuocTinh.thuocTinh._id },
+//         projection
+//       );
+//       if (!giaTriThuocTinhList) {
+//         return res.json("Thuộc tính này không có giá trị",);
+//       }
+//       for (const giaTri of giaTriThuocTinhList) {
+//         const IDGiaTriThuocTinh = giaTri._id; // Destructure to get the value ID
+//         currentVariant = { ...currentVariant, [thuocTinh]: IDGiaTriThuocTinh };
+//         await createVariants(product, [...thuocTinhs], currentVariant);
+//       }
+
+//     }
+//   };
+
+//   await createVariants(product, attributeIds);
+//   // Điều kiện dừng: Kiểm tra nếu tất cả các biến thể đã được tạo xong
+//   const totalCombinations = attributeIds.reduce((acc, attr) => acc * attr.length, 1);
+//   const variantsCount = await BienTheSchema.countDocuments({ IDSanPham: product._id });
+//   if (variantsCount === totalCombinations) {
+//     console.log("Tất cả các biến thể đã được tạo xong");
+//     return res.status(200).json("so bien the da duoc tao", variantsCount);
+//   }
+//   return product;
+// }
 
 
 
@@ -401,9 +474,7 @@ async function createSanPhamVoiBienThe(req, res) {
   // if (!validation.valid) {
   //   return res.status(400).json({ errors: validation.errors });
   // }
-  const product = await SanPhamModel.findById(IDSanPham).populate(
-    "DanhSachThuocTinh.thuocTinh"
-  );
+  const product = await SanPhamModel.findById(IDSanPham)
   if (!product) {
     return res.status(404).json({ message: "sản phẩm không tồn tại" });
   }
@@ -430,11 +501,13 @@ async function createSanPhamVoiBienThe(req, res) {
       console.log(newVariant);
     } else {
       const thuocTinh = thuocTinhs.shift();
+      const giaTriThuocTinhList = thuocTinh.giaTriThuocTinh
+
       console.log("thuoc tinh abababa la zap", thuocTinh);
-      const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find(
-        { ThuocTinhID: thuocTinh.thuocTinh._id },
-        projection
-      );
+      // const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find(
+      //   { ThuocTinhID: thuocTinh.thuocTinh._id },
+      //   projection
+      // );
       if (!giaTriThuocTinhList) {
         return res.json("Thuộc tính này không có giá trị",);
       }
@@ -457,6 +530,78 @@ async function createSanPhamVoiBienThe(req, res) {
   }
   return product;
 }
+
+
+
+
+// async function createSanPhamVoiBienThe(req, res) {
+//   // Tạo sản phẩm gốc
+//   const projection = {
+//     _id: 1,
+//     // Set chapters to null explicitly
+//   };
+//   const { IDSanPham } = req.params;
+//   const { sku, gia, soLuong, } = req.body;
+//   // const validation = validateSanPhamData(sku, gia, soLuong);
+//   // if (!validation.valid) {
+//   //   return res.status(400).json({ errors: validation.errors });
+//   // }
+//   const product = await SanPhamModel.findById(IDSanPham).populate(
+//     "DanhSachThuocTinh.thuocTinh"
+//   );
+//   if (!product) {
+//     return res.status(404).json({ message: "sản phẩm không tồn tại" });
+//   }
+//   const attributeIds = product.DanhSachThuocTinh;
+//   console.log(attributeIds);
+//   // // Tạo các biến thể sản phẩm
+//   const createVariants = async (product, thuocTinhs, currentVariant = {}) => {
+//     if (thuocTinhs.length === 0) {
+//       // Tạo biến thể mới
+//       console.log("check  ket hop", currentVariant);
+//       const KetHopThuocTinh = Object.entries(currentVariant).map(
+//         ([key, value]) => ({
+//           IDGiaTriThuocTinh: value,
+//         })
+//       );
+//       const newVariant = new BienTheSchema({
+//         IDSanPham: product._id,
+//         sku: sku,
+//         gia: gia,
+//         soLuong: soLuong,
+//         KetHopThuocTinh: KetHopThuocTinh,
+//       });
+//       await newVariant.save();
+//       console.log(newVariant);
+//     } else {
+//       const thuocTinh = thuocTinhs.shift();
+//       console.log("thuoc tinh abababa la zap", thuocTinh);
+//       const giaTriThuocTinhList = await ThuocTinhGiaTriModel.find(
+//         { ThuocTinhID: thuocTinh.thuocTinh._id },
+//         projection
+//       );
+//       if (!giaTriThuocTinhList) {
+//         return res.json("Thuộc tính này không có giá trị",);
+//       }
+//       for (const giaTri of giaTriThuocTinhList) {
+//         const IDGiaTriThuocTinh = giaTri._id; // Destructure to get the value ID
+//         currentVariant = { ...currentVariant, [thuocTinh]: IDGiaTriThuocTinh };
+//         await createVariants(product, [...thuocTinhs], currentVariant);
+//       }
+
+//     }
+//   };
+
+//   await createVariants(product, attributeIds);
+//   // Điều kiện dừng: Kiểm tra nếu tất cả các biến thể đã được tạo xong
+//   const totalCombinations = attributeIds.reduce((acc, attr) => acc * attr.length, 1);
+//   const variantsCount = await BienTheSchema.countDocuments({ IDSanPham: product._id });
+//   if (variantsCount === totalCombinations) {
+//     console.log("Tất cả các biến thể đã được tạo xong");
+//     return res.status(200).json("so bien the da duoc tao", variantsCount);
+//   }
+//   return product;
+// }
 async function getDanhSachThuocTinhTrongSanPham(req, res) {
   const { IDSanPham } = req.params
   try {

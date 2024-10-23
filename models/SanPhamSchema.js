@@ -22,7 +22,7 @@ const SanPhamSchema = new Schema({
   }],
   DanhSachThuocTinh: [{
     thuocTinh: { type: Schema.Types.ObjectId, ref: 'ThuocTinh' },
-    giaTriThuocTinh: [String]
+    giaTriThuocTinh: [{ type: Schema.Types.ObjectId, ref: 'GiaTriThuocTinh' }]
   }],
 
   IDDanhMuc: { type: String, ref: 'DanhMuc' }, // Tham chiếu đến danh mục cha

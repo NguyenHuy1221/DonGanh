@@ -23,7 +23,7 @@ async function getlistconversation(req, res, next) {
     const { sender_id } = req.params;
     // Kiểm tra xem conversation đã tồn tại chưa
     let conversation = await ConversationModel.find({ $or: [{ sender_id: sender_id }, { receiver_id: sender_id }] });
-    console.log(conversation)
+    console.log("danh sach tin nhan")
     if (!conversation) {
       res.status(200).json({ message: "khong co cuoc hoi thoai nao" });
     }

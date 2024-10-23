@@ -42,7 +42,7 @@ async function getListDanhGiaInSanPhamById(req, res, next) {
 
 async function createDanhGia(req, res) {
     try {
-        await upload.single('file')(req, res, async (err) => {
+        await upload.array('files')(req, res, async (err) => {
             if (err) {
                 return res.status(400).json({ message: 'Error uploading image', error: err });
             }
@@ -57,9 +57,19 @@ async function createDanhGia(req, res) {
                 BinhLuan,
                 NgayTao: new Date()
             });
-            if (req.file) {
-                // Lưu đường dẫn ảnh vào cơ sở dữ liệu
-                newDanhGia.HinhAnh = req.file.path.replace('public', process.env.URL_IMAGE);
+            // if (req.file) {
+
+            //     // Lưu đường dẫn ảnh vào cơ sở dữ liệu
+            //     newDanhGia.HinhAnh = req.file.path.replace('public', process.env.URL_IMAGE);
+            // }
+            let imagePaths = [];
+
+            if (req.files) {
+                console.log(req.files)
+                req.files.forEach(file => {
+                    imagePaths.push(file.path.replace('public', process.env.URL_IMAGE));
+                });
+                newDanhGia.HinhAnh = imagePaths
             }
             await newDanhGia.save();
             res.status(201).json(newDanhGia);
@@ -153,9 +163,9 @@ async function deleteDanhGia(req, res) {
         if (!deletedDanhGia) {
             return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
         }
-        if (deletedDanhGia.HinhAnh) {
-            await deleteImage(deletedDanhGia.HinhAnh);
-        }
+        // if (deletedDanhGia.HinhAnh) {
+        //     await deleteImage(deletedDanhGia.HinhAnh);
+        // }
         const Danhgias = await DanhGiamodel.find({ sanphamId: sanphamId });
         res.status(200).json(Danhgias);
     } catch (error) {

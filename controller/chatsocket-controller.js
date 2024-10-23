@@ -34,7 +34,28 @@ async function getlistconversation(req, res, next) {
   }
 }
 
+async function getlistconversation12(req, res, next) {
+  try {
+    const { sender_id } = req.params;
+
+    // Kiểm tra xem conversation đã tồn tại chưa
+    let conversations = await ConversationModel.find({
+      $or: [{ sender_id: sender_id }, { receiver_id: sender_id }]
+    }).populate('messages'); // Sử dụng populate để lấy thông tin tin nhắn
+
+    if (conversations.length === 0) {
+      return res.status(200).json({ message: "Không có cuộc hội thoại nào" });
+    }
+    
+    res.status(200).json(conversations);
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách cuộc hội thoại:', error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
+
 module.exports = {
   Createconversation,
   getlistconversation,
+  getlistconversation12
 };

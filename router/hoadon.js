@@ -10,6 +10,7 @@ const { getlistHoaDon,
     updateTransactionHoaDonCOD,
     getHoaDonByHoaDonIdFullVersion,
     NhanThanhToanTuBaoKim,
+    HuyDonHang,
 } = require("../controller/HoaDon-controller")
 
 hoadonRouter.get('/getlistHoaDon', async function (req, res) {
@@ -44,12 +45,15 @@ hoadonRouter.put('/updateTransactionHoaDonCOD/:hoadonId', async function (req, r
     return updateTransactionHoaDonCOD(req, res);
 })
 
-hoadonRouter.delete('/updateTransactionHoaDonCOD/:hoadonId', async function (req, res) {
-    return updateTransactionHoaDonCOD(req, res);
-})
+// hoadonRouter.delete('/updateTransactionHoaDonCOD/:hoadonId', async function (req, res) {
+//     return updateTransactionHoaDonCOD(req, res);
+// })
 
 hoadonRouter.get('/NhanThanhToanTuBaoKim/:hoadonId', async function (req, res) {
     return NhanThanhToanTuBaoKim(req, res);
+})
+hoadonRouter.post('/HuyDonHang/:hoadonId', async function (req, res) {
+    return HuyDonHang(req, res);
 })
 
 // hoadonRouter.get('/findThuocTinh', async function (req, res) {

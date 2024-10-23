@@ -4,7 +4,7 @@ const { convertToVietnamTimezone } = require('../middleware/index');
 const DanhGiaSchema = new Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   sanphamId: { type: mongoose.Schema.Types.ObjectId, ref: "SanPham" },
-  HinhAnh: String,
+  HinhAnh: [String],
   XepHang: Number,
   BinhLuan: String,
   PhanHoi: [
@@ -14,11 +14,6 @@ const DanhGiaSchema = new Schema({
       NgayTao: { type: Date, default: Date.now },
     },
   ],
-  // likes: [
-  //   {
-  //     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  //   },
-  // ],
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   NgayTao: { type: Date, default: Date.now },
 });

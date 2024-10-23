@@ -25,9 +25,10 @@ const storage = multer.diskStorage({
 
 const storageForvideoandimage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    console.log(file)
+    if (file.fieldname.includes("image")) {
       cb(null, 'public/uploads/'); // Thư mục ảnh
-    } else if (file.mimetype.startsWith('video/')) {
+    } else if (file.fieldname.includes("video")) {
       cb(null, 'public/uploads/_videos/'); // Thư mục video
     } else {
       cb(new Error('Invalid file type'), false);
@@ -55,6 +56,7 @@ const storageForvideoandimage = multer.diskStorage({
 //   }
 
 // })
+
 const uploadFiles = multer({
   storage: storageForvideoandimage,
   limits: { fileSize: 1024 * 1024 * 50 } // Giới hạn kích thước file

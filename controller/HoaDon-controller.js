@@ -397,7 +397,8 @@ async function updateTransactionHoaDonCOD(req, res, next) {
     }
     hoadon.transactionId = transactionId;
     await hoadon.save();
-    res.status(200).json({ message: "Tạo dơn hàng thành công" });
+    //{ message: "Tạo dơn hàng thành công" }
+    res.status(200).json({ message: "Tạo dơn hàng thành công", "data": { hoadon } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Lỗi khi cập nhật hoa don' });
@@ -453,7 +454,23 @@ async function NhanThanhToanTuBaoKim(req, res) {
       .json({ message: "Đã xảy ra lỗi khi lấy thông tin người dùng" });
   }
 }
-
+async function HuyDonHang(req, res, next) {
+  const hoadonId = req.params.hoadonId
+  // const { transactionId } = req.body;
+  try {
+    const hoadon = await HoaDonModel.findById(hoadonId)// Lấy thông tin đơn hàng từ DB
+    if (!hoadon) {
+      return 'Đơn hàng không tồn tại';
+    }
+    hoadon.TrangThai = 4;
+    await hoadon.save();
+    //{ message: "Tạo dơn hàng thành công" }
+    res.status(200).json({ message: "Tạo dơn hàng thành công", "data": { hoadon } });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi cập nhật hoa don' });
+  }
+}
 
 module.exports = {
   getlistHoaDon,
@@ -466,4 +483,5 @@ module.exports = {
   updatetrangthaihuydonhang,
   updateTransactionHoaDonCOD,
   NhanThanhToanTuBaoKim,
+  HuyDonHang,
 };

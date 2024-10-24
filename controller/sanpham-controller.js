@@ -490,6 +490,13 @@ async function createSanPhamVoiBienThe(req, res) {
           IDGiaTriThuocTinh: value,
         })
       );
+      //   const maBienThe = `${product._id}_${KetHopThuocTinh}`;
+
+      // const existingVariant = await BienTheSchema.findOne({ maBienThe });
+      // if (existingVariant) {
+      //     console.log('Biến thể đã tồn tại');
+      //     return;
+      // }
       const newVariant = new BienTheSchema({
         IDSanPham: product._id,
         sku: sku,
@@ -752,7 +759,18 @@ async function findSanPhambyID(req, res, next) {
   }
 
   try {
-    const IDSanPhams = await SanPhamModel.findById(IDSanPham);
+    const IDSanPhams = await SanPhamModel.findById(IDSanPham).populate({
+      path: 'DanhSachThuocTinh',
+      populate: {
+        path: 'thuocTinh'
+      }
+    })
+      .populate({
+        path: 'DanhSachThuocTinh',
+        populate: {
+          path: 'giaTriThuocTinh'
+        }
+      })
     res.status(200).json(IDSanPhams);
   } catch (error) {
     console.error(error);

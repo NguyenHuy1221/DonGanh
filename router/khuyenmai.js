@@ -5,12 +5,12 @@ const {
     createKhuyenMai,
     updateKhuyenMai,
     deleteKhuyenMai,
-    getActiveKhuyenMai} = require("../controller/khuyenmai-controller")
+    getActiveKhuyenMai } = require("../controller/khuyenmai-controller")
 
-    khuyenmaiRouter.get('/getlistKhuyenMai/:IDDanhMucCon', async function (req, res) {
-        return getlistKhuyenMai(req, res);
-    })
-    
+khuyenmaiRouter.get('/getlistKhuyenMai/:IDDanhMucCon/:tongTien', async function (req, res) {
+    return getlistKhuyenMai(req, res);
+})
+
 khuyenmaiRouter.post('/createKhuyenMai', async function (req, res) {
     return createKhuyenMai(req, res);
 })

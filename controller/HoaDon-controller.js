@@ -415,6 +415,8 @@ async function NhanThanhToanTuBaoKim(req, res) {
       return res.status(404).json({ message: "Đơn hàng không tồn tại" });
     }
     hoadon.TrangThai = 1
+    hoadon.DaThanhToan = true
+
     await hoadon.save();
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -462,6 +464,9 @@ async function HuyDonHang(req, res, next) {
     if (!hoadon) {
       return 'Đơn hàng không tồn tại';
     }
+    if (hoadon.TrangThai !== 2 || hoadon.TrangThai !== 3) {
+      return res.status(400).json({ message: "Chỉ được phép hủy đơn khi vừa đặt hàng và đóng gói" });
+    }
     hoadon.TrangThai = 4;
     await hoadon.save();
     //{ message: "Tạo dơn hàng thành công" }
@@ -472,6 +477,35 @@ async function HuyDonHang(req, res, next) {
   }
 }
 
+async function updateDiaChi_ghichuHoaDon(req, res, next) {
+  const hoadonId = req.params.hoadonId;
+  const { diaChi, ghiChu } = req.body;
+
+  try {
+    const hoadon = await HoaDonModel.findById(hoadonId);
+
+    if (!hoadon) {
+      return res.status(404).json({ message: "Đơn hàng không tồn tại" });
+    }
+    if (hoadon.TrangThai !== 0 || hoadon.TrangThai !== 1) {
+      return res.status(400).json({ message: "Chỉ được phép cập nhật đơn hàng vừa đặt hoặc  đang được đóng gói" });
+    }
+    // Cập nhật thông tin
+    if (diaChi) {
+      hoadon.diaChi = diaChi;
+    }
+    if (ghiChu) {
+      hoadon.GhiChu = ghiChu;
+    }
+
+    await hoadon.save();
+
+    res.status(200).json({ message: "Cập nhật đơn hàng thành công", data: hoadon });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi cập nhật hóa đơn' });
+  }
+}
 module.exports = {
   getlistHoaDon,
   getHoaDonByUserId,
@@ -484,4 +518,5 @@ module.exports = {
   updateTransactionHoaDonCOD,
   NhanThanhToanTuBaoKim,
   HuyDonHang,
+  updateDiaChi_ghichuHoaDon,
 };

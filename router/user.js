@@ -36,7 +36,12 @@ const {
   saveChat,
   RegisterUserGG,
   LoginUserGG,
+  getAllUsers,
 } = require("../controller/user-controller");
+
+userRoute.get("/showAllUser", function (req, res) {
+  return getAllUsers(req, res);
+});
 
 // show user
 userRoute.get("/showUserID/:userId", function (req, res) {

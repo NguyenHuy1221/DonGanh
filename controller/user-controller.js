@@ -361,6 +361,18 @@ async function showUserById(req, res) {
   }
 }
 
+async function getAllUsers(req, res) {
+  try {
+    const users = await UserModel.find(); 
+    return res.json(users);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách người dùng:", error);
+    return res.status(500).json({
+      message: "Đã xảy ra lỗi khi lấy danh sách người dùng",
+    });
+  }
+}
+
 async function ResendOTP(req, res) {
   const { gmail } = req.body;
 
@@ -540,4 +552,5 @@ module.exports = {
   saveChat,
   RegisterUserGG,
   LoginUserGG,
+  getAllUsers,
 };

@@ -56,7 +56,7 @@ hoadonRouter.get('/NhanThanhToanTuBaoKim/:hoadonId', async function (req, res) {
 hoadonRouter.post('/HuyDonHang/:hoadonId', async function (req, res) {
     return HuyDonHang(req, res);
 })
-hoadonRouter.post('/updateDiaChi_ghichuHoaDon/:hoadonId', async function (req, res) {
+hoadonRouter.post('/updateDiaChighichuHoaDon/:hoadonId', async function (req, res) {
     return updateDiaChi_ghichuHoaDon(req, res);
 })
 

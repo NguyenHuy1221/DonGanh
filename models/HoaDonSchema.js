@@ -22,7 +22,9 @@ const HoaDonSchema = new Schema({
     SoDienThoai: { type: String },
   },
   TongTien: Number,
+
   DaThanhToan: { type: Boolean, default: false },
+  SoTienKhuyenMai: { type: Number, default: 0 },
   TrangThai: Number, // 0đặt hàng ,1đóng gói , 2bắt đầug giao , 3hoàn thành đơn hàng , 4huy
   ThanhToan: { type: Boolean, default: false },
   transactionId: { type: Number, default: 0 },

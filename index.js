@@ -164,7 +164,7 @@ io.on("connection", (socket) => {
 
       if (conversation) {
         socket.join(conversationId);
-        console.log(`User ${userid} joined conversation ${conversationId}`);
+        //console.log(`User ${userid} joined conversation ${conversationId}`);
 
         // Sắp xếp các tin nhắn theo thứ tự thời gian
         const sortedMessages = conversation.messages.sort(
@@ -200,7 +200,7 @@ io.on("connection", (socket) => {
       // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ
       await message.save();
       const conversation = await ConversationModel.findById(conversationId);
-      console.log(conversation)
+      //console.log(conversation)
       conversation.messages.push(message._id);
       await conversation.save();
     } catch (error) {

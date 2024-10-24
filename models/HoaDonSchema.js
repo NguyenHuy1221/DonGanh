@@ -22,7 +22,8 @@ const HoaDonSchema = new Schema({
     SoDienThoai: { type: String },
   },
   TongTien: Number,
-  TrangThai: Number,//0 : dang chờ duyệt , 1 , đã thanh toán , 2 , đang chờ thanh toán , 3 , Thanh Toán thất bại , 4 , Hủy.    //Stat = c : thành công d: đã huỷ (hoặc thất bại )p: chưa thanh toán
+  DaThanhToan: { type: Boolean, default: false },
+  TrangThai: Number, // 0đặt hàng ,1đóng gói , 2bắt đầug giao , 3hoàn thành đơn hàng , 4huy
   ThanhToan: { type: Boolean, default: false },
   transactionId: { type: Number, default: 0 },
   chiTietHoaDon: [

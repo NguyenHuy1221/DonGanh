@@ -713,7 +713,7 @@ async function createBienTheThuCong(req, res, next) {
       soLuong,
       KetHopThuocTinh,
     });
-    //const savedBienThe = await newBienThe.save();
+    const savedBienThe = await newBienThe.save();
     // Trả về kết quả cho client
     res.status(200).json(newBienThe);
   } catch (error) {

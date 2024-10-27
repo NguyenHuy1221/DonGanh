@@ -7,7 +7,7 @@ const {
     deleteKhuyenMai,
     getActiveKhuyenMai } = require("../controller/khuyenmai-controller")
 
-khuyenmaiRouter.get('/getlistKhuyenMai/:IDDanhMucCon/:tongTien', async function (req, res) {
+khuyenmaiRouter.get('/getlistKhuyenMai/:tongTien', async function (req, res) {
     return getlistKhuyenMai(req, res);
 })
 

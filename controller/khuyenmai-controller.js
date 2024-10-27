@@ -4,23 +4,29 @@ require("dotenv").config();
 
 async function getlistKhuyenMai(req, res, next) {
     try {
-        const { IDDanhMucCon, tongTien } = req.params;
-
+        const { tongTien } = req.params;
+        //IDDanhMucCon,
         // Kiểm tra tổng tiền
         if (tongTien <= 0) {
             return res.status(400).json({ message: 'Tổng tiền không hợp lệ' });
         }
+
         // Tìm tất cả khuyến mãi đang hoạt động
+        // const activePromotions = await KhuyenMaiModel.find({
+        //     SoLuongHienTai: { $gt: 0 },
+        //     $or: [
+        //         { TrangThai: 0 },
+        //         // { IDDanhMucCon: IDDanhMucCon },
+        //         // { IDDanhMucCon: { $exists: false } }
+        //     ],
+        //     // NgayBatDau: { $lte: new Date() },
+        //     // NgayKetThuc: { $gte: new Date() }
+        // });
         const activePromotions = await KhuyenMaiModel.find({
             SoLuongHienTai: { $gt: 0 },
-            $or: [
-                { TrangThai: 0 },
-                { IDDanhMucCon: IDDanhMucCon },
-                { IDDanhMucCon: { $exists: false } }
-            ],
-            // NgayBatDau: { $lte: new Date() },
-            // NgayKetThuc: { $gte: new Date() }
+            TrangThai: 0 // Chỉ lấy các khuyến mãi có trạng thái là 0 (đang hoạt động)
         });
+        console.log(activePromotions)
         // Thêm thuộc tính isEligible cho từng khuyến mãi
         const eligiblePromotions = activePromotions.map(promotion => ({
             ...promotion._doc,

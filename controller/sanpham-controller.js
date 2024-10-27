@@ -678,6 +678,34 @@ async function createBienTheThuCong(req, res, next) {
   const { IDSanPham } = req.params;
   const { sku, gia, soLuong, KetHopThuocTinh } = req.body;
   try {
+    const bienthe = await BienTheSchema.find({ IDSanPham: IDSanPham })
+    // Duyệt qua từng biến thể đã tồn tại
+    for (const existing of bienthe) {
+      const existingKetHopThuocTinh = existing.KetHopThuocTinh;
+      //console.log(existing.KetHopThuocTinh)
+      // Kiểm tra độ dài
+      if (existingKetHopThuocTinh.length !== KetHopThuocTinh.length) {
+        console.log("bo qua")
+        continue; // Tiếp tục với biến thể tiếp theo
+      }
+      console.log("check")
+      // Kiểm tra trùng lặp từng phần tử
+      let isDuplicate = true;
+      for (let i = 0; i < existingKetHopThuocTinh.length; i++) {
+        console.log("check1")
+
+        if (existingKetHopThuocTinh[i].IDGiaTriThuocTinh.toString() !== KetHopThuocTinh[i].IDGiaTriThuocTinh) {
+          console.log("check2")
+          isDuplicate = false;
+          break;
+        }
+      }
+
+      if (isDuplicate) {
+        return res.status(400).json({ error: 'Kết hợp thuộc tính đã tồn tại' });
+      }
+    }
+
     const newBienThe = new BienTheSchema({
       IDSanPham,
       sku,
@@ -685,9 +713,9 @@ async function createBienTheThuCong(req, res, next) {
       soLuong,
       KetHopThuocTinh,
     });
-    const savedBienThe = await newBienThe.save();
+    //const savedBienThe = await newBienThe.save();
     // Trả về kết quả cho client
-    res.status(200).json(savedBienThe);
+    res.status(200).json(newBienThe);
   } catch (error) {
     console.error("Lỗi Thêm Biến thể :", error);
     res.status(500).json({ error: 'Lỗi hệ thống' });
@@ -699,6 +727,13 @@ async function updateBienTheThuCong(req, res, next) {
   const BienTheS = await BienTheSchema.findById(IDBienThe);
   if (!BienTheS) {
     return res.status(404).json({ message: 'Không tìm thấy biến thể' });
+  }
+  const maBienThe = `${BienTheS.IDSanPham}_${KetHopThuocTinh}`;
+
+  const existingVariant = await BienTheSchema.findOne({ maBienThe });
+  if (existingVariant) {
+    console.log('Biến thể đã tồn tại');
+    return;
   }
   try {
     BienTheS.sku = sku
@@ -994,7 +1029,34 @@ function validateSanPhamData(sku, gia, soLuong) {
   };
 }
 
+async function checkVariantExistence(IDSanPham, KetHopThuocTinh) {
+  try {
+    // Validate sự tồn tại của IDGiaTriThuocTinh
+    // for (const item of KetHopThuocTinh) {
+    //   const giaTriThuocTinh = await BienTheSchema.findById(item.IDGiaTriThuocTinh);
+    //   if (!giaTriThuocTinh) {
+    //     throw new Error(`IDGiaTriThuocTinh ${item.IDGiaTriThuocTinh} không tồn tại`);
+    //   }
+    // }
 
+    // Validate không trùng lặp IDGiaTriThuocTinh trong KetHopThuocTinh
+    const uniqueValues = new Set(KetHopThuocTinh.map(item => item.IDGiaTriThuocTinh.toString()));
+    if (uniqueValues.size !== KetHopThuocTinh.length) {
+      throw new Error('Các IDGiaTriThuocTinh không được trùng lặp');
+    }
+
+    // Tìm kiếm biến thể có cùng IDSanPham và KetHopThuocTinh
+    const existingVariant = await BienTheSchema.findOne({
+      IDSanPham: IDSanPham,
+      KetHopThuocTinh: { $all: KetHopThuocTinh }
+    });
+    console.log("kiem tra", existingVariant)
+    return existingVariant !== null;
+  } catch (error) {
+    console.error('Error checking variant existence:', error);
+    return false;
+  }
+}
 module.exports = {
   getlistSanPham,
   getSanPhamListNew_Old,

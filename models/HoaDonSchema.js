@@ -22,7 +22,6 @@ const HoaDonSchema = new Schema({
     SoDienThoai: { type: String },
   },
   TongTien: Number,
-
   DaThanhToan: { type: Boolean, default: false },
   SoTienKhuyenMai: { type: Number, default: 0 },
   TrangThai: Number, // 0đặt hàng ,1đóng gói , 2bắt đầug giao , 3hoàn thành đơn hàng , 4huy
@@ -40,7 +39,7 @@ const HoaDonSchema = new Schema({
   redirect_url: { type: String },
   mrc_order_id: { type: String },
   order_id: { type: Number },
-  expiresAt: { type: Date, required: true, default: Date(Date.now() + 30 * 60 * 1000) },
+  expiresAt: { type: Date, required: true, default: () => new Date(Date.now() + 30 * 60 * 1000) },
   NgayTao: { type: Date, default: getCurrentDate },
 });
 convertToVietnamTimezone(HoaDonSchema)

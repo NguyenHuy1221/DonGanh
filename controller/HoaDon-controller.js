@@ -200,7 +200,6 @@ async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
       diaChi: diaChiMoi,
       TrangThai,
       TongTien,
-      khuyenmaiId,
       chiTietHoaDon: ChiTietGioHang,
       GhiChu: ghiChu,
 
@@ -250,17 +249,17 @@ function calculateDiscountedItems(items, discountValue, totalQuantity) {
 async function updateTransactionHoaDon(req, res, next) {
   const hoadonId = req.params.hoadonId
   const { transactionId, khuyenmaiId, giaTriGiam = 0 } = req.body;
-
   try {
-
     const hoadon = await HoaDonModel.findById(hoadonId).populate("userId"); // Lấy thông tin đơn hàng từ DB
     const token = refreshToken();
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').format('YYYYMMDDHHmmss');
     const orderIdbaokim = `${"name"}-${vietnamTime}`;
-
-
+    let total_tien = hoadon.TongTien;
+    if (khuyenmaiId && giaTriGiam > 0) {
+      total_tien = hoadon.TongTien - giaTriGiam;
+      total_tien = Math.max(total_tien, 0);
+    }
     const totalQuantity = hoadon.chiTietHoaDon.reduce((total, item) => total + item.soLuong, 0);
-
     // Tính toán các sản phẩm đã được giảm giá
     let discountedItems = hoadon.chiTietHoaDon; // Giữ nguyên mảng ban đầu nếu không có khuyến mãi
     if (khuyenmaiId && giaTriGiam > 0) {
@@ -279,12 +278,9 @@ async function updateTransactionHoaDon(req, res, next) {
     //   quantity: item.soLuong,
     //   url: process.env.BASE_URL + item.idBienThe,
     // })));
-
-
-
     const orderData2 = {
       mrc_order_id: orderIdbaokim,
-      total_amount: hoadon.TongTien - giaTriGiam,
+      total_amount: total_tien,
       description: hoadon.GhiChu,
       url_success: `${process.env.MAIN_BASE_URL}api/hoadon/NhanThanhToanTuBaoKim/${hoadon._id}`,
       merchant_id: parseInt(process.env.MERCHANT_ID),
@@ -306,6 +302,7 @@ async function updateTransactionHoaDon(req, res, next) {
       }))),
 
     };
+    console.log(hoadon.TongTien - giaTriGiam)
     // Kiểm tra thời gian hết hạn của đơn hàng
 
     if (!hoadon) {

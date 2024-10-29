@@ -11,6 +11,7 @@ const {
   getlistBienThe,
   createBienTheThuCong,
   updateBienTheThuCong,
+  deleteBienTheThuCong,
   updateSanPham,
   deleteSanPham,
   updateTinhTrangSanPham,
@@ -27,6 +28,7 @@ const {
   sapXepSanPhamCoGiamGia,
   createSanPhamtest,
   getDanhSachThuocTinhTrongSanPham,
+  searchSanPham,
 } = require("../controller/sanpham-controller");
 sanphamRouter.post("/createSanPhamtest", async function (req, res) {
   return createSanPhamtest(req, res);
@@ -78,6 +80,10 @@ sanphamRouter.post("/createBienTheThuCong/:IDSanPham", async function (req, res)
 sanphamRouter.put("/updateBienTheThuCong/:IDBienThe", async function (req, res) {
   return updateBienTheThuCong(req, res);
 });
+sanphamRouter.delete("/deleteBienTheThuCong/:IDBienThe", async function (req, res) {
+  return deleteBienTheThuCong(req, res);
+});
+
 sanphamRouter.put("/updateReview", async function (req, res) {
   return updateReview(req, res);
 });
@@ -161,6 +167,9 @@ sanphamRouter.get("/sapXepSanPhamBanChayNhat", async function (req, res) {
 });
 sanphamRouter.get("/sapXepSanPhamCoGiamGia", async function (req, res) {
   return sapXepSanPhamCoGiamGia(req, res);
+});
+sanphamRouter.get("/searchSanPham", async function (req, res) {
+  return searchSanPham(req, res);
 });
 
 module.exports = sanphamRouter;

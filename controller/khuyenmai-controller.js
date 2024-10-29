@@ -26,17 +26,18 @@ async function getlistKhuyenMai(req, res, next) {
             SoLuongHienTai: { $gt: 0 },
             TrangThai: 0 // Chỉ lấy các khuyến mãi có trạng thái là 0 (đang hoạt động)
         });
-        console.log(activePromotions)
+
         // Thêm thuộc tính isEligible cho từng khuyến mãi
+
         const eligiblePromotions = activePromotions.map(promotion => ({
             ...promotion._doc,
             isEligible: tongTien >= promotion.GioiHanGiaTriDuocApDung && promotion.GioiHanGiaTriDuocApDung > 0
         }));
-
+        console.log(eligiblePromotions)
         eligiblePromotions.sort((a, b) => b.GiaTriKhuyenMai - a.GiaTriKhuyenMai);
 
         const promotionsWithDetails = eligiblePromotions.map(promotion => {
-            const giaTriGiam = calculateDiscount(promotion.LoaiKhuyenMai, tongTien, promotion.GiaTriKhuyenMai, promotion.GioiHanGiaTriGiamToiDa);
+            const giaTriGiam = calculateDiscount(promotion.LoaiKhuyenMai, parseFloat(tongTien), promotion.GiaTriKhuyenMai, promotion.GioiHanGiaTriGiamToiDa);
             return {
                 ...promotion,
                 giaTriGiam,

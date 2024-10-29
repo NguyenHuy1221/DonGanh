@@ -4,15 +4,16 @@ const ThuocTinhGiaTriModel = require("../models/GiaTriThuocTinhSchema");
 const BienTheSchema = require("../models/BienTheSchema");
 const GiaTriThuocTinhModel = require("../models/GiaTriThuocTinhSchema")
 const mongoose = require("mongoose");
-
+const tiengviet = require('tiengviet');
 const fs = require('fs');
 const path = require('path');
-
+const HoadonModel = require("../models/HoaDonSchema")
 
 require("dotenv").config();
 const multer = require("multer");
 const util = require('util');
 const { v4: uid } = require('uuid');
+const HoaDon = require("../models/HoaDonSchema");
 // const { upload } = require("../untils/index");
 //ham lay danh sach thuoc tinh
 async function getlistSanPham(req, res, next) {
@@ -688,20 +689,25 @@ async function createBienTheThuCong(req, res, next) {
         console.log("bo qua")
         continue; // Tiếp tục với biến thể tiếp theo
       }
-      console.log("check")
       // Kiểm tra trùng lặp từng phần tử
       let isDuplicate = true;
       for (let i = 0; i < existingKetHopThuocTinh.length; i++) {
-        console.log("check1")
-
         if (existingKetHopThuocTinh[i].IDGiaTriThuocTinh.toString() !== KetHopThuocTinh[i].IDGiaTriThuocTinh) {
-          console.log("check2")
           isDuplicate = false;
           break;
         }
       }
 
       if (isDuplicate) {
+        const bientheisDelete = await BienTheSchema.findById(existing._id)
+        if (bientheisDelete && bientheisDelete.isDeleted) {
+          bientheisDelete.sku = sku;
+          bientheisDelete.gia = gia;
+          bientheisDelete.soLuong = soLuong;
+          bientheisDelete.isDeleted = false;
+          await bientheisDelete.save();
+          return res.status(200).json({ message: 'Biến thể đã được khôi phục' });
+        }
         return res.status(400).json({ error: 'Kết hợp thuộc tính đã tồn tại' });
       }
     }
@@ -728,13 +734,42 @@ async function updateBienTheThuCong(req, res, next) {
   if (!BienTheS) {
     return res.status(404).json({ message: 'Không tìm thấy biến thể' });
   }
-  const maBienThe = `${BienTheS.IDSanPham}_${KetHopThuocTinh}`;
 
-  const existingVariant = await BienTheSchema.findOne({ maBienThe });
-  if (existingVariant) {
-    console.log('Biến thể đã tồn tại');
-    return;
+  //const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham })
+  const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham, _id: { $ne: IDBienThe } });
+  // Duyệt qua từng biến thể đã tồn tại
+  for (const existing of bienthe) {
+    const existingKetHopThuocTinh = existing.KetHopThuocTinh;
+    //console.log(existing.KetHopThuocTinh)
+    // Kiểm tra độ dài
+    if (existingKetHopThuocTinh.length !== KetHopThuocTinh.length) {
+      console.log("bo qua")
+      continue; // Tiếp tục với biến thể tiếp theo
+    }
+    // Kiểm tra trùng lặp từng phần tử
+    let isDuplicate = true;
+    for (let i = 0; i < existingKetHopThuocTinh.length; i++) {
+      if (existingKetHopThuocTinh[i].IDGiaTriThuocTinh.toString() !== KetHopThuocTinh[i].IDGiaTriThuocTinh) {
+        isDuplicate = false;
+        break;
+      }
+    }
+
+    if (isDuplicate) {
+      const bientheisDelete = await BienTheSchema.findById(existing._id)
+      if (bientheisDelete && bientheisDelete.isDeleted) {
+        bientheisDelete.sku = sku;
+        bientheisDelete.gia = gia;
+        bientheisDelete.soLuong = soLuong;
+        bientheisDelete.isDeleted = false;
+        await bientheisDelete.save();
+        return res.status(200).json({ message: 'Biến thể đã được khôi phục' });
+      }
+      return res.status(400).json({ error: 'Kết hợp thuộc tính đã tồn tại' });
+    }
   }
+
+
   try {
     BienTheS.sku = sku
     BienTheS.gia = gia
@@ -750,20 +785,26 @@ async function updateBienTheThuCong(req, res, next) {
 }
 async function deleteBienTheThuCong(req, res, next) {
   const { IDBienThe } = req.params;
-  const BienTheS = await BienTheSchema.findById(IDBienThe);
-  if (!BienTheS) {
-    return res.status(404).json({ message: 'Không tìm thấy biến thể' });
-  }
   try {
-    BienTheS.sku = sku
-    BienTheS.gia = gia
-    BienTheS.soLuong = soLuong
-    BienTheS.KetHopThuocTinh = KetHopThuocTinh
-    await BienTheS.save();
-    // Trả về kết quả cho client
-    res.status(200).json(BienTheS);
+    // Tìm tất cả các hóa đơn có chứa biến thể
+    const hoaDons = await HoadonModel.find({
+      'chiTietHoaDon.idBienThe': IDBienThe
+    });
+
+    // Kiểm tra xem có hóa đơn nào chứa biến thể cần xóa
+    if (hoaDons.length > 0) {
+      // Cập nhật trạng thái isDeleted của biến thể
+      await BienTheSchema.findByIdAndUpdate(IDBienThe, { isDeleted: true });
+      res.status(200).json({ message: 'Biến thể đã được đánh dấu là đã xóa' });
+    } else {
+      // Nếu không tìm thấy hóa đơn nào, có nghĩa là biến thể chưa được mua
+      // Bạn có thể thực hiện các hành động khác ở đây, ví dụ: xóa biến thể hoàn toàn
+      await BienTheSchema.findByIdAndDelete(IDBienThe);
+
+      res.status(200).json({ message: 'Biến thể đã được xóa' });
+    }
   } catch (error) {
-    console.error("Lỗi update biến thể :", error);
+    console.error("Lỗi khi xóa biến thể:", error);
     res.status(500).json({ error: 'Lỗi hệ thống' });
   }
 }
@@ -956,6 +997,24 @@ async function findSanPhamByDanhMuc(req, res, next) {
       .json({ message: "Lỗi khi tìm kiếm sản phẩm theo danh mục" });
   }
 }
+async function searchSanPham(req, res, next) {
+  try {
+    const { TenSanPham } = req.query;
+
+    // Loại bỏ dấu bằng hàm removeAccents
+    const tenSanPhamKhongDau = removeAccents(TenSanPham.toLowerCase());
+
+    // Tìm kiếm
+    const sanphams = await SanPhamModel.find({
+      TenSanPham: { $regex: new RegExp(`.*${tenSanPhamKhongDau}.*`, 'i') }
+    });
+
+    res.status(200).json(sanphams);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
+  }
+}
 //hàm chuyển đổi ngày tạo sang ngày việt nam
 // async function layNgayTaoSanPham(idSanPham) {
 //   try {
@@ -972,7 +1031,11 @@ async function findSanPhamByDanhMuc(req, res, next) {
 //     console.error('Lỗi khi lấy ngày tạo:', error);
 //   }
 // }
-
+function removeAccents(str) {
+  return str.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
 async function validateSanPham(IDSanPham, TenSanPham) {
   const sanPham = await SanPhamModel.findOne({ IDSanPham, TenSanPham });
   if (!sanPham) {
@@ -1058,6 +1121,7 @@ async function checkVariantExistence(IDSanPham, KetHopThuocTinh) {
   }
 }
 module.exports = {
+  searchSanPham,
   getlistSanPham,
   getSanPhamListNew_Old,
   toggleSanPhamMoi,
@@ -1068,6 +1132,7 @@ module.exports = {
   getlistBienThe,
   createBienTheThuCong,
   updateBienTheThuCong,
+  deleteBienTheThuCong,
   updateSanPham,
   deleteSanPham,
   updateTinhTrangSanPham,

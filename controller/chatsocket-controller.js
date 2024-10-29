@@ -6,6 +6,9 @@ require("dotenv").config();
 async function Createconversation(req, res, next) {
   try {
     const { sender_id, receiver_id } = req.body;
+    if (sender_id.toString() === receiver_id.toString()) {
+      return res.status(400).json({ error: 'Người gửi và người nhận tin nhắn không được trùng lặp!' });
+    }
     // Kiểm tra xem conversation đã tồn tại chưa
     let conversation = await ConversationModel.findOne({ sender_id, receiver_id });
     if (!conversation) {
@@ -46,7 +49,7 @@ async function getlistconversation12(req, res, next) {
     if (conversations.length === 0) {
       return res.status(200).json({ message: "Không có cuộc hội thoại nào" });
     }
-    
+
     res.status(200).json(conversations);
   } catch (error) {
     console.error('Lỗi khi lấy danh sách cuộc hội thoại:', error);

@@ -189,12 +189,18 @@ io.on("connection", (socket) => {
 
   socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
     try {
+      //const now = Date.now();
+      const MIN_TIME_BETWEEN_MESSAGES = 1000;
       const message = new MessageModel({
         text,
         imageUrl,
         videoUrl,
         msgByUserId: userid,
       });
+      const lastMessage = await MessageModel.findOne({ msgByUserId }).sort({ createdAt: -1 });
+      if (lastMessage && createdAt - lastMessage.createdAt < MIN_TIME_BETWEEN_MESSAGES) {
+        throw new Error('Please wait a few seconds before sending another message.');
+      }
       // Gửi phản hồi nhanh chóng tới client
       io.to(conversationId).emit('message', { conversationId, message });
       // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ

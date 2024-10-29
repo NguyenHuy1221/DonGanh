@@ -1,4 +1,5 @@
 const ThuocTinhModel = require("../models/ThuocTinhSchema");
+const ThuocTinhGiaTriModel = require("../models/GiaTriThuocTinhSchema")
 require("dotenv").config();
 
 
@@ -21,17 +22,17 @@ async function createThuocTinh(req, res, next) {
     try {
 
         // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    const existingThuocTinh = await ThuocTinhModel.findOne({ ThuocTinhID });
+        const existingThuocTinh = await ThuocTinhModel.findOne({ ThuocTinhID });
 
-    if (existingThuocTinh) {
-        return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
-    }
+        if (existingThuocTinh) {
+            return res.status(409).json({ message: 'Thuộc tính đã tồn tại' });
+        }
         // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
         const newThuocTinh = new ThuocTinhModel({
             ThuocTinhID,
             TenThuocTinh
         });
-        
+
         // Lưu đối tượng vào cơ sở dữ liệu
         const savedThuocTinh = await newThuocTinh.save();
 
@@ -40,15 +41,15 @@ async function createThuocTinh(req, res, next) {
     } catch (error) {
         if (error.code === 11000) {
             console.error('ThuocTinhID đã tồn tại');
-          } else {
+        } else {
             console.error('Lỗi khác:', error);
-          }
+        }
     }
 }
-  
-   
+
+
 async function updateThuocTinh(req, res, next) {
-     const { ThuocTinhID } = req.params;
+    const { ThuocTinhID } = req.params;
     const { TenThuocTinh } = req.body;
 
     try {
@@ -73,11 +74,15 @@ async function deleteThuocTinh(req, res, next) {
     const { ThuocTinhID } = req.params;
 
     try {
-        const deletedThuocTinh = await ThuocTinhModel.findByIdAndDelete(ThuocTinhID);
-
-        if (!deletedThuocTinh) {
+        const updatedThuocTinh = await ThuocTinhModel.findByIdAndUpdate(
+            ThuocTinhID,
+            { isDeleted: true },
+            { new: true }
+        );
+        if (!updatedThuocTinh) {
             return res.status(404).json({ message: 'Không tìm thấy thuộc tính' });
         }
+        await ThuocTinhGiaTriModel.updateMany({ ThuocTinhID }, { isDeleted: true });
 
         res.status(200).json({ message: 'Xóa thuộc tính thành công' });
     } catch (error) {

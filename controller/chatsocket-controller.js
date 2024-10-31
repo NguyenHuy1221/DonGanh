@@ -10,7 +10,8 @@ async function Createconversation(req, res, next) {
       return res.status(400).json({ error: 'Người gửi và người nhận tin nhắn không được trùng lặp!' });
     }
     // Kiểm tra xem conversation đã tồn tại chưa
-    let conversation = await ConversationModel.findOne({ sender_id, receiver_id });
+    let conversation = await ConversationModel.findOne({ sender_id, receiver_id }).populate("sender_id")
+      .populate("receiver_id");
     if (!conversation) {
       conversation = new ConversationModel({ sender_id, receiver_id });
       await conversation.save();
@@ -25,7 +26,8 @@ async function getlistconversation(req, res, next) {
   try {
     const { sender_id } = req.params;
     // Kiểm tra xem conversation đã tồn tại chưa
-    let conversation = await ConversationModel.find({ $or: [{ sender_id: sender_id }, { receiver_id: sender_id }] });
+    let conversation = await ConversationModel.find({ $or: [{ sender_id: sender_id }, { receiver_id: sender_id }] }).populate("sender_id")
+      .populate("receiver_id");
     console.log("danh sach tin nhan")
     if (!conversation) {
       res.status(200).json({ message: "khong co cuoc hoi thoai nao" });
@@ -44,7 +46,8 @@ async function getlistconversation12(req, res, next) {
     // Kiểm tra xem conversation đã tồn tại chưa
     let conversations = await ConversationModel.find({
       $or: [{ sender_id: sender_id }, { receiver_id: sender_id }]
-    }).populate('messages'); // Sử dụng populate để lấy thông tin tin nhắn
+    }).populate('messages').populate("sender_id")
+      .populate("receiver_id"); // Sử dụng populate để lấy thông tin tin nhắn
 
     if (conversations.length === 0) {
       return res.status(200).json({ message: "Không có cuộc hội thoại nào" });

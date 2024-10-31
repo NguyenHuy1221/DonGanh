@@ -101,7 +101,7 @@ async function createSanPham(req, res, next) {
       IDSanPham, TenSanPham,
       HinhSanPham: newPath,
       DonGiaNhap, DonGiaBan,
-      SoLuongNhap, SoLuongHienTai, PhanTramGiamGia, TinhTrang, MoTa, Unit,
+      SoLuongNhap, SoLuongHienTai: 0, PhanTramGiamGia, TinhTrang, MoTa, Unit,
       HinhBoSung: hinhBoSung,
       DanhSachThuocTinh: DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
     });
@@ -164,6 +164,10 @@ async function ToHopBienThe(IDSanPham, sku, gia, soLuong) {
       });
       await newVariant.save();
       console.log(newVariant);
+      await SanPhamModel.findOneAndUpdate(
+        { _id: newVariant.IDSanPham },
+        { $inc: { SoLuongHienTai: soLuong } }
+      );
     } else {
       const thuocTinh = thuocTinhs.shift();
       const giaTriThuocTinhList = thuocTinh.giaTriThuocTinh
@@ -391,7 +395,7 @@ async function updateSanPham(req, res, next) {
       DonGiaNhap,
       DonGiaBan,
       SoLuongNhap,
-      SoLuongHienTai,
+      //SoLuongHienTai, app tự sử lý biến này
       PhanTramGiamGia,
       NgayTao,
       TinhTrang,
@@ -407,7 +411,7 @@ async function updateSanPham(req, res, next) {
     if (DonGiaNhap !== undefined) sanPham.DonGiaNhap = DonGiaNhap;
     if (DonGiaBan !== undefined) sanPham.DonGiaBan = DonGiaBan;
     if (SoLuongNhap !== undefined) sanPham.SoLuongNhap = SoLuongNhap;
-    if (SoLuongHienTai !== undefined) sanPham.SoLuongHienTai = SoLuongHienTai;
+    //if (SoLuongHienTai !== undefined) sanPham.SoLuongHienTai = SoLuongHienTai;
     if (PhanTramGiamGia !== undefined) sanPham.PhanTramGiamGia = PhanTramGiamGia;
     if (NgayTao !== undefined) sanPham.NgayTao = NgayTao;
     if (TinhTrang !== undefined) sanPham.TinhTrang = TinhTrang;
@@ -507,6 +511,10 @@ async function createSanPhamVoiBienThe(req, res) {
       });
       await newVariant.save();
       console.log(newVariant);
+      await SanPhamModel.findOneAndUpdate(
+        { _id: newVariant.IDSanPham },
+        { $inc: { SoLuongHienTai: soLuong } }
+      );
     } else {
       const thuocTinh = thuocTinhs.shift();
       const giaTriThuocTinhList = thuocTinh.giaTriThuocTinh
@@ -719,9 +727,14 @@ async function createBienTheThuCong(req, res, next) {
       soLuong,
       KetHopThuocTinh,
     });
+
     const savedBienThe = await newBienThe.save();
+    await SanPhamModel.findOneAndUpdate(
+      { _id: savedBienThe.IDSanPham },
+      { $inc: { SoLuongHienTai: soLuong } }
+    );
     // Trả về kết quả cho client
-    res.status(200).json(newBienThe);
+    res.status(200).json(savedBienThe);
   } catch (error) {
     console.error("Lỗi Thêm Biến thể :", error);
     res.status(500).json({ error: 'Lỗi hệ thống' });
@@ -735,42 +748,53 @@ async function updateBienTheThuCong(req, res, next) {
     return res.status(404).json({ message: 'Không tìm thấy biến thể' });
   }
 
-  //const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham })
-  const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham, _id: { $ne: IDBienThe } });
-  // Duyệt qua từng biến thể đã tồn tại
-  for (const existing of bienthe) {
-    const existingKetHopThuocTinh = existing.KetHopThuocTinh;
-    //console.log(existing.KetHopThuocTinh)
-    // Kiểm tra độ dài
-    if (existingKetHopThuocTinh.length !== KetHopThuocTinh.length) {
-      console.log("bo qua")
-      continue; // Tiếp tục với biến thể tiếp theo
-    }
-    // Kiểm tra trùng lặp từng phần tử
-    let isDuplicate = true;
-    for (let i = 0; i < existingKetHopThuocTinh.length; i++) {
-      if (existingKetHopThuocTinh[i].IDGiaTriThuocTinh.toString() !== KetHopThuocTinh[i].IDGiaTriThuocTinh) {
-        isDuplicate = false;
-        break;
-      }
-    }
 
-    if (isDuplicate) {
-      const bientheisDelete = await BienTheSchema.findById(existing._id)
-      if (bientheisDelete && bientheisDelete.isDeleted) {
-        bientheisDelete.sku = sku;
-        bientheisDelete.gia = gia;
-        bientheisDelete.soLuong = soLuong;
-        bientheisDelete.isDeleted = false;
-        await bientheisDelete.save();
-        return res.status(200).json({ message: 'Biến thể đã được khôi phục' });
-      }
-      return res.status(400).json({ error: 'Kết hợp thuộc tính đã tồn tại' });
-    }
-  }
 
 
   try {
+    //const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham })
+    const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham, _id: { $ne: IDBienThe } });
+    // Duyệt qua từng biến thể đã tồn tại
+    for (const existing of bienthe) {
+      const existingKetHopThuocTinh = existing.KetHopThuocTinh;
+      //console.log(existing.KetHopThuocTinh)
+      // Kiểm tra độ dài
+      if (existingKetHopThuocTinh.length !== KetHopThuocTinh.length) {
+        console.log("bo qua")
+        continue; // Tiếp tục với biến thể tiếp theo
+      }
+      // Kiểm tra trùng lặp từng phần tử
+      let isDuplicate = true;
+      for (let i = 0; i < existingKetHopThuocTinh.length; i++) {
+        if (existingKetHopThuocTinh[i].IDGiaTriThuocTinh.toString() !== KetHopThuocTinh[i].IDGiaTriThuocTinh) {
+          isDuplicate = false;
+          break;
+        }
+      }
+
+      if (isDuplicate) {
+        const bientheisDelete = await BienTheSchema.findById(existing._id)
+        if (bientheisDelete && bientheisDelete.isDeleted) {
+          bientheisDelete.sku = sku;
+          bientheisDelete.gia = gia;
+          bientheisDelete.soLuong = soLuong;
+          bientheisDelete.isDeleted = false;
+          await bientheisDelete.save();
+          return res.status(200).json({ message: 'Biến thể đã được khôi phục' });
+        }
+        return res.status(400).json({ error: 'Kết hợp thuộc tính đã tồn tại' });
+      }
+    }
+    const soLuongCu = BienTheS.soLuong;
+    const soLuongMoi = soLuong;
+    const deltaSoLuong = soLuongMoi - soLuongCu;
+
+
+    await SanPhamModel.findByIdAndUpdate(
+      { _id: bienthe.IDSanPham },
+      { $inc: { SoLuongHienTai: deltaSoLuong } },
+      { session }
+    );
     BienTheS.sku = sku
     BienTheS.gia = gia
     BienTheS.soLuong = soLuong
@@ -794,11 +818,22 @@ async function deleteBienTheThuCong(req, res, next) {
     // Kiểm tra xem có hóa đơn nào chứa biến thể cần xóa
     if (hoaDons.length > 0) {
       // Cập nhật trạng thái isDeleted của biến thể
-      await BienTheSchema.findByIdAndUpdate(IDBienThe, { isDeleted: true });
+      const bienthe = await BienTheSchema.findByIdAndUpdate(IDBienThe, { isDeleted: true });
+      await SanPhamModel.findOneAndUpdate(
+        { _id: bienthe.IDSanPham },
+        { $inc: { SoLuongHienTai: -bienthe.soLuong } }
+      );
+      bienthe.soLuong = 0
+      await bienthe.save()
       res.status(200).json({ message: 'Biến thể đã được đánh dấu là đã xóa' });
     } else {
       // Nếu không tìm thấy hóa đơn nào, có nghĩa là biến thể chưa được mua
       // Bạn có thể thực hiện các hành động khác ở đây, ví dụ: xóa biến thể hoàn toàn
+      const bienthe = await BienTheSchema.findById(IDBienThe);
+      await SanPhamModel.findOneAndUpdate(
+        { _id: bienthe.IDSanPham },
+        { $inc: { SoLuongHienTai: -bienthe.soLuong } }
+      );
       await BienTheSchema.findByIdAndDelete(IDBienThe);
 
       res.status(200).json({ message: 'Biến thể đã được xóa' });
@@ -1015,6 +1050,30 @@ async function searchSanPham(req, res, next) {
     res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
   }
 }
+// tự nhiên ngiu tiếng anh
+async function checkNumberProductvaBienthe(req, res, next) {
+  const { IDSanPham } = req.params;
+  try {
+    // Tìm tất cả các hóa đơn có chứa biến thể
+    const bienthes = await BienTheSchema.find({ IDSanPham: IDSanPham });
+    const totalBientheQuantity = bienthes.reduce((total, bienthe) => total + bienthe.soLuong, 0);
+
+    const sanpham = await SanPhamModel.findById(IDSanPham);
+    if (!sanpham) {
+      return res.status(404).json({ error: 'Sản phẩm không tồn tại' });
+    }
+    const Data = {
+      TongSoluongsp: sanpham.SoLuongHienTai,
+      TongSoluongSanPhamBienThe: totalBientheQuantity,
+      ChenhLech: totalBientheQuantity - sanpham.SoLuongHienTai
+    }
+    res.status(200).json({ message: 'Biến Kiểm tra xong', Data });
+
+  } catch (error) {
+    console.error("Lỗi khi xóa biến thể:", error);
+    res.status(500).json({ error: 'Lỗi hệ thống' });
+  }
+}
 //hàm chuyển đổi ngày tạo sang ngày việt nam
 // async function layNgayTaoSanPham(idSanPham) {
 //   try {
@@ -1164,4 +1223,5 @@ module.exports = {
   // getlistPageSanPham,
   createSanPhamtest,
   getDanhSachThuocTinhTrongSanPham,
+  checkNumberProductvaBienthe,
 };

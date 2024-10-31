@@ -6,7 +6,7 @@ require("dotenv").config();
 async function getlistThuocTinhGiaTri(req, res, next) {
 
     try {
-        const thuocTinhs = await ThuocTinhGiaTriModel.find({ isDeleted: false }).populate('ThuocTinhID')
+        const thuocTinhs = await ThuocTinhGiaTriModel.find().populate('ThuocTinhID')
         res.status(200).json(thuocTinhs);
     } catch (error) {
         console.error(error);

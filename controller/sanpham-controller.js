@@ -108,7 +108,7 @@ async function createSanPham(req, res, next) {
       DanhSachThuocTinh: DanhSachThuocTinh, IDDanhMuc, IDDanhMucCon,
     });
     // Lưu đối tượng vào cơ sở dữ liệu
-    const savedSanPham = await newSanPham.save();
+    let savedSanPham = await newSanPham.save();
 
     if (luachon == 0) {
       try {
@@ -121,14 +121,22 @@ async function createSanPham(req, res, next) {
         if (!giatrithuoctinh) {
           res.status(404).json({ message: 'Lỗi Không tìm thấy giá trị thuộc tính sản phẩm dơn giản , nếu không tìm thấy vui lòng tạo lại. với id là Simple' });
         }
+        const danhsachthuoctinhdongian = [{
+          thuocTinh: thuoctinh._id,
+          giaTriThuocTinh: [giatrithuoctinh._id]
+        }]
         const KetHopThuocTinh = [{ IDGiaTriThuocTinh: giatrithuoctinh._id }]
         const newBienThe = new BienTheSchema({
           IDSanPham: savedSanPham._id,
           sku: sku,
           gia: DonGiaBan,
-          soLuong: SoLuongNhap,
+          soLuong: SoLuongHienTai,
           KetHopThuocTinh
         });
+
+        newSanPham.DanhSachThuocTinh = danhsachthuoctinhdongian
+        newSanPham.SoLuongHienTai = SoLuongHienTai
+        savedSanPham = await newSanPham.save();
         await newBienThe.save();
       } catch (error) {
         console.error("Lỗi Thêm Biến thể :", error);

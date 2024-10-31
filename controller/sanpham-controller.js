@@ -112,14 +112,24 @@ async function createSanPham(req, res, next) {
 
     if (luachon == 0) {
       try {
+        const thuoctinh = await ThuocTinhModel.findOne({ ThuocTinhID: "SPspimple" })
+        if (!thuoctinh) {
+          res.status(404).json({ message: 'Lỗi Không tìm thấy thuộc tính sản phẩm dơn giản , nếu không tìm thấy vui lòng tạo lại. với id là SPspimple' });
+        }
+        const giatrithuoctinh = await GiaTriThuocTinhModel.findOne({ IDGiaTriThuocTinh: "Simple" })
+
+        if (!giatrithuoctinh) {
+          res.status(404).json({ message: 'Lỗi Không tìm thấy giá trị thuộc tính sản phẩm dơn giản , nếu không tìm thấy vui lòng tạo lại. với id là Simple' });
+        }
+        const KetHopThuocTinh = [{ IDGiaTriThuocTinh: giatrithuoctinh._id }]
         const newBienThe = new BienTheSchema({
           IDSanPham: savedSanPham._id,
-          sku: "bama",
+          sku: sku,
           gia: DonGiaBan,
           soLuong: SoLuongNhap,
-
+          KetHopThuocTinh
         });
-        const savedBienThe = await newBienThe.save();
+        await newBienThe.save();
       } catch (error) {
         console.error("Lỗi Thêm Biến thể :", error);
         res.status(500).json({ error: 'Lỗi hệ thống liên quan đến biến thể' });
@@ -301,10 +311,28 @@ async function createSanPhamtest(req, res, next) {
       IDDanhMuc,
       IDDanhMucCon,
     });
+    const thuoctinh = await ThuocTinhModel.findOne({ ThuocTinhID: "SPspimple" })
+    if (!thuoctinh) {
+      res.status(404).json({ message: 'Lỗi Không tìm thấy thuộc tính sản phẩm dơn giản , nếu không tìm thấy vui lòng tạo lại. với id là SPspimple' });
+    }
+    const giatrithuoctinh = await GiaTriThuocTinhModel.findOne({ IDGiaTriThuocTinh: "Simple" })
+
+    if (!giatrithuoctinh) {
+      res.status(404).json({ message: 'Lỗi Không tìm thấy giá trị thuộc tính sản phẩm dơn giản , nếu không tìm thấy vui lòng tạo lại. với id là Simple' });
+    }
+    const KetHopThuocTinh = [{ IDGiaTriThuocTinh: giatrithuoctinh._id }]
+    const newBienThe = new BienTheSchema({
+      IDSanPham: "67230ded0ed1250d8ba7880c",
+      sku: "kk",
+      gia: DonGiaBan,
+      soLuong: SoLuongHienTai,
+      KetHopThuocTinh
+    });
+    await newBienThe.save();
 
     // Lưu đối tượng vào cơ sở dữ liệu
-    const savedSanPham = await newSanPham.save();
-    res.status(201).json(savedSanPham);
+    //const savedSanPham = await newSanPham.save();
+    res.status(201).json(newSanPham);
   } catch (error) {
     console.error("Lỗi Them san pham bổ sung:", error);
     res.status(500).json({ error: 'Lỗi hệ thống' });

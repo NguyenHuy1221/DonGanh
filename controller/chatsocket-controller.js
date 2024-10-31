@@ -21,6 +21,7 @@ async function Createconversation(req, res, next) {
       { path: 'receiver_id' } // Populate receiver details
     ];
     conversation = await ConversationModel.findById(conversation._id).populate(populateOptions);
+    console.log(conversation)
     res.status(200).json(conversation);
   } catch (error) {
     console.error('Lỗi khi tạo conversation:', error);

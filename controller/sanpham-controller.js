@@ -754,6 +754,7 @@ async function updateBienTheThuCong(req, res, next) {
   try {
     //const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham })
     const bienthe = await BienTheSchema.find({ IDSanPham: BienTheS.IDSanPham, _id: { $ne: IDBienThe } });
+    console.log(bienthe)
     // Duyệt qua từng biến thể đã tồn tại
     for (const existing of bienthe) {
       const existingKetHopThuocTinh = existing.KetHopThuocTinh;
@@ -790,11 +791,11 @@ async function updateBienTheThuCong(req, res, next) {
     const deltaSoLuong = soLuongMoi - soLuongCu;
 
 
-    await SanPhamModel.findByIdAndUpdate(
-      { _id: bienthe.IDSanPham },
-      { $inc: { SoLuongHienTai: deltaSoLuong } },
-      { session }
+    const sanpham = await SanPhamModel.findByIdAndUpdate(
+      BienTheS.IDSanPham,
+      { $inc: { SoLuongHienTai: deltaSoLuong } }
     );
+    console.log(sanpham)
     BienTheS.sku = sku
     BienTheS.gia = gia
     BienTheS.soLuong = soLuong
@@ -1036,13 +1037,15 @@ async function searchSanPham(req, res, next) {
   try {
     const { TenSanPham } = req.query;
 
-    // Loại bỏ dấu bằng hàm removeAccents
     const tenSanPhamKhongDau = removeAccents(TenSanPham.toLowerCase());
 
-    // Tìm kiếm
+    // Biểu thức chính quy linh hoạt hơn, bao gồm khoảng trắng và các ký tự đặc biệt
+    const regex = new RegExp(`.*${tenSanPhamKhongDau}.*`, 'gi');
+
+    // Tìm kiếm, thêm index nếu chưa có
     const sanphams = await SanPhamModel.find({
-      TenSanPham: { $regex: new RegExp(`.*${tenSanPhamKhongDau}.*`, 'i') }
-    });
+      TenSanPham: { $regex: regex }
+    }).collation({ locale: 'vi' }); // Sử dụng collation cho tiếng Việt
 
     res.status(200).json(sanphams);
   } catch (error) {

@@ -6,7 +6,7 @@ require("dotenv").config();
 async function getlistBienTheByID(req, res, next) {
     const IDSanPham = req.query.IDSanPham;
     try {
-        const bienthes = await BienTheModel.find({IDSanPham:IDSanPham});
+        const bienthes = await BienTheModel.find({ IDSanPham: IDSanPham });
         res.status(200).json(bienthes);
     } catch (error) {
         console.error(error);
@@ -30,19 +30,19 @@ async function getlistBienTheByID(req, res, next) {
 
 //hàm thêm bien the
 async function createBienTheInSanPham(req, res, next) {
-    const { IDSanPham,ListGiaTriThuocTinh,soLuong,gia,sku,} = req.body;
+    const { IDSanPham, ListGiaTriThuocTinh, soLuong, gia, sku, } = req.body;
     try {
 
         // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    const existingThuocTinh = await BienTheModel.findOne({ IDSanPham:IDSanPham,KetHopThuocTinh:ListGiaTriThuocTinh });
+        const existingThuocTinh = await BienTheModel.findOne({ IDSanPham: IDSanPham, KetHopThuocTinh: ListGiaTriThuocTinh });
 
-    if (existingThuocTinh) {
-        return res.status(409).json({ message: 'Biến thể đã tồn tại' });
-    }
+        if (existingThuocTinh) {
+            return res.status(409).json({ message: 'Biến thể đã tồn tại' });
+        }
         // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
         const newbienthe = new BienTheModel({
             IDSanPham,
-            KetHopThuocTinh : ListGiaTriThuocTinh,
+            KetHopThuocTinh: ListGiaTriThuocTinh,
             soLuong,
             sku,
             gia,
@@ -56,26 +56,26 @@ async function createBienTheInSanPham(req, res, next) {
     } catch (error) {
         if (error.code === 11000) {
             console.error('Lỗi thêm Biến thể đã tồn tại');
-          } else {
+        } else {
             console.error('Lỗi khác:', error);
-          }
+        }
     }
 }
 //hàm thêm update
 async function updateBienTheInSanPham(req, res, next) {
-    const { IDBienThe,ListGiaTriThuocTinh,soLuong,gia,sku,} = req.body;
+    const { IDBienThe, ListGiaTriThuocTinh, soLuong, gia, sku, } = req.body;
     try {
 
         // Kiểm tra xem ThuocTinhID đã tồn tại chưa
-    const existingThuocTinh = await BienTheModel.findOne({ IDSanPham:IDSanPham,KetHopThuocTinh:ListGiaTriThuocTinh });
+        const existingThuocTinh = await BienTheModel.findOne({ IDSanPham: IDSanPham, KetHopThuocTinh: ListGiaTriThuocTinh });
 
-    if (existingThuocTinh) {
-        return res.status(409).json({ message: 'Biến thể đã tồn tại' });
-    }
+        if (existingThuocTinh) {
+            return res.status(409).json({ message: 'Biến thể đã tồn tại' });
+        }
         // Tạo một đối tượng thuộc tính mới dựa trên dữ liệu nhận được
         const updatedBienThe = await BienTheModel.findOneAndUpdate(
-            { _id:IDBienThe },
-            { KetHopThuocTinh:ListGiaTriThuocTinh,soLuong,gia,sku},
+            { _id: IDBienThe },
+            { KetHopThuocTinh: ListGiaTriThuocTinh, soLuong, gia, sku },
             { new: true }
         );
 
@@ -88,9 +88,9 @@ async function updateBienTheInSanPham(req, res, next) {
     } catch (error) {
         if (error.code === 11000) {
             console.error('Lỗi update Biến thể loi');
-          } else {
+        } else {
             console.error('Lỗi khác:', error);
-          }
+        }
     }
 }
 
@@ -98,7 +98,7 @@ async function deleteBienTheInSanPham(req, res, next) {
     const { IDBienThe } = req.params;
 
     try {
-        const deletedBienThe = await BienTheModel.findOneAndDelete( IDBienThe );
+        const deletedBienThe = await BienTheModel.findOneAndDelete(IDBienThe);
 
         if (!deletedBienThe) {
             return res.status(404).json({ message: 'Không tìm thấy Biến thể' });
@@ -130,6 +130,23 @@ async function findBienTheInSanPham(req, res, next) {
         res.status(500).json({ message: 'Lỗi khi tìm kiếm Biến thể' });
     }
 }
+async function findBienTheByIdSanPham(req, res, next) {
+    const { id } = req.params;
+
+    let query = {};
+
+    // if (_id) {
+    //     query._id = { $regex: _id, $options: 'i' }; // Tìm kiếm không phân biệt hoa thường
+    // }
+
+    try {
+        const BienThes = await BienTheModel.findById(id);
+        res.status(200).json(BienThes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi khi tìm kiếm Biến thể' });
+    }
+}
 
 
 
@@ -139,4 +156,5 @@ module.exports = {
     updateBienTheInSanPham,
     deleteBienTheInSanPham,
     findBienTheInSanPham,
+    findBienTheByIdSanPham,
 };

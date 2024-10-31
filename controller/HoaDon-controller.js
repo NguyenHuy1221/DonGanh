@@ -8,6 +8,9 @@ const { refreshToken } = require('../jwt/index');
 const transporter = require("./mailer");
 //xoa dau tieng viet 
 const removeAccents = require('remove-accents');
+const BienThe = require("../models/BienTheSchema");
+const SanPham = require("../models/SanPhamSchema");
+const KhuyenMai = require("../models/KhuyenMaiSchema")
 // qr
 // const PayOS = require('@payos/node')
 // const pauos = require('client_oid','api_key','checksum-key')
@@ -139,58 +142,6 @@ async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
   const TrangThai = 0
   try {
     const user = await UserModel.findById(userId);
-    // console.log("aa",user)
-    // const orderId = `${"name"}-${vietnamTime}`;
-    // if (!user) {
-    //   return 'Người dùng không tồn tại';
-    // }
-    // console.log(giohang.chiTietGioHang)
-    // Chuyển đổi dữ liệu chiTietGioHang
-    // const chiTietHoaDon = giohang.chiTietGioHang.map(item => ({
-
-    //   BienThe: {
-    //       IDSanPham: item.idBienThe.IDSanPham,
-    //       sku: item.idBienThe.sku,
-    //       gia: item.idBienThe.gia,
-    //       soLuong: item.idBienThe.soLuong,
-    //       KetHopThuocTinh: item.idBienThe.KetHopThuocTinh.map(ketHop => ({
-    //           GiaTriThuocTinh: {
-    //               ThuocTinh: {
-    //                   TenThuocTinh: ketHop.IDGiaTriThuocTinh.ThuocTinhID.TenThuocTinh
-    //               },
-    //               GiaTri: ketHop.IDGiaTriThuocTinh.GiaTri
-    //           }
-    //       }))
-    //   },
-    //   soLuong: item.soLuong,
-    //   donGia: item.donGia
-    // }));
-
-    // const orderData = {
-    //   mrc_order_id: orderId,
-    //   total_amount: TongTien,
-    //   description: ghiChu,
-    //   url_success: "https://baokim.vn/",
-    //   merchant_id: parseInt(process.env.MERCHANT_ID),
-    //   url_detail: "https://baokim.vn/",
-    //   lang: "en",
-    //   bpm_id: transactionId,
-    //   webhooks: "https://baokim.vn/",
-    //   customer_email: user.gmail,
-    //   customer_phone: "0358748103",
-    //   customer_name: "ho duc hau",
-    //   customer_address: diaChiMoi.tinhThanhPho+" "+diaChiMoi.quanHuyen+" "+diaChiMoi.phuongXa+" "+diaChiMoi.duongThon,
-
-    //   items: JSON.stringify(ChiTietGioHang.map(item => ({
-    //     item_id: item.idBienThe,
-    //     item_code: item.idBienThe,
-    //          item_name: item.idBienThe,
-    //          price_amount: item.donGia,
-    //          quantity: item.soLuong,
-    //          url: process.env.BASE_URL + item.idBienThe,
-    //        }))),
-
-    // };
     console.log(removeAccents(user.tenNguoiDung))
     // const orderResponse = await createOrder(orderData);
     // user.diaChi = diaChiMoi;
@@ -204,6 +155,22 @@ async function createUserDiaChivaThongTinGiaoHang(req, res, next) {
       GhiChu: ghiChu,
 
     });
+    for (const chiTiet of ChiTietGioHang) {
+      if (chiTiet.idBienThe) {
+        await BienThe.findOneAndUpdate(
+          { _id: chiTiet.idBienThe._id },
+          { $inc: { soLuong: -chiTiet.soLuong } }
+        );
+      }
+
+      await SanPham.findOneAndUpdate(
+        { _id: chiTiet.idBienThe.IDSanPham },
+        {
+          $inc: { soLuongDaBan: chiTiet.soLuong },
+          $inc: { SoLuongHienTai: -chiTiet.soLuong }
+        }
+      );
+    }
     // Lưu đối tượng vào cơ sở dữ liệu
     const savedHoaDon = await newHoaDon.save();
     res.status(200).json(savedHoaDon);
@@ -315,6 +282,10 @@ async function updateTransactionHoaDon(req, res, next) {
     if (khuyenmaiId && giaTriGiam > 0) {
       hoadon.khuyenmaiId = khuyenmaiId;
       hoadon.SoTienKhuyenMai = giaTriGiam;
+      await KhuyenMai.findOneAndUpdate(
+        { _id: khuyenmaiId },
+        { $inc: { soLuong: -SoLuongHienTai } }
+      );
     }
     hoadon.transactionId = transactionId;
     hoadon.payment_url = donhangmoi.data.payment_url
@@ -419,6 +390,28 @@ async function updatetrangthaihuydonhang(req, res, next) {
     if (!hoadon) {
       return 'hoa don không tồn tại';
     }
+    for (const chiTiet of hoadon.chiTietHoaDon) {
+      if (chiTiet.idBienThe) {
+        await BienThe.findOneAndUpdate(
+          { _id: chiTiet.idBienThe._id },
+          { $inc: { soLuong: chiTiet.soLuong } }
+        );
+      }
+
+      await SanPham.findOneAndUpdate(
+        { _id: chiTiet.idBienThe.IDSanPham },
+        {
+          $inc: { soLuongDaBan: -chiTiet.soLuong },
+          $inc: { SoLuongHienTai: chiTiet.soLuong }
+        }
+      );
+    }
+    if (hoadon.khuyenmaiId && hoadon.giaTriGiam > 0) {
+      await KhuyenMai.findOneAndUpdate(
+        { _id: hoadon.khuyenmaiId },
+        { $inc: { soLuong: SoLuongHienTai } }
+      );
+    }
     hoadon.TrangThai = 4;
     await hoadon.save();
     res.status(200).json("Huy don hang thanh cong");
@@ -427,6 +420,54 @@ async function updatetrangthaihuydonhang(req, res, next) {
     res.status(500).json({ message: 'Lỗi khi cập nhật trang thái hủy hoa don' });
   }
 }
+
+
+async function updatetrangthaiHoaDOn(req, res, next) {
+  const hoadonId = req.params.hoadonId
+  const { TrangThai } = req.body
+  try {
+
+    const hoadon = await HoaDonModel.findById(hoadonId)// Lấy thông tin đơn hàng từ DB
+    if (!hoadon) {
+      return 'hoa don không tồn tại';
+    }
+
+    if (TrangThai == 4) {
+      for (const chiTiet of hoadon.chiTietHoaDon) {
+        if (chiTiet.idBienThe) {
+          await BienThe.findOneAndUpdate(
+            { _id: chiTiet.idBienThe._id },
+            { $inc: { soLuong: chiTiet.soLuong } }
+          );
+        }
+
+        await SanPham.findOneAndUpdate(
+          { _id: chiTiet.idBienThe.IDSanPham },
+          {
+            $inc: { soLuongDaBan: -chiTiet.soLuong },
+            $inc: { SoLuongHienTai: chiTiet.soLuong }
+          }
+        );
+      }
+      if (hoadon.khuyenmaiId && hoadon.giaTriGiam > 0) {
+        await KhuyenMai.findOneAndUpdate(
+          { _id: hoadon.khuyenmaiId },
+          { $inc: { soLuong: SoLuongHienTai } }
+        );
+      }
+    }
+    hoadon.TrangThai = TrangThai;
+    await hoadon.save();
+    res.status(200).json("Huy don hang thanh cong");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi khi cập nhật trang thái hủy hoa don' });
+  }
+}
+
+
+
+
 
 
 async function updateTransactionHoaDonCOD(req, res, next) {
@@ -447,6 +488,10 @@ async function updateTransactionHoaDonCOD(req, res, next) {
     if (khuyenmaiId && giaTriGiam > 0) {
       hoadon.khuyenmaiId = khuyenmaiId;
       hoadon.SoTienKhuyenMai = giaTriGiam;
+      await KhuyenMai.findOneAndUpdate(
+        { _id: khuyenmaiId },
+        { $inc: { soLuong: -SoLuongHienTai } }
+      );
     }
     hoadon.transactionId = transactionId;
     await hoadon.save();
@@ -513,13 +558,38 @@ async function HuyDonHang(req, res, next) {
   const hoadonId = req.params.hoadonId
   // const { transactionId } = req.body;
   try {
-    const hoadon = await HoaDonModel.findById(hoadonId)// Lấy thông tin đơn hàng từ DB
+    const hoadon = await HoaDonModel.findById(hoadonId).populate({
+      path: 'chiTietHoaDon.idBienThe',
+      select: 'IDSanPham _id', // Select desired fields
+    })// Lấy thông tin đơn hàng từ DB
     if (!hoadon) {
       return 'Đơn hàng không tồn tại';
     }
     // if (hoadon.TrangThai !== 2 || hoadon.TrangThai !== 3) {
     //   return res.status(400).json({ message: "Chỉ được phép hủy đơn khi vừa đặt hàng và đóng gói" });
     // }
+    for (const chiTiet of hoadon.chiTietHoaDon) {
+      if (chiTiet.idBienThe) {
+        await BienThe.findOneAndUpdate(
+          { _id: chiTiet.idBienThe._id },
+          { $inc: { soLuong: chiTiet.soLuong } }
+        );
+      }
+
+      await SanPham.findOneAndUpdate(
+        { _id: chiTiet.idBienThe.IDSanPham },
+        {
+          $inc: { soLuongDaBan: -chiTiet.soLuong },
+          $inc: { SoLuongHienTai: chiTiet.soLuong }
+        }
+      );
+    }
+    if (hoadon.khuyenmaiId && hoadon.giaTriGiam > 0) {
+      await KhuyenMai.findOneAndUpdate(
+        { _id: hoadon.khuyenmaiId },
+        { $inc: { soLuong: SoLuongHienTai } }
+      );
+    }
     hoadon.TrangThai = 4;
     await hoadon.save();
     //{ message: "Tạo dơn hàng thành công" }
@@ -568,4 +638,5 @@ module.exports = {
   NhanThanhToanTuBaoKim,
   HuyDonHang,
   updateDiaChighichuHoaDon,
+  updatetrangthaiHoaDOn,
 };

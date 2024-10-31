@@ -30,6 +30,7 @@ const {
   getDanhSachThuocTinhTrongSanPham,
   searchSanPham,
   checkNumberProductvaBienthe,
+  searchSanPhamtest,
 } = require("../controller/sanpham-controller");
 sanphamRouter.post("/createSanPhamtest", async function (req, res) {
   return createSanPhamtest(req, res);
@@ -172,6 +173,10 @@ sanphamRouter.get("/sapXepSanPhamCoGiamGia", async function (req, res) {
 sanphamRouter.get("/searchSanPham", async function (req, res) {
   return searchSanPham(req, res);
 });
+sanphamRouter.get("/searchSanPhamtest", async function (req, res) {
+  return searchSanPhamtest(req, res);
+});
+
 sanphamRouter.get("/checkNumberProductvaBienthe/:IDSanPham", async function (req, res) {
   return checkNumberProductvaBienthe(req, res);
 });

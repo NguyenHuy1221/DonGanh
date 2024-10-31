@@ -160,7 +160,13 @@ io.on("connection", (socket) => {
       // Tìm cuộc trò chuyện và populate các tin nhắn
       const conversation = await ConversationModel.findById(
         conversationId
-      ).populate("messages")
+      ).populate({
+        path: 'messages',
+        populate: {
+          path: 'IDSanPham',
+          model: 'SanPham' // Name of the Product model
+        }
+      })
         .populate("sender_id")
         .populate("receiver_id");
 
@@ -189,7 +195,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
+  socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl, IDSanPham }) => {
     try {
       //const now = Date.now();
       const MIN_TIME_BETWEEN_MESSAGES = 1000;
@@ -197,9 +203,10 @@ io.on("connection", (socket) => {
         text,
         imageUrl,
         videoUrl,
+        IDSanPham,
         msgByUserId: userid,
       });
-
+      console.log(message)
       // Gửi phản hồi nhanh chóng tới client
       io.to(conversationId).emit('message', { conversationId, message });
       // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ

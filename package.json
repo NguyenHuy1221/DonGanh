@@ -21,6 +21,7 @@
     "express": "^4.21.0",
     "express-session": "^1.18.0",
     "fs": "^0.0.1-security",
+    "fuzzysearch": "^1.0.3",
     "generate-password": "^1.7.1",
     "google-auth-library": "^9.14.2",
     "jsonwebtoken": "^9.0.2",

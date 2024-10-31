@@ -8,6 +8,8 @@ const tiengviet = require('tiengviet');
 const fs = require('fs');
 const path = require('path');
 const HoadonModel = require("../models/HoaDonSchema")
+//thu vien tim ket qua gan dung
+const fuzzysearch = require('fuzzysearch');
 
 require("dotenv").config();
 const multer = require("multer");
@@ -1053,6 +1055,58 @@ async function searchSanPham(req, res, next) {
     res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
   }
 }
+
+// async function searchSanPhamtest(req, res, next) {
+//   try {
+//     const { TenSanPham } = req.query;
+//     console.log(TenSanPham)
+
+//     const tenSanPhamKhongDau = removeAccents(TenSanPham.toLowerCase());
+//     // Biểu thức chính quy linh hoạt hơn, bao gồm khoảng trắng và các ký tự đặc biệt
+//     const regex = new RegExp(`.*${tenSanPhamKhongDau}.*`, 'gi');
+
+
+
+//     // Tìm kiếm, thêm index nếu chưa có
+//     const sanphams = await SanPhamModel.find({
+//       TenSanPham: { $regex: regex }
+//     })
+
+//     res.status(200).json(sanphams);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
+//   }
+// }
+async function searchSanPhamtest(req, res, next) {
+  try {
+    const { TenSanPham } = req.query;
+    if (!TenSanPham) {
+      return res.status(400).json({ message: "Vui lòng nhập tên sản phẩm để tìm kiếm" });
+    }
+
+    const tenSanPhamKhongDau = removeAccents(TenSanPham.toLowerCase());
+    const regex = new RegExp(`.*${tenSanPhamKhongDau}.*`, 'i'); // chỉ một regex, 'i' để không phân biệt hoa thường
+
+    // Tìm kiếm với cả từ không dấu và từ gốc có dấu
+    const sanphams = await SanPhamModel.find({
+      $or: [
+        { TenSanPham: { $regex: regex } },
+        { TenSanPham: { $regex: new RegExp(`.*${TenSanPham}.*`, 'i') } }
+      ]
+    }).collation({ locale: 'vi', strength: 1 });
+
+    res.status(200).json(sanphams);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
+  }
+}
+function removeAccents(str) {
+  return str.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
 // tự nhiên ngiu tiếng anh
 async function checkNumberProductvaBienthe(req, res, next) {
   const { IDSanPham } = req.params;
@@ -1093,11 +1147,7 @@ async function checkNumberProductvaBienthe(req, res, next) {
 //     console.error('Lỗi khi lấy ngày tạo:', error);
 //   }
 // }
-function removeAccents(str) {
-  return str.normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
-}
+
 async function validateSanPham(IDSanPham, TenSanPham) {
   const sanPham = await SanPhamModel.findOne({ IDSanPham, TenSanPham });
   if (!sanPham) {
@@ -1227,4 +1277,5 @@ module.exports = {
   createSanPhamtest,
   getDanhSachThuocTinhTrongSanPham,
   checkNumberProductvaBienthe,
+  searchSanPhamtest,
 };

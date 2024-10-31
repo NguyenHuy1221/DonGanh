@@ -160,7 +160,13 @@ io.on("connection", (socket) => {
       // Tìm cuộc trò chuyện và populate các tin nhắn
       const conversation = await ConversationModel.findById(
         conversationId
-      ).populate("messages")
+      ).populate({
+        path: 'messages',
+        populate: {
+          path: 'IDSanPham',
+          model: 'SanPham' // Name of the Product model
+        }
+      })
         .populate("sender_id")
         .populate("receiver_id");
 
@@ -189,34 +195,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
-  //   try {
-  //     const message = new MessageModel({
-  //       text,
-  //       imageUrl,
-  //       videoUrl,
-  //       msgByUserId: userid,
-  //     });
-
-  //     // Gửi phản hồi nhanh chóng tới client
-  //     io.to(conversationId).emit('message', { conversationId, message });
-  //     // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ
-  //     await message.save();
-
-  //     // Lưu tin nhắn vào cuộc hội thoại
-  //     const conversation = await ConversationModel.findById(conversationId);
-  //     conversation.messages.push(message._id);
-  //     await conversation.save();
-
-  //     // Gửi tin nhắn đến tất cả các client trong room
-  //     io.to(conversationId).emit('message', { conversationId, ...message.toObject() });
-  //   } catch (error) {
-  //     console.error('Error sending message:', error);
-  //     socket.emit('error', { message: 'An error occurred while sending the message' });
-  //   }
-  // });
-
-
   socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl, IDSanPham }) => {
     try {
       //const now = Date.now();
@@ -228,7 +206,7 @@ io.on("connection", (socket) => {
         IDSanPham,
         msgByUserId: userid,
       });
-
+      console.log(message)
       // Gửi phản hồi nhanh chóng tới client
       io.to(conversationId).emit('message', { conversationId, message });
       // Lưu tin nhắn và cập nhật cuộc trò chuyện không đồng bộ

@@ -93,7 +93,7 @@ sanphamRouter.delete("/deleteReview", async function (req, res) {
   return DeleteReview(req, res);
 });
 
-sanphamRouter.get("/getlistPageSanPham", async function (req, res) {
+sanphamRouter.get("/getlistPageSanPham/:page", async function (req, res) {
   return getlistPageSanPham(req, res);
 });
 

@@ -222,33 +222,11 @@ io.on("connection", (socket) => {
   });
 
 
-  // socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl }) => {
-  //   try {
-  //     const message = new MessageModel({
-  //       text,
-  //       imageUrl,
-  //       videoUrl,
-  //       msgByUserId: userid,
-  //     });
-  //     await message.save();
-
-  //     // Lưu tin nhắn vào cuộc hội thoại
-  //     const conversation = await ConversationModel.findById(conversationId);
-  //     conversation.messages.push(message._id);
-  //     await conversation.save();
-
-  //     // Gửi tin nhắn đến tất cả các client trong room
-  //     io.to(conversationId).emit('message', { conversationId, ...message.toObject() });
-  //   } catch (error) {
-  //     console.error('Error sending message:', error);
-  //     socket.emit('error', { message: 'An error occurred while sending the message' });
-  //   }
-  // });
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
 });
-server.listen(3000, "0.0.0.0", () => {
+server.listen(5000, "0.0.0.0", () => {
   console.log("Server  is running on port 3000");
 });
 

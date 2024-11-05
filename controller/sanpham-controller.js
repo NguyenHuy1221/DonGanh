@@ -930,7 +930,7 @@ async function findSanPhambyID(req, res, next) {
 
 async function getlistPageSanPham(req, res, next) {
   try {
-    const page = parseInt(req.query.page) || 1;
+    const page = parseInt(req.params.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
@@ -1309,7 +1309,7 @@ module.exports = {
   // deleteSanPham,
   // findSanPham,
   // findSanPhambyID,
-  // getlistPageSanPham,
+  getlistPageSanPham,
   createSanPhamtest,
   getDanhSachThuocTinhTrongSanPham,
   checkNumberProductvaBienthe,

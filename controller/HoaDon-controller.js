@@ -215,7 +215,7 @@ function calculateDiscountedItems(items, discountValue, totalQuantity) {
 
 async function updateTransactionHoaDon(req, res, next) {
   const hoadonId = req.params.hoadonId
-  const { transactionId, khuyenmaiId, giaTriGiam = 0 } = req.body;
+  const { transactionId, khuyenmaiId, giaTriGiam } = req.body;
   try {
     const hoadon = await HoaDonModel.findById(hoadonId).populate("userId"); // Lấy thông tin đơn hàng từ DB
     const token = refreshToken();

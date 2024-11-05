@@ -10,8 +10,15 @@ async function Createconversation(req, res, next) {
       return res.status(400).json({ error: 'Người gửi và người nhận tin nhắn không được trùng lặp!' });
     }
     // Kiểm tra xem conversation đã tồn tại chưa
-    let conversation = await ConversationModel.findOne({ sender_id, receiver_id }).populate("sender_id")
-      .populate("receiver_id");
+    let conversation = await ConversationModel.findOne({
+      $or: [
+        { sender_id, receiver_id },
+        { sender_id: receiver_id, receiver_id: sender_id },
+      ]
+    }).populate("sender_id").populate("receiver_id");
+    console.log(conversation)
+    // let conversation = await ConversationModel.findOne({ sender_id, receiver_id }).populate("sender_id")
+    //   .populate("receiver_id");
     if (!conversation) {
       conversation = new ConversationModel({ sender_id, receiver_id });
       await conversation.save();

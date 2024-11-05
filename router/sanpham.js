@@ -5,7 +5,7 @@ const {
   toggleSanPhamMoi,
   getSanPhamListNew_Old,
   createSanPham,
-  // updateHinhBoSung,
+  updateHinhBoSung,
   createThuocTinhSanPham,
   createSanPhamVoiBienThe,
   getlistBienThe,

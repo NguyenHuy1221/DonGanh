@@ -114,12 +114,16 @@ app.get("/logout", (req, res) => {
 });
 
 //chat
+let connectedUsers = []; // Danh sách các user đã kết nối
 
 io.on("connection", (socket) => {
   console.log(`New client connected: ${socket.id}`);
   // Lấy token từ handshake
   const token = socket.handshake.auth.token;
+  console.log("hand", socket.handshake)
   console.log(token);
+  connectedUsers.push(socket.id);
+  console.log(connectedUsers);
   let userid;
   // Xác thực token
   try {
@@ -195,9 +199,10 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl, IDSanPham }) => {
+  socket.on('sendMessage', async ({ conversationId, text, imageUrl, videoUrl, IDSanPham, token }) => {
     try {
       //const now = Date.now();
+      console.log(token)
       const MIN_TIME_BETWEEN_MESSAGES = 1000;
       const message = new MessageModel({
         text,
@@ -222,11 +227,22 @@ io.on("connection", (socket) => {
   });
 
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
+  // socket.on("disconnect", () => {
+  //   delete socket.token;
+  //   console.log("Client disconnected");
+  // });
+  socket.on('disconnect', () => {
+    try {
+      //delete socket.token[socket.id];
+      delete socket.handshake.auth.token
+      connectedUsers = connectedUsers.filter(id => id !== socket.id);
+      console.log('User disconnected');
+    } catch (error) {
+      console.error("Error deleting token:", error);
+    }
   });
 });
-server.listen(5000, "0.0.0.0", () => {
+server.listen(3000, "0.0.0.0", () => {
   console.log("Server  is running on port 3000");
 });
 

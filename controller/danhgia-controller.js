@@ -32,7 +32,7 @@ async function getListDanhGiaInSanPhamById(req, res, next) {
             const isLiked = danhGia.likes.includes(userId);
             return { ...danhGia._doc, isLiked };
         });
-
+        console.log(danhGiasWithLikeInfo)
         res.status(200).json(danhGiasWithLikeInfo);
     } catch (error) {
         console.error(error);

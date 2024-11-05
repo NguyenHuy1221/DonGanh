@@ -125,9 +125,9 @@ async function RegisterUserGG(req, res) {
       user.tenNguoiDung = tenNguoiDung;
       user.gmail = gmail;
       user.googleId = googleId;
-      await user.save();
+      user = await user.save();
     }
-    const token = generateToken(user, user.role);
+    const token = generateToken(user, user._id, user.role);
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {
     console.error("Lỗi khi thêm người dùng:", error);
@@ -209,6 +209,8 @@ async function loginUser(req, res) {
     }
 
     const token = generateToken(user._id, user.role);
+    console.log(token)
+    console.log(user)
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {
     console.error("Lỗi khi đăng nhập:", error);
@@ -363,7 +365,7 @@ async function showUserById(req, res) {
 
 async function getAllUsers(req, res) {
   try {
-    const users = await UserModel.find(); 
+    const users = await UserModel.find();
     return res.json(users);
   } catch (error) {
     console.error("Lỗi khi lấy danh sách người dùng:", error);

@@ -212,6 +212,8 @@ async function loginUser(req, res) {
     }
 
     const token = generateToken(user._id, user.role);
+    console.log(token)
+    console.log(user)
     return res.json({ message: "Đăng nhập thành công", token });
   } catch (error) {
     console.error("Lỗi khi đăng nhập:", error);
@@ -482,41 +484,6 @@ async function createAnhDaiDien(req, res, next) {
 //   }
 // }
 
-async function updateUser12(req, res, next) {
-  try {
-    const userId = req.params.id;
-    const { tenNguoiDung, soDienThoai, GioiTinh, ngaySinh } = req.body;
-
-    // Tìm người dùng theo ID
-    let user = await UserModel.findById(userId);
-
-    // Nếu không tìm thấy người dùng, tạo mới
-    if (!user) {
-      user = new UserModel({
-        _id: userId,
-        tenNguoiDung,
-        soDienThoai,
-        GioiTinh,
-        ngaySinh,
-      });
-      await user.save();
-      return res.status(201).json(user); // Trả về mã trạng thái 201 cho bản ghi mới
-    }
-
-    // Nếu tìm thấy, cập nhật thông tin người dùng
-    user.tenNguoiDung = tenNguoiDung;
-    user.soDienThoai = soDienThoai;
-    user.GioiTinh = GioiTinh;
-    user.ngaySinh = ngaySinh;
-
-    const updatedUser = await user.save(); // Lưu thay đổi
-    res.status(200).json(updatedUser); // Trả về người dùng đã cập nhật
-  } catch (error) {
-    console.error("Lỗi khi cập nhật người dùng:", error);
-    res.status(500).json({ message: "Lỗi cập nhật hồ sơ." });
-  }
-}
-
 async function updateUser(req, res, next) {
   const { UserID, LoaiThongTinUpdate } = req.body;
 
@@ -591,5 +558,4 @@ module.exports = {
   RegisterUserGG,
   LoginUserGG,
   getAllUsers,
-  updateUser12,
 };

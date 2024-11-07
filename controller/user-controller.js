@@ -19,18 +19,6 @@ async function verifyGoogleToken(token) {
 }
 
 
-// const accountSid = 'ACdb5086dcbc07a2cd7c3bcd7c9b968ee1';
-// const authToken = '9961897468488247208e4888556e82ea';
-// const clientotpphone = require('twilio')(accountSid, authToken);
-
-// clientotpphone.verify.v2.services("VAc45b689d2ecd1354ddc291b5ce9aebb3")
-//   .verificationChecks
-//   .create({ to: '+84358748103', code: '[Code]' })
-//   .then(verification_check => console.log(verification_check.status));
-
-
-
-
 async function RegisterUser(req, res) {
   const { tenNguoiDung, gmail, matKhau } = req.body;
   const hash_pass = await hashPassword(matKhau);

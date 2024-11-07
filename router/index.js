@@ -15,7 +15,11 @@ const khuyenmaimanageRoute = require("../router/khuyenmai-manage");
 const diachiRoute = require("../router/diachi");
 const chatsocket = require("../router/chatsoccket");
 const danhgiaRoute = require("../router/danhgia")
+const yeuthichRoute = require("../router/yeuthich")
+const adminRoute = require("../router/admin")
 // const phuongthucthanhtoanRoute = require("../router/phuongthucthanhtoan")
+
+apiRoute.use("/admin", adminRoute);
 apiRoute.use("/user", userRoute);
 apiRoute.use("/cart", gioHangRoute);
 apiRoute.use("/banner", bannerRoutes);
@@ -102,6 +106,14 @@ apiRoute.use(
     next();
   },
   chatsocket
+);
+apiRoute.use(
+  "/yeuthich",
+  (req, res, next) => {
+    console.log("call yeu thich api router");
+    next();
+  },
+  yeuthichRoute
 );
 
 module.exports = apiRoute;

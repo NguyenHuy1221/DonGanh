@@ -8,6 +8,7 @@ const tiengviet = require('tiengviet');
 const fs = require('fs');
 const path = require('path');
 const HoadonModel = require("../models/HoaDonSchema")
+const YeuThichModel = require("../models/YeuThichSchema")
 //thu vien tim ket qua gan dung
 const fuzzysearch = require('fuzzysearch');
 
@@ -902,14 +903,14 @@ async function findSanPham(req, res, next) {
 
 async function findSanPhambyID(req, res, next) {
   const { IDSanPham } = req.params;
-  console.log(IDSanPham);
-  let query = {};
-  if (IDSanPham) {
-    query.IDSanPham = IDSanPham;
-  }
-
+  const { userId, yeuThichId } = req.query
+  // console.log(IDSanPham);
+  // let query = {};
+  // if (IDSanPham) {
+  //   query.IDSanPham = IDSanPham;
+  // }
   try {
-    const IDSanPhams = await SanPhamModel.findById(IDSanPham).populate({
+    const SanPham = await SanPhamModel.findById(IDSanPham).populate({
       path: 'DanhSachThuocTinh',
       populate: {
         path: 'thuocTinh'
@@ -921,14 +922,26 @@ async function findSanPhambyID(req, res, next) {
           path: 'giaTriThuocTinh'
         }
       })
-    res.status(200).json(IDSanPhams);
+
+    let isFavorited = false; // Kiểm tra yêu thích nếu userId không null 
+    if (userId && yeuThichId) {
+      const yeuThich = await YeuThichModel.findById(yeuThichId);
+      if (yeuThich) { isFavorited = yeuThich.sanphams.some(sanpham => sanpham.IDSanPham.equals(productId)); }
+    }
+    //res.status(200).json({ SanPham, isFavorited })
+    const productWithFavoriteStatus = SanPham.toObject();
+    productWithFavoriteStatus.isFavorited = isFavorited;
+
+
+    res.status(200).json(productWithFavoriteStatus);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Lỗi khi tìm kiếm giá trị thuộc tính" });
+    res.status(500).json({ message: "Lỗi khi lay gia tri san pham" });
   }
 }
 
 async function getlistPageSanPham(req, res, next) {
+  const { userId, yeuThichId } = req.query
   try {
     const page = parseInt(req.params.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -937,8 +950,19 @@ async function getlistPageSanPham(req, res, next) {
     const sanphams = await SanPhamModel.find().skip(skip).limit(limit);
     const totalProducts = await SanPhamModel.countDocuments();
 
+    let favoritedProductIds = [];
+    if (userId && yeuThichId) {
+      const yeuThich = await YeuThichModel.findById(yeuThichId);
+      if (yeuThich) { favoritedProductIds = yeuThich.sanphams.map(sanpham => sanpham.IDSanPham.toString()); }
+    } // Thêm thuộc tính isFavorited vào từng sản phẩm 
+    const sanphamsWithFavoriteStatus = sanphams.map(sanpham => {
+      const productObject = sanpham.toObject();
+      productObject.isFavorited = favoritedProductIds.includes(productObject._id.toString());
+      return productObject;
+    });
+
     res.status(200).json({
-      sanphams,
+      sanphams: sanphamsWithFavoriteStatus,
       totalProducts,
       currentPage: page,
       totalPages: Math.ceil(totalProducts / limit),
@@ -1073,8 +1097,7 @@ async function findSanPhamByDanhMuc(req, res, next) {
 }
 async function searchSanPham(req, res, next) {
   try {
-    const { TenSanPham } = req.query;
-
+    const { TenSanPham, userId, yeuThichId } = req.query;
     const tenSanPhamKhongDau = removeAccents(TenSanPham.toLowerCase());
 
     // Biểu thức chính quy linh hoạt hơn, bao gồm khoảng trắng và các ký tự đặc biệt
@@ -1085,7 +1108,19 @@ async function searchSanPham(req, res, next) {
       TenSanPham: { $regex: regex }
     }).collation({ locale: 'vi' }); // Sử dụng collation cho tiếng Việt
 
-    res.status(200).json(sanphams);
+    let favoritedProductIds = [];
+    if (userId && yeuThichId) {
+      const yeuThich = await YeuThichModel.findById(yeuThichId);
+      if (yeuThich) { favoritedProductIds = yeuThich.sanphams.map(sanpham => sanpham.IDSanPham.toString()); }
+    } // Thêm thuộc tính isFavorited vào từng sản phẩm 
+    const sanphamsWithFavoriteStatus = sanphams.map(sanpham => {
+      const productObject = sanpham.toObject();
+      productObject.isFavorited = favoritedProductIds.includes(productObject._id.toString());
+      return productObject;
+    });
+
+
+    res.status(200).json(sanphamsWithFavoriteStatus);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });

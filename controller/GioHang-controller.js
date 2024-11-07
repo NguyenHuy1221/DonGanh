@@ -135,7 +135,6 @@ async function getGioHangByUserId(req, res, next) {
       });
       await gioHang.save();
     }
-
     res.status(200).json(gioHang);
   } catch (error) {
     res

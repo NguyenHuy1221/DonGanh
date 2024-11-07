@@ -56,13 +56,22 @@ const authMiddlewareView = (req, res, next) => {
 const moment = require('moment-timezone');
 
 function convertToVietnamTimezone(schema) {
-    schema.methods.toJSON = function() {
-        const obj = this.toObject();
-        if (obj.NgayBatDau) {
-            obj.NgayBatDau = moment(obj.NgayBatDau).tz('Asia/Ho_Chi_Minh').format();
-        }
-        return obj;
-    };
+  schema.methods.toJSON = function () {
+    const obj = this.toObject();
+    if (obj.NgayBatDau) {
+      obj.NgayBatDau = moment(obj.NgayBatDau).tz('Asia/Ho_Chi_Minh').format();
+    }
+    return obj;
+  };
 }
-
-module.exports = { authMiddleware, authorizationJwt, authMiddlewareView,convertToVietnamTimezone };
+function checkPermissions(entity, action) {
+  return (req, res, next) => {
+    const user = req.user; // Giả sử bạn đã có cơ chế xác thực và gán user vào req 
+    if (!user) { return res.status(401).json({ message: 'Unauthorized' }); }
+    if (user.role === 'admin') {
+      return next(); // Admin có tất cả quyền 
+    } const hasPermission = user.permissions.some(permission => permission.entity === entity && permission.actions.includes(action));
+    if (!hasPermission) { return res.status(403).json({ message: 'Forbidden: You do not have permission' }); } next();
+  };
+}
+module.exports = { authMiddleware, authorizationJwt, authMiddlewareView, convertToVietnamTimezone, checkPermissions };

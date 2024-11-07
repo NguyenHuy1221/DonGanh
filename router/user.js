@@ -37,7 +37,6 @@ const {
   RegisterUserGG,
   LoginUserGG,
   getAllUsers,
-  updateUser12,
 } = require("../controller/user-controller");
 
 userRoute.get("/showAllUser", function (req, res) {
@@ -92,10 +91,6 @@ userRoute.post("/createAnhDaiDien/:IDNguoiDung", async function (req, res) {
 
 userRoute.put("/updateUser", async function (req, res) {
   return updateUser(req, res);
-});
-
-userRoute.put("/updateUser12/:id", async function (req, res) {
-  return updateUser12(req, res);
 });
 
 // });

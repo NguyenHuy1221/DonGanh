@@ -12,24 +12,10 @@ const NguoiDungSchema = new Schema({
   ngaySinh: String,
   hoKinhDoanh: { type: Boolean, default: false },
   tinhTrang: { type: Number, default: 0 },
-  IDYeuThich: { type: Schema.Types.ObjectId, ref: 'YeuThich' },
   phuongThucThanhToan: [
     { type: Schema.Types.ObjectId, ref: "PhuongThucThanhToan" },
   ],
-
-  //phan quyen cho admin
-  role: {
-    type: String, enum: ['khachhang', 'hokinhdoanh', 'nhanvien', 'admin'], required: true,
-    default: 'khachhang' // Thiết lập giá trị mặc định là 'khachhang'
-  },
-  // permissions: [{
-  //   entity: { type: String, enum: ['sanpham', 'khuyenmai', 'hoadon'], required: true },
-  //   actions: [{ type: String, enum: ['them', 'xoa', 'sua', 'update'] }]
-  // }],
-  permissions: [{
-    entity: { type: String, enum: ['sanpham', 'khuyenmai', 'hoadon'], required: true },
-    actions: [{ type: String, enum: ['them', 'xoa', 'sua', 'update'] }]
-  }],
+  role: { type: String, enum: ["user", "admin"] },
   otp: { type: String },
   otpExpiry: { type: Date },
   isVerified: { type: Boolean, default: false },
